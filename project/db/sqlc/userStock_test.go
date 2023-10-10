@@ -31,10 +31,8 @@ func CreateRandomUserStock(t *testing.T) (User, Fund, Stock, UserStock) {
 
 	require.Equal(t, user.UserID, userStock.UserID)
 	require.Equal(t, stock.StockID, userStock.StockID)
-	require.Equal(t, quantity, userStock.UserID)
-	require.Equal(t, user.UserID, userStock.Quantity)
+	require.Equal(t, quantity, userStock.Quantity)
 	require.Equal(t, stock.CurrentPrice, userStock.PurchasePricePerShare)
-	require.Equal(t, user.UserID, userStock.UserID)
 
 	return user, fund, stock, userStock
 }
