@@ -15,13 +15,13 @@ dropdb:
 	docker exec -it project7-postgres  dropdb --username=royce stock_info
 
 sqlc:
-	docker run --rm -v $(current_dir):/src -w /src sqlc/sqlc generate
+	docker run --rm -v $(current_dir)/project:/src -w /src sqlc/sqlc generate
 
 migrateup:
-	migrate -path db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose up
+	migrate -path project/db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose up
 
 migratedown:
-	migrate -path db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose down
+	migrate -path project/db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose down
 
 
 test:
