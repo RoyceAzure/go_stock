@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS stock_transaction;
+DROP TABLE IF EXISTS user_stock;
+DROP TABLE IF EXISTS stock;
+DROP TABLE IF EXISTS fund;
+DROP TABLE IF EXISTS "user";
