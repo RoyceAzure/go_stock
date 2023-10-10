@@ -25,7 +25,8 @@ migratedown:
 
 
 test:
-	go test -v -cover ./...
+	go test -v -cover ./project/...
+	go test -v -cover ./shared/...
 
 .PHONY: postgresup postgresrm createdb dropdb test
  
