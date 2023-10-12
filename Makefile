@@ -23,10 +23,16 @@ migrateup:
 migratedown:
 	migrate -path project/db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose down
 
-
 test:
 	go test -v -cover ./project/...
 	go test -v -cover ./shared/...
 
-.PHONY: postgresup postgresrm createdb dropdb test
+server:
+	go run main.go
+
+# mockgen需要依賴go.mod  你的執行指令目錄或父目錄必須包含go.mod,  所以無法在root 目錄執行  因為只有go.mod
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/RoyceAzure/go-stockinfo-project/db/sqlc Store
+
+.PHONY: postgresup postgresrm createdb dropdb test server mock
  

@@ -49,7 +49,7 @@ func TestStockTransTx(t *testing.T) {
 		oriFund := result.OriFund
 
 		require.NotEmpty(t, transRes.TransationId)
-		_, err = store.Queries.GetStockTransaction(context.Background(), transRes.TransationId)
+		_, err = store.GetStockTransaction(context.Background(), transRes.TransationId)
 		require.NoError(t, err)
 
 		//檢查fund

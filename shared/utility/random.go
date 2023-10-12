@@ -12,6 +12,8 @@ var TransactionType = [2]string{"Buy", "Sell"}
 
 var CurrencyType = []string{"TW", "US", "EU"}
 
+var SSOType = []string{"MS", "GOOGLE", "AWS", "FB"}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -26,6 +28,10 @@ func RandomFloat(max float64) float64 {
 
 func RandomTransactionType() string {
 	return TransactionType[rand.Intn(len(TransactionType))]
+}
+
+func RandomSSOType() string {
+	return SSOType[rand.Intn(len(SSOType))]
 }
 
 func RandomCurrencyType() string {

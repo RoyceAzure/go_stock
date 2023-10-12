@@ -7,12 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	_ "github.com/lib/pq"
-)
-
-const (
-	dbDrivar = "postgres"
-	dbSource = "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable"
 )
 
 // database/sql  只是個介面  所以測試時需要額外使用github.com/lib/pq
@@ -32,8 +28,12 @@ func TestMain(m *testing.M) {
 
 func setup() {
 	// 你的初始化代碼
-	var err error
-	testDB, err = sql.Open(dbDrivar, dbSource)
+
+	config, err := utility.LoadConfig("../../..")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+	testDB, err = sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
