@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const alphabet string = "abcdefghijklmnopqrstuvwxyz@."
+const alphabet string = "abcdefghijklmnopqrstuvwxyz"
 
 var TransactionType = [2]string{"Buy", "Sell"}
 
@@ -39,7 +39,7 @@ func RandomCurrencyType() CurrencyType {
 }
 
 func RandomSSOTypeStr() string {
-	return string(RandomCurrencyType())
+	return string(RandomSSOType())
 }
 
 func RandomCurrencyTypeStr() string {

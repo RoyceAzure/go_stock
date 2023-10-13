@@ -101,7 +101,16 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	res := createUserResponse{
+		UserID:       user.UserID,
+		UserName:     user.UserName,
+		Email:        user.Email,
+		SsoIdentifer: user.SsoIdentifer.String,
+		CrDate:       user.CrDate,
+		CrUser:       user.CrUser,
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }
 
 type listUserRequest struct {
@@ -123,11 +132,24 @@ func (server *Server) listUser(ctx *gin.Context) {
 	}
 
 	//注意  這裡的ctx是由gin.Context提供，這就表示要不要中止process是由gin框架控制
-	user, err := server.store.Getusers(ctx, arg)
+	users, err := server.store.Getusers(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	var responses []createUserResponse
+	for _, user := range users {
+		res := createUserResponse{
+			UserID:       user.UserID,
+			UserName:     user.UserName,
+			Email:        user.Email,
+			SsoIdentifer: user.SsoIdentifer.String,
+			CrDate:       user.CrDate,
+			CrUser:       user.CrUser,
+		}
+		responses = append(responses, res)
+	}
+
+	ctx.JSON(http.StatusOK, responses)
 }
