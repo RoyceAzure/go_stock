@@ -8,33 +8,37 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO "user"(
     user_name,
     email,
-    password,
+    hashed_password,
+    password_changed_at,
     sso_identifer,
     cr_user
 ) VALUES(
-    $1, $2, $3, $4, $5
-)   RETURNING user_id, user_name, password, email, sso_identifer, cr_date, up_date, cr_user, up_user
+    $1, $2, $3, $4, $5, $6
+)   RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user
 `
 
 type CreateUserParams struct {
-	UserName     string         `json:"user_name"`
-	Email        string         `json:"email"`
-	Password     sql.NullString `json:"password"`
-	SsoIdentifer sql.NullString `json:"sso_identifer"`
-	CrUser       string         `json:"cr_user"`
+	UserName          string         `json:"user_name"`
+	Email             string         `json:"email"`
+	HashedPassword    string         `json:"hashed_password"`
+	PasswordChangedAt time.Time      `json:"password_changed_at"`
+	SsoIdentifer      sql.NullString `json:"sso_identifer"`
+	CrUser            string         `json:"cr_user"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.queryRow(ctx, q.createUserStmt, createUser,
 		arg.UserName,
 		arg.Email,
-		arg.Password,
+		arg.HashedPassword,
+		arg.PasswordChangedAt,
 		arg.SsoIdentifer,
 		arg.CrUser,
 	)
@@ -42,8 +46,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	err := row.Scan(
 		&i.UserID,
 		&i.UserName,
-		&i.Password,
 		&i.Email,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
 		&i.SsoIdentifer,
 		&i.CrDate,
 		&i.UpDate,
@@ -64,7 +69,7 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT user_id, user_name, password, email, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -74,8 +79,9 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 	err := row.Scan(
 		&i.UserID,
 		&i.UserName,
-		&i.Password,
 		&i.Email,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
 		&i.SsoIdentifer,
 		&i.CrDate,
 		&i.UpDate,
@@ -86,7 +92,7 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 }
 
 const getUserForUpdateNoKey = `-- name: GetUserForUpdateNoKey :one
-SELECT user_id, user_name, password, email, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
 WHERE user_id = $1 LIMIT 1
 FOR NO KEY UPDATE
 `
@@ -97,8 +103,9 @@ func (q *Queries) GetUserForUpdateNoKey(ctx context.Context, userID int64) (User
 	err := row.Scan(
 		&i.UserID,
 		&i.UserName,
-		&i.Password,
 		&i.Email,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
 		&i.SsoIdentifer,
 		&i.CrDate,
 		&i.UpDate,
@@ -109,7 +116,7 @@ func (q *Queries) GetUserForUpdateNoKey(ctx context.Context, userID int64) (User
 }
 
 const getusers = `-- name: Getusers :many
-SELECT user_id, user_name, password, email, sso_identifer, cr_date, up_date, cr_user, up_user FROM  "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM  "user"
 ORDER BY user_id
 LIMIT $1
 OFFSET $2
@@ -132,8 +139,9 @@ func (q *Queries) Getusers(ctx context.Context, arg GetusersParams) ([]User, err
 		if err := rows.Scan(
 			&i.UserID,
 			&i.UserName,
-			&i.Password,
 			&i.Email,
+			&i.HashedPassword,
+			&i.PasswordChangedAt,
 			&i.SsoIdentifer,
 			&i.CrDate,
 			&i.UpDate,
@@ -157,7 +165,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE "user"
 SET user_name = $2
 WHERE user_id = $1
-RETURNING user_id, user_name, password, email, sso_identifer, cr_date, up_date, cr_user, up_user
+RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user
 `
 
 type UpdateUserParams struct {
@@ -171,8 +179,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	err := row.Scan(
 		&i.UserID,
 		&i.UserName,
-		&i.Password,
 		&i.Email,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
 		&i.SsoIdentifer,
 		&i.CrDate,
 		&i.UpDate,

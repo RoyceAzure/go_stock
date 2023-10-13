@@ -5,7 +5,7 @@ INSERT INTO stock_transaction(
     transaction_type,
     transaction_date,
     transation_amt,
-    transation_proce_per_share,
+    transation_price_per_share,
     cr_user
 ) VALUES(
     $1, $2, $3, $4,$5,$6,$7

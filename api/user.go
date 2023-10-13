@@ -3,18 +3,30 @@ package api
 import (
 	"database/sql"
 	"net/http"
+	"time"
 
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/constants"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 // gin使用go-playground/validator做驗證  這裡的驗證function使用,分隔  不能使用空白建
 type createUserRequest struct {
-	UserName     string `json:"user_name" binding:"required"`
+	UserName     string `json:"user_name" binding:"required,alphanum"`
 	Email        string `json:"email"  binding:"required,email"`
-	Password     string `json:"password"  binding:"required"`
-	SsoIdentifer string `json:"sso_identifer"  binding:"required,oneof=MS GOOGLE AWS FB"`
+	Password     string `json:"password"  binding:"required,min=6"`
+	SsoIdentifer string `json:"sso_identifer"  binding:"required,SSO"`
+}
+
+type createUserResponse struct {
+	UserID       int64     `json:"user_id"`
+	UserName     string    `json:"user_name"`
+	Email        string    `json:"email"`
+	SsoIdentifer string    `json:"sso_identifer"`
+	CrDate       time.Time `json:"cr_date"`
+	CrUser       string    `json:"cr_user"`
 }
 
 // 不符合單職責原則  應該要區分不同的Controller
@@ -26,22 +38,44 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateUserParams{
-		UserName:     request.UserName,
-		Email:        request.Email,
-		Password:     utility.StringToSqlNiStr(request.Password),
-		SsoIdentifer: utility.StringToSqlNiStr(request.SsoIdentifer),
-		CrUser:       "SYSTEM",
-	}
-
-	//注意  這裡的ctx是由gin.Context提供，這就表示要不要中止process是由gin框架控制
-	user, err := server.store.CreateUser(ctx, arg)
+	hashed_password, err := utility.HashPassword(request.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, user)
+	arg := db.CreateUserParams{
+		UserName:       request.UserName,
+		Email:          request.Email,
+		HashedPassword: hashed_password,
+		SsoIdentifer:   utility.StringToSqlNiStr(request.SsoIdentifer),
+		CrUser:         "SYSTEM",
+	}
+
+	//注意  這裡的ctx是由gin.Context提供，這就表示要不要中止process是由gin框架控制
+	user, err := server.store.CreateUser(ctx, arg)
+	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Code.Name() {
+			case constants.ForeignKeyViolation, constants.UniqueViolation:
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	res := createUserResponse{
+		UserID:       user.UserID,
+		UserName:     user.UserName,
+		Email:        user.Email,
+		SsoIdentifer: user.SsoIdentifer.String,
+		CrDate:       user.CrDate,
+		CrUser:       user.CrUser,
+	}
+
+	ctx.JSON(http.StatusAccepted, res)
 }
 
 type getUserRequest struct {

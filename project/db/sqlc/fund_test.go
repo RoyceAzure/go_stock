@@ -8,21 +8,19 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
-
 )
 
 func TestCreateFund(t *testing.T) {
 	CreateRandomFund(t)
 }
 
-// TODO balance 不要寫死
 func CreateRandomFund(t *testing.T) (User, Fund) {
 	user := CreateRandomUser(t)
 	balance := "100"
 	arg := CreateFundParams{
 		UserID:       user.UserID,
 		Balance:      balance,
-		CurrencyType: utility.RandomCurrencyType(),
+		CurrencyType: utility.RandomCurrencyTypeStr(),
 		CrUser:       "royce",
 	}
 
@@ -44,7 +42,7 @@ func CreateRandomFundNoTest(user User) (User, Fund) {
 	arg := CreateFundParams{
 		UserID:       user.UserID,
 		Balance:      decimal.NewFromInt(utility.RandomInt(100000, 5000000)).String(),
-		CurrencyType: utility.RandomCurrencyType(),
+		CurrencyType: utility.RandomCurrencyTypeStr(),
 		CrUser:       "royce",
 	}
 

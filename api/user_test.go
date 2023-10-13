@@ -79,6 +79,7 @@ func TestGetUserApi(t *testing.T) {
 			userId: 0,
 			buildStub: func(store *mockdb.MockStore) {
 				store.EXPECT().
+					//使用any無法dected錯誤的參數
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -123,13 +124,13 @@ func TestGetUserApi(t *testing.T) {
 
 func randomUser() db.User {
 	return db.User{
-		UserID:       utility.RandomInt(1, 100),
-		UserName:     utility.RandomString(10),
-		Password:     utility.StringToSqlNiStr(utility.RandomString(10)),
-		Email:        utility.RandomString(10),
-		SsoIdentifer: utility.StringToSqlNiStr(utility.RandomSSOType()),
-		CrDate:       utility.TimeToSqlNiTime(time.Now().UTC()),
-		CrUser:       "royce",
+		UserID:         utility.RandomInt(1, 100),
+		UserName:       utility.RandomString(10),
+		HashedPassword: utility.RandomString(10),
+		Email:          utility.RandomString(10),
+		SsoIdentifer:   utility.StringToSqlNiStr(utility.RandomSSOTypeStr()),
+		CrDate:         time.Now().UTC(),
+		CrUser:         "royce",
 	}
 }
 

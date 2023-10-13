@@ -10,9 +10,9 @@ const alphabet string = "abcdefghijklmnopqrstuvwxyz@."
 
 var TransactionType = [2]string{"Buy", "Sell"}
 
-var CurrencyType = []string{"TW", "US", "EU"}
+var CurrencyTypeSlice = []CurrencyType{TW, USD, EU}
 
-var SSOType = []string{"MS", "GOOGLE", "AWS", "FB"}
+var SSOTypeSlice = []SSOType{MS, GOOGLE, AWS, FB}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -30,12 +30,20 @@ func RandomTransactionType() string {
 	return TransactionType[rand.Intn(len(TransactionType))]
 }
 
-func RandomSSOType() string {
-	return SSOType[rand.Intn(len(SSOType))]
+func RandomSSOType() SSOType {
+	return SSOTypeSlice[rand.Intn(len(SSOTypeSlice))]
 }
 
-func RandomCurrencyType() string {
-	return CurrencyType[rand.Intn(len(CurrencyType))]
+func RandomCurrencyType() CurrencyType {
+	return CurrencyTypeSlice[rand.Intn(len(CurrencyTypeSlice))]
+}
+
+func RandomSSOTypeStr() string {
+	return string(RandomCurrencyType())
+}
+
+func RandomCurrencyTypeStr() string {
+	return string(RandomCurrencyType())
 }
 
 func RandomString(n int) string {

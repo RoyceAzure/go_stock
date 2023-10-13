@@ -26,7 +26,7 @@ func TestStockTransTx(t *testing.T) {
 				FundID:          testFund.FundID,
 				TransType:       utility.RandomTransactionType(),
 				TransactionDate: time.Now().UTC(),
-				Amt:             utility.RandomInt(1, 5),
+				Amt:             int32(utility.RandomInt(1, 5)),
 				PerPrice:        decimal.NewFromInt(utility.RandomInt(1000, 10000)),
 				CreateUser:      "royce",
 			})
@@ -56,10 +56,10 @@ func TestStockTransTx(t *testing.T) {
 		require.NotEmpty(t, fundRes)
 		require.Equal(t, fundRes.UserID, transRes.UserID)
 
-		D_amt := decimal.NewFromInt(transRes.TransationAmt)
+		D_amt := decimal.NewFromInt32(transRes.TransationAmt)
 		require.NoError(t, err)
 
-		D_stock_cur_price, err := decimal.NewFromString(transRes.TransationProcePerShare)
+		D_stock_cur_price, err := decimal.NewFromString(transRes.TransationPricePerShare)
 		require.NoError(t, err)
 
 		priceToHandle := D_amt.Mul(D_stock_cur_price)
@@ -93,8 +93,8 @@ func TestStockTransTx(t *testing.T) {
 			UserSotck = &UserStock{}
 		}
 
-		D_ori_amt := decimal.NewFromInt(oriUserStock.Quantity)
-		D_new_amt := decimal.NewFromInt(UserSotck.Quantity)
+		D_ori_amt := decimal.NewFromInt32(oriUserStock.Quantity)
+		D_new_amt := decimal.NewFromInt32(UserSotck.Quantity)
 
 		if strings.EqualFold(transRes.TransactionType, "buy") {
 			require.True(t, D_new_amt.GreaterThanOrEqual(decimal.NewFromInt(0)))

@@ -3,6 +3,8 @@ package api
 import (
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // 為何gin.Engine要使用*?
@@ -17,9 +19,19 @@ func NewServer(store db.Store) *Server {
 	//gin.Default() 也是回傳指標
 	router := gin.Default()
 
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("SSO", validSSO)
+	}
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("Currency", validCurrency)
+	}
 	router.POST("/user", server.createUser)
 	router.GET("/user/:id", server.getUser)
 	router.GET("/users", server.listUser)
+
+	router.POST("/fund", server.createFund)
+	router.GET("/fund", server.getFund)
+	router.POST("/stockTransfer", server.createStockTransaction)
 	server.router = router
 	return server
 }

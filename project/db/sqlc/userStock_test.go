@@ -20,7 +20,7 @@ func CreateRandomUserStock(t *testing.T) (User, Fund, Stock, UserStock) {
 	userStock, err := testQueries.CreateUserStock(context.Background(), CreateUserStockParams{
 		UserID:                user.UserID,
 		StockID:               stock.StockID,
-		Quantity:              quantity,
+		Quantity:              int32(quantity),
 		PurchasePricePerShare: stock.CurrentPrice,
 		PurchasedDate:         time.Now().UTC(),
 		CrUser:                "royce",
@@ -45,7 +45,7 @@ func CreateRandomUserStockNoTest() (User, Fund, Stock, UserStock) {
 	userStock, _ := testQueries.CreateUserStock(context.Background(), CreateUserStockParams{
 		UserID:                user.UserID,
 		StockID:               stock.StockID,
-		Quantity:              quantity,
+		Quantity:              int32(quantity),
 		PurchasePricePerShare: stock.CurrentPrice,
 		PurchasedDate:         time.Now().UTC(),
 		CrUser:                "royce",

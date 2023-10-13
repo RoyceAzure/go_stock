@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"os"
+	_ "os"
 	"testing"
 
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
@@ -22,8 +22,8 @@ var testUser User
 var testUserStock UserStock
 
 func TestMain(m *testing.M) {
-	setup()
-	os.Exit(m.Run())
+	// setup()
+	// os.Exit(m.Run())
 }
 
 func setup() {

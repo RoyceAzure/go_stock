@@ -18,10 +18,10 @@ func CreateRandomStockTransactions(t *testing.T) StockTransaction {
 	arg := CreateStockTransactionParams{
 		UserID:                  1,
 		StockID:                 1,
-		TransactionType:         utility.RandomCurrencyType(),
+		TransactionType:         utility.RandomCurrencyTypeStr(),
 		TransactionDate:         time.Now().UTC(),
 		TransationAmt:           10,
-		TransationProcePerShare: "100",
+		TransationPricePerShare: "100",
 		CrUser:                  "royce",
 	}
 
@@ -34,7 +34,7 @@ func CreateRandomStockTransactions(t *testing.T) StockTransaction {
 	require.Equal(t, arg.TransactionType, stockTrans.TransactionType)
 	// require.Equal(t, arg.TransactionDate.Time, stockTrans.TransactionDate.Time.UTC())
 	require.Equal(t, arg.TransationAmt, stockTrans.TransationAmt)
-	require.Equal(t, arg.TransationProcePerShare, stockTrans.TransationProcePerShare)
+	require.Equal(t, arg.TransationPricePerShare, stockTrans.TransationPricePerShare)
 
 	//檢查db自動產生  不能為0值
 	require.NotZero(t, stockTrans.TransationId)
