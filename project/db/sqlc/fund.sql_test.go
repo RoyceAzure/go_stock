@@ -97,21 +97,24 @@ func TestDeleteFund(t *testing.T) {
 	require.Empty(t, fund2)
 }
 
-// func TestGetUsers(t *testing.T) {
-// 	for i := 0; i < 5; i++ {
-// 		CreateRandomUser(t)
-// 	}
+func TestGetFunds(t *testing.T) {
+	var user User
+	for i := 0; i < 5; i++ {
+		user, _ = CreateRandomFund(t)
+	}
 
-// 	arg := GetUsersParams{
-// 		Limit:  5,
-// 		Offset: 5,
-// 	}
-// 	users, err := testQueries.GetUsers(context.Background(), arg)
+	arg := GetfundByUserIdParams{
+		UserID: user.UserID,
+		Limit:  5,
+		Offset: 0,
+	}
+	funds, err := testQueries.GetfundByUserId(context.Background(), arg)
 
-// 	require.NoError(t, err)
-// 	require.Len(t, users, 5)
+	require.NoError(t, err)
+	require.NotEmpty(t, funds)
 
-// 	for _, user := range users {
-// 		require.NotEmpty(t, user)
-// 	}
-// }
+	for _, fund := range funds {
+		require.NotEmpty(t, fund)
+		require.Equal(t, user.UserID, fund.UserID)
+	}
+}

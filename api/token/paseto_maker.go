@@ -36,6 +36,7 @@ func (maker *PasetoMaker) VertifyToken(token string) (*Payload, error) {
 	//之所以這麼簡單  是因為套件只會回傳ErrInvalidToken相關範圍得錯誤
 	//你自己的paload valid要自己呼叫
 	//也因為如此  不像jwt驗證是通通包再一起，你必須拆解jwt回傳的錯誤訊息
+	//目前看到的InvalidToken錯誤包括key  資料不匹配
 	err := maker.paseto.Decrypt(token, maker.symmerickey, payload, nil)
 	if err != nil {
 		return nil, ErrInvalidToken

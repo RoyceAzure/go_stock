@@ -19,6 +19,9 @@ SELECT * FROM "user"
 WHERE user_id = $1 LIMIT 1
 FOR NO KEY UPDATE;
 
+-- name: GetUserByEmail :one
+SELECT * FROM "user"
+WHERE email = $1 LIMIT 1;
 
 -- name: Getusers :many
 SELECT * FROM  "user"

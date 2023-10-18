@@ -137,7 +137,7 @@ func TestGetUserApi(t *testing.T) {
 			tc.buildStub(store)
 			//使用Gin  *gin.Engine建立server
 			//new Server已經把所有的路由都設定好
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			//Response Recoder是做甚麼的?
 			//ResponseRecorder 是一个实现了 http.ResponseWriter 接口的类型
 			recoder := httptest.NewRecorder()
@@ -183,10 +183,10 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var gotUser createUserResponse
+	var gotUser UserResponseDTO
 	err = json.Unmarshal(data, &gotUser)
 	require.NoError(t, err)
-	res := createUserResponse{
+	res := UserResponseDTO{
 		UserID:       user.UserID,
 		UserName:     user.UserName,
 		Email:        user.Email,
@@ -198,7 +198,7 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 }
 
 func TestCreateUserApi(t *testing.T) {
-	//或許在測試API時  randomUser就應該產生DTO 而不是model
+	// 或許在測試API時  randomUser就應該產生DTO 而不是model
 	user := randomUser()
 
 	testCase := []struct {
@@ -284,7 +284,7 @@ func TestCreateUserApi(t *testing.T) {
 			tc.buildStub(store)
 			//使用Gin  *gin.Engine建立server
 			//new Server已經把所有的路由都設定好
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			//Response Recoder是做甚麼的?
 			//ResponseRecorder 是一个实现了 http.ResponseWriter 接口的类型
 			recoder := httptest.NewRecorder()

@@ -2,9 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
+	"github.com/RoyceAzure/go-stockinfo-api/token"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +19,6 @@ type createStockTransactionRequest struct {
 	TransationAmt   int32  `json:"transation_amt"  binding:"required,gt=0"`
 }
 
-// 不符合單職責原則  應該要區分不同的Controller
 func (server *Server) createStockTransaction(ctx *gin.Context) {
 	var request createStockTransactionRequest
 	//S從 HTTP 請求的 JSON Body 中獲取和驗證資料，並將其填充到 Go 程式中的物件 且只會填充有匹配的
@@ -28,11 +29,19 @@ func (server *Server) createStockTransaction(ctx *gin.Context) {
 
 	var stock *db.Stock
 	var isValidated bool
-	if _, isValidated = server.validateUser(ctx, request.UserID); !isValidated {
+	user, isValidated := server.validateUser(ctx, request.UserID)
+	if !isValidated {
+		return
+	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if user.UserID != authPayload.UserId {
+		err := errors.New("userid doesn't math authorizd user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
-	if stock, isValidated = server.validateStock(ctx, request.StockID); !isValidated {
+	stock, isValidated = server.validateStock(ctx, request.StockID)
+	if !isValidated {
 		return
 	}
 

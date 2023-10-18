@@ -30,7 +30,7 @@ test:
 server:
 	go run main.go
 
-# mockgen需要依賴go.mod  你的執行指令目錄或父目錄必須包含go.mod,  所以無法在root 目錄執行  因為只有go.mod
+# mockgen需要依賴go.mod  你的執行指令目錄或父目錄必須包含go.mod,  所以無法在root 目錄執行  因為只有go.work
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/RoyceAzure/go-stockinfo-project/db/sqlc Store
 

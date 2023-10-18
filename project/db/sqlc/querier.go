@@ -27,6 +27,7 @@ type Querier interface {
 	GetStockTransactionsByStockId(ctx context.Context, arg GetStockTransactionsByStockIdParams) ([]StockTransaction, error)
 	GetStockTransactionsByUserId(ctx context.Context, arg GetStockTransactionsByUserIdParams) ([]StockTransaction, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserForUpdateNoKey(ctx context.Context, userID int64) (User, error)
 	GetUserStock(ctx context.Context, userStockID int64) (UserStock, error)
 	GetUserStocks(ctx context.Context, arg GetUserStocksParams) ([]UserStock, error)

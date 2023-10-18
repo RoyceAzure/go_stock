@@ -19,14 +19,24 @@ type createUserRequest struct {
 	Password     string `json:"password"  binding:"required,min=6"`
 	SsoIdentifer string `json:"sso_identifer"  binding:"required,SSO"`
 }
-
-type createUserResponse struct {
+type UserResponseDTO struct {
 	UserID       int64     `json:"user_id"`
 	UserName     string    `json:"user_name"`
 	Email        string    `json:"email"`
 	SsoIdentifer string    `json:"sso_identifer"`
 	CrDate       time.Time `json:"cr_date"`
 	CrUser       string    `json:"cr_user"`
+}
+
+func newUserResponse(user db.User) UserResponseDTO {
+	return UserResponseDTO{
+		UserID:       user.UserID,
+		UserName:     user.UserName,
+		Email:        user.Email,
+		SsoIdentifer: user.SsoIdentifer.String,
+		CrDate:       user.CrDate,
+		CrUser:       user.CrUser,
+	}
 }
 
 // 不符合單職責原則  應該要區分不同的Controller
@@ -66,14 +76,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	res := createUserResponse{
-		UserID:       user.UserID,
-		UserName:     user.UserName,
-		Email:        user.Email,
-		SsoIdentifer: user.SsoIdentifer.String,
-		CrDate:       user.CrDate,
-		CrUser:       user.CrUser,
-	}
+	res := newUserResponse(user)
 
 	ctx.JSON(http.StatusAccepted, res)
 }
@@ -101,14 +104,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	res := createUserResponse{
-		UserID:       user.UserID,
-		UserName:     user.UserName,
-		Email:        user.Email,
-		SsoIdentifer: user.SsoIdentifer.String,
-		CrDate:       user.CrDate,
-		CrUser:       user.CrUser,
-	}
+	res := newUserResponse(user)
 
 	ctx.JSON(http.StatusOK, res)
 }
@@ -138,18 +134,58 @@ func (server *Server) listUser(ctx *gin.Context) {
 		return
 	}
 
-	var responses []createUserResponse
+	var responses []UserResponseDTO
 	for _, user := range users {
-		res := createUserResponse{
-			UserID:       user.UserID,
-			UserName:     user.UserName,
-			Email:        user.Email,
-			SsoIdentifer: user.SsoIdentifer.String,
-			CrDate:       user.CrDate,
-			CrUser:       user.CrUser,
-		}
+		res := newUserResponse(user)
 		responses = append(responses, res)
 	}
 
 	ctx.JSON(http.StatusOK, responses)
+}
+
+type loginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type loginUserResponse struct {
+	User        UserResponseDTO `json:"user"`
+	AccessToken string          `json:"access_token"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, err)
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	err = utility.CheckPassword(req.Password, user.HashedPassword)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, err)
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(req.Email, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	rsp := loginUserResponse{
+		User:        newUserResponse(user),
+		AccessToken: accessToken,
+	}
+	ctx.JSON(http.StatusOK, rsp)
 }

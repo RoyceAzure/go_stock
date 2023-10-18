@@ -18,6 +18,11 @@ type MockStore struct {
 	recorder *MockStoreMockRecorder
 }
 
+// GetUserByEmail implements db.Store.
+func (*MockStore) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
+	panic("unimplemented")
+}
+
 // MockStoreMockRecorder is the mock recorder for MockStore.
 type MockStoreMockRecorder struct {
 	mock *MockStore

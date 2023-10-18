@@ -91,6 +91,29 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.UserName,
+		&i.Email,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
+		&i.SsoIdentifer,
+		&i.CrDate,
+		&i.UpDate,
+		&i.CrUser,
+		&i.UpUser,
+	)
+	return i, err
+}
+
 const getUserForUpdateNoKey = `-- name: GetUserForUpdateNoKey :one
 SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
 WHERE user_id = $1 LIMIT 1

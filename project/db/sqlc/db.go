@@ -78,6 +78,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
 	}
+	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
+	}
 	if q.getUserForUpdateNoKeyStmt, err = db.PrepareContext(ctx, getUserForUpdateNoKey); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserForUpdateNoKey: %w", err)
 	}
@@ -234,6 +237,11 @@ func (q *Queries) Close() error {
 	if q.getUserStmt != nil {
 		if cerr := q.getUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
+		}
+	}
+	if q.getUserByEmailStmt != nil {
+		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
 		}
 	}
 	if q.getUserForUpdateNoKeyStmt != nil {
@@ -398,6 +406,7 @@ type Queries struct {
 	getStockTransactionsByStockIdStmt      *sql.Stmt
 	getStockTransactionsByUserIdStmt       *sql.Stmt
 	getUserStmt                            *sql.Stmt
+	getUserByEmailStmt                     *sql.Stmt
 	getUserForUpdateNoKeyStmt              *sql.Stmt
 	getUserStockStmt                       *sql.Stmt
 	getUserStocksStmt                      *sql.Stmt
@@ -443,6 +452,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getStockTransactionsByStockIdStmt:      q.getStockTransactionsByStockIdStmt,
 		getStockTransactionsByUserIdStmt:       q.getStockTransactionsByUserIdStmt,
 		getUserStmt:                            q.getUserStmt,
+		getUserByEmailStmt:                     q.getUserByEmailStmt,
 		getUserForUpdateNoKeyStmt:              q.getUserForUpdateNoKeyStmt,
 		getUserStockStmt:                       q.getUserStockStmt,
 		getUserStocksStmt:                      q.getUserStocksStmt,
