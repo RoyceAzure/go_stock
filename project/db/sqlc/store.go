@@ -21,14 +21,21 @@ New(db *sql.DB) 會把db放到Queries.db
 		tx                                *sql.Tx
 		...
 */
-type Store struct {
+
+// 製作一個Repo介面  可以用來做Mock
+type Store interface {
+	Querier
+	TransferStockTx(ctx context.Context, arg TransferStockTxParams) (TransferStockTxResults, error)
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
 // Queries struct 本身就有包含 *sql.DB
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -36,7 +43,7 @@ func NewStore(db *sql.DB) *Store {
 
 // 注意最後是return tx.Commit() 就表示有可能在commit時也會有error
 // 一個克制化的通用trans func
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -71,7 +78,7 @@ type TransferStockTxParams struct {
 	StockID         int64           `json:"stock_id"`
 	FundID          int64           `json:"fund_id"`
 	TransType       string          `json:"trans_type"`
-	Amt             int64           `json:"amt"`
+	Amt             int32           `json:"amt"`
 	PerPrice        decimal.Decimal `json:"per_price"`
 	TransactionDate time.Time       `json:"transaction_date"`
 	CreateUser      string          `json:"cr_uesr"`
@@ -88,7 +95,7 @@ type TransferStockTxResults struct {
 
 // 個別克制化使用trans 的 func
 // 做參數與enity轉換  定義call back  執行exec
-func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxParams) (TransferStockTxResults, error) {
+func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxParams) (TransferStockTxResults, error) {
 	var result TransferStockTxResults
 
 	//
@@ -108,7 +115,8 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 		// }
 
 		//select for update no key, 受引用關聯的表仍可以做操作
-		log.Println("Test TransferStockTx Section 1")
+		//由於目前的測試  所有的平行測試都是按照同樣順序  先取fund在取  userstock, 只要第一個人取得fund  後續其他人就會卡在這
+		//有就不會有其他人先取得userstock，導致deadlock情況發生
 		oriFund, err := q.GetfundByUidandFidForUpdateNoK(ctx, GetfundByUidandFidForUpdateNoKParams{
 			UserID: arg.UserID,
 			FundID: arg.FundID,
@@ -117,7 +125,6 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 			return err
 		}
 		//select for update no key, 受引用關聯的表仍可以做操作
-		log.Println("Test TransferStockTx Section 2")
 		oriUserStock, err := q.GetserStockByUidandSidForUpdateNoK(ctx, GetserStockByUidandSidForUpdateNoKParams{
 			UserID:  arg.UserID,
 			StockID: arg.StockID,
@@ -133,12 +140,12 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 
 		//先固定抓取第一個Fund
 		//後續操作應該都要針對一種Fund
-		D_priceToHandle := arg.PerPrice.Mul(decimal.NewFromInt(arg.Amt))
+		D_priceToHandle := arg.PerPrice.Mul(decimal.NewFromInt32(arg.Amt))
 		if err != nil {
 			return err
 		}
 
-		D_amt := decimal.NewFromInt(arg.Amt)
+		D_amt := decimal.NewFromInt32(arg.Amt)
 		D_ori_balance, err := decimal.NewFromString(oriFund.Balance)
 		if err != nil {
 			return err
@@ -157,7 +164,7 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 			TransactionType:         arg.TransType,
 			TransactionDate:         arg.TransactionDate,
 			TransationAmt:           arg.Amt,
-			TransationProcePerShare: arg.PerPrice.String(),
+			TransationPricePerShare: arg.PerPrice.String(),
 			CrUser:                  "royce",
 		})
 
@@ -166,9 +173,8 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 		}
 		var newUserStock UserStock
 		var new_balance, oriTotlaStcokCost decimal.Decimal
-		var new_user_stock_quantity int64
+		var new_user_stock_quantity int32
 		//更新操做
-		log.Println("Test TransferStockTx Section 3")
 		if strings.EqualFold(arg.TransType, "sell") {
 			//fund
 			new_balance = D_ori_balance.Add(D_priceToHandle)
@@ -231,7 +237,6 @@ func (store *Store) TransferStockTx(ctx context.Context, arg TransferStockTxPara
 			}
 
 		}
-		log.Println("Test TransferStockTx Section 4")
 		newFund, err := q.UpdateFund(ctx, UpdateFundParams{
 			FundID:  arg.FundID,
 			Balance: new_balance.String(),

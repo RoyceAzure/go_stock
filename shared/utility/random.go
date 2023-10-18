@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
-const alphabet string = "abcdefghijklmnopqrstuvwxyz@."
+const alphabet string = "abcdefghijklmnopqrstuvwxyz"
 
 var TransactionType = [2]string{"Buy", "Sell"}
 
-var CurrencyType = []string{"TW", "US", "EU"}
+var CurrencyTypeSlice = []CurrencyType{TW, USD, EU}
+
+var SSOTypeSlice = []SSOType{MS, GOOGLE, AWS, FB}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -28,8 +30,20 @@ func RandomTransactionType() string {
 	return TransactionType[rand.Intn(len(TransactionType))]
 }
 
-func RandomCurrencyType() string {
-	return CurrencyType[rand.Intn(len(CurrencyType))]
+func RandomSSOType() SSOType {
+	return SSOTypeSlice[rand.Intn(len(SSOTypeSlice))]
+}
+
+func RandomCurrencyType() CurrencyType {
+	return CurrencyTypeSlice[rand.Intn(len(CurrencyTypeSlice))]
+}
+
+func RandomSSOTypeStr() string {
+	return string(RandomSSOType())
+}
+
+func RandomCurrencyTypeStr() string {
+	return string(RandomCurrencyType())
 }
 
 func RandomString(n int) string {

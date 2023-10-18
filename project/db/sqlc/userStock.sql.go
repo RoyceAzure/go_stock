@@ -27,7 +27,7 @@ INSERT INTO user_stock(
 type CreateUserStockParams struct {
 	UserID                int64     `json:"user_id"`
 	StockID               int64     `json:"stock_id"`
-	Quantity              int64     `json:"quantity"`
+	Quantity              int32     `json:"quantity"`
 	PurchasePricePerShare string    `json:"purchase_price_per_share"`
 	PurchasedDate         time.Time `json:"purchased_date"`
 	CrUser                string    `json:"cr_user"`
@@ -410,7 +410,7 @@ RETURNING user_stock_id, user_id, stock_id, quantity, purchase_price_per_share, 
 type UpdateUserStockParams struct {
 	UserID                int64          `json:"user_id"`
 	StockID               int64          `json:"stock_id"`
-	Quantity              int64          `json:"quantity"`
+	Quantity              int32          `json:"quantity"`
 	PurchasePricePerShare string         `json:"purchase_price_per_share"`
 	PurchasedDate         time.Time      `json:"purchased_date"`
 	UpDate                sql.NullTime   `json:"up_date"`

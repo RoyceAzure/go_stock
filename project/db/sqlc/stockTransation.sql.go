@@ -17,11 +17,11 @@ INSERT INTO stock_transaction(
     transaction_type,
     transaction_date,
     transation_amt,
-    transation_proce_per_share,
+    transation_price_per_share,
     cr_user
 ) VALUES(
     $1, $2, $3, $4,$5,$6,$7
-)   RETURNING "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user
+)   RETURNING "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user
 `
 
 type CreateStockTransactionParams struct {
@@ -29,8 +29,8 @@ type CreateStockTransactionParams struct {
 	StockID                 int64     `json:"stock_id"`
 	TransactionType         string    `json:"transaction_type"`
 	TransactionDate         time.Time `json:"transaction_date"`
-	TransationAmt           int64     `json:"transation_amt"`
-	TransationProcePerShare string    `json:"transation_proce_per_share"`
+	TransationAmt           int32     `json:"transation_amt"`
+	TransationPricePerShare string    `json:"transation_price_per_share"`
 	CrUser                  string    `json:"cr_user"`
 }
 
@@ -41,7 +41,7 @@ func (q *Queries) CreateStockTransaction(ctx context.Context, arg CreateStockTra
 		arg.TransactionType,
 		arg.TransactionDate,
 		arg.TransationAmt,
-		arg.TransationProcePerShare,
+		arg.TransationPricePerShare,
 		arg.CrUser,
 	)
 	var i StockTransaction
@@ -52,7 +52,7 @@ func (q *Queries) CreateStockTransaction(ctx context.Context, arg CreateStockTra
 		&i.TransactionType,
 		&i.TransactionDate,
 		&i.TransationAmt,
-		&i.TransationProcePerShare,
+		&i.TransationPricePerShare,
 		&i.CrDate,
 		&i.UpDate,
 		&i.CrUser,
@@ -72,7 +72,7 @@ func (q *Queries) DeleteStockTransaction(ctx context.Context, transationid int64
 }
 
 const getStockTransaction = `-- name: GetStockTransaction :one
-SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
+SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
 WHERE "TransationId" = $1 LIMIT 1
 `
 
@@ -86,7 +86,7 @@ func (q *Queries) GetStockTransaction(ctx context.Context, transationid int64) (
 		&i.TransactionType,
 		&i.TransactionDate,
 		&i.TransationAmt,
-		&i.TransationProcePerShare,
+		&i.TransationPricePerShare,
 		&i.CrDate,
 		&i.UpDate,
 		&i.CrUser,
@@ -96,7 +96,7 @@ func (q *Queries) GetStockTransaction(ctx context.Context, transationid int64) (
 }
 
 const getStockTransactions = `-- name: GetStockTransactions :many
-SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user FROM  stock_transaction
+SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user FROM  stock_transaction
 ORDER BY "TransationId"
 LIMIT $1
 OFFSET $2
@@ -123,7 +123,7 @@ func (q *Queries) GetStockTransactions(ctx context.Context, arg GetStockTransact
 			&i.TransactionType,
 			&i.TransactionDate,
 			&i.TransationAmt,
-			&i.TransationProcePerShare,
+			&i.TransationPricePerShare,
 			&i.CrDate,
 			&i.UpDate,
 			&i.CrUser,
@@ -143,7 +143,7 @@ func (q *Queries) GetStockTransactions(ctx context.Context, arg GetStockTransact
 }
 
 const getStockTransactionsByDate = `-- name: GetStockTransactionsByDate :many
-SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
+SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
 WHERE transaction_date = $1 
 ORDER BY transaction_date
 LIMIT $2
@@ -172,7 +172,7 @@ func (q *Queries) GetStockTransactionsByDate(ctx context.Context, arg GetStockTr
 			&i.TransactionType,
 			&i.TransactionDate,
 			&i.TransationAmt,
-			&i.TransationProcePerShare,
+			&i.TransationPricePerShare,
 			&i.CrDate,
 			&i.UpDate,
 			&i.CrUser,
@@ -192,7 +192,7 @@ func (q *Queries) GetStockTransactionsByDate(ctx context.Context, arg GetStockTr
 }
 
 const getStockTransactionsByStockId = `-- name: GetStockTransactionsByStockId :many
-SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
+SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
 WHERE stock_id = $1
 ORDER BY "TransationId"
 LIMIT $2
@@ -221,7 +221,7 @@ func (q *Queries) GetStockTransactionsByStockId(ctx context.Context, arg GetStoc
 			&i.TransactionType,
 			&i.TransactionDate,
 			&i.TransationAmt,
-			&i.TransationProcePerShare,
+			&i.TransationPricePerShare,
 			&i.CrDate,
 			&i.UpDate,
 			&i.CrUser,
@@ -241,7 +241,7 @@ func (q *Queries) GetStockTransactionsByStockId(ctx context.Context, arg GetStoc
 }
 
 const getStockTransactionsByUserId = `-- name: GetStockTransactionsByUserId :many
-SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_proce_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
+SELECT "TransationId", user_id, stock_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user FROM stock_transaction
 WHERE user_id = $1
 ORDER BY "TransationId"
 LIMIT $2
@@ -270,7 +270,7 @@ func (q *Queries) GetStockTransactionsByUserId(ctx context.Context, arg GetStock
 			&i.TransactionType,
 			&i.TransactionDate,
 			&i.TransationAmt,
-			&i.TransationProcePerShare,
+			&i.TransationPricePerShare,
 			&i.CrDate,
 			&i.UpDate,
 			&i.CrUser,
