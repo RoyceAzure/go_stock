@@ -61,26 +61,6 @@ jobs:
 
       - name: Run migrate
         run: make migrateup
-
-      - name: Print working directory
-        run: pwd
-
-      - name: List directory contents
-        run: ls -al
-      
-      - name: Clear Go cache
-        run: go clean -modcache
         
-      - name: Check Go version
-        run: go version
-      
-      
-      - name: Run Go tests directly
-        run: |
-          go test -v -cover ./project/...
-          go test -v -cover ./shared/...
-          go test -v -cover ./api/...
-        working-directory: /home/runner/work/go_stock/go_stock
-
       - name: Test
         run: make test
