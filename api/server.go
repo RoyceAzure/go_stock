@@ -49,15 +49,15 @@ func NewServer(config utility.Config, store db.Store) (*Server, error) {
 func (server *Server) SetupRouter() {
 	//gin.Default() 也是回傳指標
 	router := gin.Default()
-	router.GET("/users", server.listUser)
 	router.POST("/user/login", server.loginUser)
+	router.POST("/user", server.createUser)
 
 	//路由前缀: router.Group()的第一個參數是前缀。
 	//在此例中，前缀是"/"，這意味著它沒有添加任何特定的前缀到群組內的路由。
 	//如果前缀是/api，那麼/user路由就會變成/api/user。
 	authRouter := router.Group("/", authMiddleware(server.tokenMaker, &server.store))
 
-	authRouter.POST("/user", server.createUser)
+	authRouter.GET("/users", server.listUser)
 	authRouter.GET("/user/:id", server.getUser)
 	authRouter.POST("/fund", server.createFund)
 	authRouter.GET("/fund/:id", server.getFund)
