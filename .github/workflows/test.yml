@@ -71,5 +71,11 @@ jobs:
       - name: Clear Go cache
         run: go clean -modcache
       
+      - name: Run Go tests directly
+        run: |
+          go test -v -cover ./project/...
+          go test -v -cover ./shared/...
+          go test -v -cover ./api/...
+
       - name: Test
         run: make test
