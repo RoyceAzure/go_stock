@@ -17,6 +17,9 @@ dropdb:
 sqlc:
 	docker run --rm -v $(current_dir)/project:/src -w /src sqlc/sqlc generate
 
+awsmigrateup:
+	migrate -path project/db/migrations/ -database "postgres://royce:gqD2yhIOpUpuwK6IX6xz@stockinfo.cblayv8xneas.ap-northeast-1.rds.amazonaws.com:5432/stockinfo" --verbose up
+
 migrateup:
 	migrate -path project/db/migrations/ -database "postgres://royce:royce@localhost:5432/stock_info?sslmode=disable" --verbose up
 
@@ -34,5 +37,5 @@ server:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/RoyceAzure/go-stockinfo-project/db/sqlc Store
 
-.PHONY: postgresup postgresrm createdb dropdb test server mock
+.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup
  
