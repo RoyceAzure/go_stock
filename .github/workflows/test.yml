@@ -62,5 +62,14 @@ jobs:
       - name: Run migrate
         run: make migrateup
 
+      - name: Print working directory
+        run: pwd
+
+      - name: List directory contents
+        run: ls -al ./project/
+      
+      - name: Clear Go cache
+        run: go clean -modcache
+      
       - name: Test
         run: make test
