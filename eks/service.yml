@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-info-api-service
+spec:
+#要控制哪個pod
+  selector:
+    app: stock-info-api
+  ports:
+    - protocol: TCP
+    #service監聽80 port
+      port: 80
+    #監聽到後傳送給目標pod的port
+      targetPort: 8080
+  type: LoadBalancer
