@@ -57,10 +57,10 @@ jobs:
 
       - name: Depoly image to Amazon EKS
         run: |
-          kubectl apply -f eks\aws-auth.yml
-          kubectl apply -f eks\depolyment.yml
-          kubectl apply -f eks\service.yml
-          kubectl apply -f eks\issure.yml
-          kubectl apply -f eks\ingress.yml
+          kubectl apply -f eks/aws-auth.yml
+          kubectl apply -f eks/depolyment.yml
+          kubectl apply -f eks/service.yml
+          kubectl apply -f eks/issure.yml
+          kubectl apply -f eks/ingress.yml
           
 
