@@ -17,5 +17,7 @@ spec:
       containers:
       - name: stock-info-api
         image: 579275018124.dkr.ecr.ap-northeast-1.amazonaws.com/stockinfo:latest
+        #k8s 永遠抓最新的imgage
+        imagePullPolicy: aways
         ports:
         - containerPort: 8080
