@@ -5,7 +5,7 @@ metadata:
   labels:
     app: stock-info-api
 spec:
-  replicas: 2
+  replicas: 0
   selector:
     matchLabels:
       app: stock-info-api
@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: stock-info-api
-        image: 579275018124.dkr.ecr.ap-northeast-1.amazonaws.com/stockinfo:b7c2d6a40a062ccca76d61f96144cf8ae0efd4e1
+        image: 579275018124.dkr.ecr.ap-northeast-1.amazonaws.com/stockinfo:latest
         ports:
         - containerPort: 8080

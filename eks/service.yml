@@ -12,4 +12,4 @@ spec:
       port: 80
     #監聽到後傳送給目標pod的port
       targetPort: 8080
-  type: LoadBalancer
+  type: ClusterIP
