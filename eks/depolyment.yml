@@ -5,7 +5,7 @@ metadata:
   labels:
     app: stock-info-api
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: stock-info-api
