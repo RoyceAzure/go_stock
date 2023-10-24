@@ -18,10 +18,12 @@ func AddAuthorization(
 	tokenMaker token.Maker,
 	authorizationType string,
 	username string,
+	userID int64,
 	duration time.Duration,
 ) {
-	token, err := tokenMaker.CreateToken(username, duration)
+	token, payload, err := tokenMaker.CreateToken(username, userID, duration)
 	require.NoError(t, err)
+	require.NotEmpty(t, payload)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, token)
 	request.Header.Set(authorizationHeaderKey, authorizationHeader)
@@ -40,7 +42,7 @@ func TestMiddleWare(t *testing.T) {
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				//真正的測試資料
 				//注意這個階段不會檢查user是否存在
-				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", time.Minute)
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", 1, time.Minute)
 			},
 			//撰寫特定測試結果
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -59,7 +61,7 @@ func TestMiddleWare(t *testing.T) {
 		{
 			name: "UnSupportedAuthorization",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, "unsupported", "user", time.Minute)
+				AddAuthorization(t, request, tokenMaker, "unsupported", "user", 1, time.Minute)
 			},
 			//撰寫特定測試結果
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -69,7 +71,7 @@ func TestMiddleWare(t *testing.T) {
 		{
 			name: "InvalidAuthorizationHeaderFormat",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, "", "user", time.Minute)
+				AddAuthorization(t, request, tokenMaker, "", "user", 1, time.Minute)
 			},
 			//撰寫特定測試結果
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -79,7 +81,7 @@ func TestMiddleWare(t *testing.T) {
 		{
 			name: "ExpiredToken",
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", -time.Minute)
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, "user", 1, -time.Minute)
 			},
 			//撰寫特定測試結果
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {

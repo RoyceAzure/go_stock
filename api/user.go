@@ -9,6 +9,7 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility/constants"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -149,10 +150,15 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	User        UserResponseDTO `json:"user"`
-	AccessToken string          `json:"access_token"`
+	SessionID            uuid.UUID       `json:"session_id"`
+	AccessToken          string          `json:"access_token"`
+	AccessTokenExpiredAt time.Time       `json:"access_token_expired_at"`
+	RefreshToken         string          `json:"refresh_token"`
+	RefreshExpiredAt     time.Time       `json:"refresh_token_expired_at"`
+	User                 UserResponseDTO `json:"user"`
 }
 
+// TODO: session管理應該跟 refreshToken分開  兩者生命週期不一樣
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	err := ctx.ShouldBindJSON(&req)
@@ -177,15 +183,45 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(req.Email, server.config.AccessTokenDuration)
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(req.Email,
+		user.UserID,
+		server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		req.Email,
+		user.UserID,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	//session跟token綁定??
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		UserID:       user.UserID,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(), //TODO : fillit
+		ClientIp:     ctx.ClientIP(),          //TODO : fillit
+		IsBlocked:    false,
+		ExpiredAt:    refreshPayload.ExpiredAt,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	rsp := loginUserResponse{
-		User:        newUserResponse(user),
-		AccessToken: accessToken,
+		SessionID:            session.ID,
+		AccessToken:          accessToken,
+		AccessTokenExpiredAt: accessPayload.ExpiredAt,
+		RefreshToken:         refreshToken,
+		RefreshExpiredAt:     refreshPayload.ExpiredAt,
+		User:                 newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }

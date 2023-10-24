@@ -10,17 +10,13 @@ import (
 
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/google/uuid"
 )
 
 // MockStore is a mock of Store interface.
 type MockStore struct {
 	ctrl     *gomock.Controller
 	recorder *MockStoreMockRecorder
-}
-
-// GetUserByEmail implements db.Store.
-func (*MockStore) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
-	panic("unimplemented")
 }
 
 // MockStoreMockRecorder is the mock recorder for MockStore.
@@ -53,6 +49,21 @@ func (m *MockStore) CreateFund(arg0 context.Context, arg1 db.CreateFundParams) (
 func (mr *MockStoreMockRecorder) CreateFund(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFund", reflect.TypeOf((*MockStore)(nil).CreateFund), arg0, arg1)
+}
+
+// CreateSession mocks base method.
+func (m *MockStore) CreateSession(arg0 context.Context, arg1 db.CreateSessionParams) (db.Sessions, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSession", arg0, arg1)
+	ret0, _ := ret[0].(db.Sessions)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSession indicates an expected call of CreateSession.
+func (mr *MockStoreMockRecorder) CreateSession(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSession", reflect.TypeOf((*MockStore)(nil).CreateSession), arg0, arg1)
 }
 
 // CreateStock mocks base method.
@@ -200,6 +211,21 @@ func (mr *MockStoreMockRecorder) GetFund(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFund", reflect.TypeOf((*MockStore)(nil).GetFund), arg0, arg1)
 }
 
+// GetSession mocks base method.
+func (m *MockStore) GetSession(arg0 context.Context, arg1 uuid.UUID) (db.Sessions, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSession", arg0, arg1)
+	ret0, _ := ret[0].(db.Sessions)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSession indicates an expected call of GetSession.
+func (mr *MockStoreMockRecorder) GetSession(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockStore)(nil).GetSession), arg0, arg1)
+}
+
 // GetStock mocks base method.
 func (m *MockStore) GetStock(arg0 context.Context, arg1 int64) (db.Stock, error) {
 	m.ctrl.T.Helper()
@@ -303,6 +329,21 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 int64) (db.User, error) {
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+}
+
+// GetUserByEmail mocks base method.
+func (m *MockStore) GetUserByEmail(arg0 context.Context, arg1 string) (db.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByEmail", arg0, arg1)
+	ret0, _ := ret[0].(db.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockStoreMockRecorder) GetUserByEmail(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockStore)(nil).GetUserByEmail), arg0, arg1)
 }
 
 // GetUserForUpdateNoKey mocks base method.
@@ -633,18 +674,4 @@ func (m *MockStore) UpdateUserStock(arg0 context.Context, arg1 db.UpdateUserStoc
 func (mr *MockStoreMockRecorder) UpdateUserStock(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserStock", reflect.TypeOf((*MockStore)(nil).UpdateUserStock), arg0, arg1)
-}
-
-// execTx mocks base method.
-func (m *MockStore) execTx(arg0 context.Context, arg1 func(*db.Queries) error) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "execTx", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// execTx indicates an expected call of execTx.
-func (mr *MockStoreMockRecorder) execTx(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "execTx", reflect.TypeOf((*MockStore)(nil).execTx), arg0, arg1)
 }

@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createFundStmt, err = db.PrepareContext(ctx, createFund); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateFund: %w", err)
 	}
+	if q.createSessionStmt, err = db.PrepareContext(ctx, createSession); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateSession: %w", err)
+	}
 	if q.createStockStmt, err = db.PrepareContext(ctx, createStock); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateStock: %w", err)
 	}
@@ -56,6 +59,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getFundStmt, err = db.PrepareContext(ctx, getFund); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFund: %w", err)
+	}
+	if q.getSessionStmt, err = db.PrepareContext(ctx, getSession); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSession: %w", err)
 	}
 	if q.getStockStmt, err = db.PrepareContext(ctx, getStock); err != nil {
 		return nil, fmt.Errorf("error preparing query GetStock: %w", err)
@@ -154,6 +160,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createFundStmt: %w", cerr)
 		}
 	}
+	if q.createSessionStmt != nil {
+		if cerr := q.createSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createSessionStmt: %w", cerr)
+		}
+	}
 	if q.createStockStmt != nil {
 		if cerr := q.createStockStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createStockStmt: %w", cerr)
@@ -202,6 +213,11 @@ func (q *Queries) Close() error {
 	if q.getFundStmt != nil {
 		if cerr := q.getFundStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getFundStmt: %w", cerr)
+		}
+	}
+	if q.getSessionStmt != nil {
+		if cerr := q.getSessionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSessionStmt: %w", cerr)
 		}
 	}
 	if q.getStockStmt != nil {
@@ -389,6 +405,7 @@ type Queries struct {
 	db                                     DBTX
 	tx                                     *sql.Tx
 	createFundStmt                         *sql.Stmt
+	createSessionStmt                      *sql.Stmt
 	createStockStmt                        *sql.Stmt
 	createStockTransactionStmt             *sql.Stmt
 	createUserStmt                         *sql.Stmt
@@ -399,6 +416,7 @@ type Queries struct {
 	deleteUserStmt                         *sql.Stmt
 	deleteUserStockStmt                    *sql.Stmt
 	getFundStmt                            *sql.Stmt
+	getSessionStmt                         *sql.Stmt
 	getStockStmt                           *sql.Stmt
 	getStockTransactionStmt                *sql.Stmt
 	getStockTransactionsStmt               *sql.Stmt
@@ -435,6 +453,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                                     tx,
 		tx:                                     tx,
 		createFundStmt:                         q.createFundStmt,
+		createSessionStmt:                      q.createSessionStmt,
 		createStockStmt:                        q.createStockStmt,
 		createStockTransactionStmt:             q.createStockTransactionStmt,
 		createUserStmt:                         q.createUserStmt,
@@ -445,6 +464,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteUserStmt:                         q.deleteUserStmt,
 		deleteUserStockStmt:                    q.deleteUserStockStmt,
 		getFundStmt:                            q.getFundStmt,
+		getSessionStmt:                         q.getSessionStmt,
 		getStockStmt:                           q.getStockStmt,
 		getStockTransactionStmt:                q.getStockTransactionStmt,
 		getStockTransactionsStmt:               q.getStockTransactionsStmt,

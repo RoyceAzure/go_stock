@@ -20,14 +20,15 @@ func NewPasetoMaker(symmerickey string) (Maker, error) {
 	return &PasetoMaker{paseto.NewV2(), []byte(symmerickey)}, nil
 }
 
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+func (maker *PasetoMaker) CreateToken(upn string, userID int64, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(upn, userID, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 	//相比jwt之所以只有這行是因為你不需要決定加密演算法
 	//固定使用chacha演算法
-	return maker.paseto.Encrypt(maker.symmerickey, payload, nil)
+	token, err := maker.paseto.Encrypt(maker.symmerickey, payload, nil)
+	return token, payload, err
 }
 
 func (maker *PasetoMaker) VertifyToken(token string) (*Payload, error) {

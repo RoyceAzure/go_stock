@@ -7,6 +7,8 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Fund struct {
@@ -18,6 +20,17 @@ type Fund struct {
 	UpDate       sql.NullTime   `json:"up_date"`
 	CrUser       string         `json:"cr_user"`
 	UpUser       sql.NullString `json:"up_user"`
+}
+
+type Sessions struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       int64     `json:"user_id"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiredAt    time.Time `json:"expired_at"`
+	CrDate       time.Time `json:"cr_date"`
 }
 
 type Stock struct {
