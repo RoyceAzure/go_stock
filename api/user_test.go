@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RoyceAzure/go-stockinfo-api/token"
 	mockdb "github.com/RoyceAzure/go-stockinfo-project/db/mock"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
@@ -64,6 +65,7 @@ func TestGetUserApi(t *testing.T) {
 		name         string //子測試名稱
 		userId       int64
 		buildStub    func(store *mockdb.MockStore)
+		setupAuth    func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		checkReponse func(t *testing.T, recoder *httptest.ResponseRecorder)
 	}{
 		{
@@ -78,6 +80,9 @@ func TestGetUserApi(t *testing.T) {
 					GetUser(gomock.Any(), gomock.Eq(user.UserID)).
 					Times(1).Return(user, nil)
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, user.UserID, time.Minute)
+			},
 			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recoder.Code)
 				requireBodyMatchUser(t, recoder.Body, user)
@@ -91,6 +96,9 @@ func TestGetUserApi(t *testing.T) {
 					GetUser(gomock.Any(), gomock.Eq(user.UserID)).
 					Times(1).Return(db.User{}, sql.ErrNoRows)
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, user.UserID, time.Minute)
+			},
 			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recoder.Code)
 			},
@@ -102,6 +110,9 @@ func TestGetUserApi(t *testing.T) {
 				store.EXPECT().
 					GetUser(gomock.Any(), gomock.Eq(user.UserID)).
 					Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, user.UserID, time.Minute)
 			},
 			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recoder.Code)
@@ -115,6 +126,9 @@ func TestGetUserApi(t *testing.T) {
 					//使用any無法dected錯誤的參數
 					GetUser(gomock.Any(), gomock.Any()).
 					Times(0)
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, user.UserID, time.Minute)
 			},
 			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recoder.Code)
@@ -135,6 +149,7 @@ func TestGetUserApi(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 
 			tc.buildStub(store)
+
 			//使用Gin  *gin.Engine建立server
 			//new Server已經把所有的路由都設定好
 			server := newTestServer(t, store)
@@ -146,7 +161,7 @@ func TestGetUserApi(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 
 			require.NoError(t, err)
-
+			tc.setupAuth(t, request, server.tokenMaker)
 			//這裡的router實際上是 *gin.Engine
 			//自己發送自己接收?
 			server.router.ServeHTTP(recoder, request)
