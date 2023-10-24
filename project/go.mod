@@ -6,6 +6,7 @@ require github.com/RoyceAzure/go-stockinfo-shared v0.0.0
 
 require (
 	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.1.2
 	github.com/lib/pq v1.10.9
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.4

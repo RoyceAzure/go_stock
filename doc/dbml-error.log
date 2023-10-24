@@ -1,0 +1,13 @@
+2023-10-24T07:49:18.310Z
+Error: ENOENT: no such file or directory, stat '/app/data/app/data/db.dbml'
+    at Object.statSync (node:fs:1683:25)
+    at validateFilePlugin (/usr/local/lib/node_modules/@dbml/cli/lib/cli/validatePlugins/validatePlugins.js:10:28)
+    at /usr/local/lib/node_modules/@dbml/cli/lib/cli/utils.js:21:31
+    at Array.every (<anonymous>)
+    at validateInputFilePaths (/usr/local/lib/node_modules/@dbml/cli/lib/cli/utils.js:21:16)
+    at exportHandler (/usr/local/lib/node_modules/@dbml/cli/lib/cli/export.js:21:39)
+    at Object.dbml2sql (/usr/local/lib/node_modules/@dbml/cli/lib/cli/index.js:19:23)
+    at Object.<anonymous> (/usr/local/lib/node_modules/@dbml/cli/bin/dbml2sql.js:4:19)
+    at Module._compile (node:internal/modules/cjs/loader:1369:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+

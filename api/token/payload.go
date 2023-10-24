@@ -15,13 +15,13 @@ var (
 // 這個Payload也等同於Claim   這個套件的Valid完全由自己掌控??  不對  只有claim需要自己驗證  其餘簽名應由套件處理
 type Payload struct {
 	ID        uuid.UUID `json:id`
-	UserName  string    `json:"usesrname`
+	UPN       string    `json:"upn`
 	UserId    int64     `json:"userid`
 	IssuedAt  time.Time `json:issued_at`
 	ExpiredAt time.Time `josn:expired_at`
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(upn string, userID int64, duration time.Duration) (*Payload, error) {
 	uuid, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -29,7 +29,8 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		ID:        uuid,
-		UserName:  username,
+		UPN:       upn,
+		UserId:    userID,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}

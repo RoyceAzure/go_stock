@@ -58,7 +58,7 @@ func TestGetFund(t *testing.T) {
 			name:   "OK",
 			fundId: fund.FundID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, time.Minute)
+				AddAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Email, user.UserID, time.Minute)
 			},
 			//把測試流程中的buildStub過程與checkReponse獨立出來成匿名function
 			//那你要分離出來自定義的流程裡面，所需的物件都要變成參數傳入

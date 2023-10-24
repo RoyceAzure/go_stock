@@ -186,15 +186,17 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	var gotUser UserResponseDTO
 	err = json.Unmarshal(data, &gotUser)
 	require.NoError(t, err)
-	res := UserResponseDTO{
-		UserID:       user.UserID,
-		UserName:     user.UserName,
-		Email:        user.Email,
-		SsoIdentifer: user.SsoIdentifer.String,
-		CrDate:       user.CrDate,
-		CrUser:       user.CrUser,
-	}
-	require.Equal(t, res, gotUser)
+	require.Equal(t, newUserResponse(user), gotUser)
+}
+
+func requireBodyMatchLoginUser(t *testing.T, body *bytes.Buffer, user db.User) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var loginRes loginUserResponse
+	err = json.Unmarshal(data, &loginRes)
+	require.NoError(t, err)
+	require.Equal(t, newUserResponse(user), loginRes.User)
 }
 
 func TestCreateUserApi(t *testing.T) {
@@ -293,6 +295,79 @@ func TestCreateUserApi(t *testing.T) {
 			require.NoError(t, err)
 
 			url := "/user"
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+
+			require.NoError(t, err)
+
+			//這裡的router實際上是 *gin.Engine
+			//自己發送自己接收?
+			server.router.ServeHTTP(recoder, request)
+			tc.checkReponse(t, recoder)
+		})
+	}
+}
+
+func TestUserLoginApi(t *testing.T) {
+	// 或許在測試API時  randomUser就應該產生DTO 而不是model
+	user := randomUser()
+	hashed_password, err := utility.HashPassword(user.HashedPassword)
+	dbuer := user
+	dbuer.HashedPassword = hashed_password
+	require.NoError(t, err)
+	testCase := []struct {
+		name         string //子測試名稱
+		body         gin.H
+		buildStub    func(store *mockdb.MockStore)
+		checkReponse func(t *testing.T, recoder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: gin.H{
+				"user_name":     user.UserName,
+				"email":         user.Email,
+				"password":      user.HashedPassword,
+				"sso_identifer": user.SsoIdentifer.String,
+			},
+			buildStub: func(store *mockdb.MockStore) {
+				//這裡手動模擬API處理參數
+				store.EXPECT().
+					GetUserByEmail(gomock.Any(), gomock.Eq(user.Email)).
+					Times(1).Return(dbuer, nil)
+				store.EXPECT().
+					CreateSession(gomock.Any(), gomock.Any()).
+					Times(1)
+			},
+			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recoder.Code)
+				requireBodyMatchLoginUser(t, recoder.Body, dbuer)
+			},
+		},
+	}
+
+	for i := range testCase {
+		tc := testCase[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			defer ctrl.Finish()
+
+			//建立mockdb
+			//mockStore 裡面包含了所有store行為的介面  且你可以對所有介面設定其stub行為
+			store := mockdb.NewMockStore(ctrl)
+
+			tc.buildStub(store)
+			//使用Gin  *gin.Engine建立server
+			//new Server已經把所有的路由都設定好
+			server := newTestServer(t, store)
+			//Response Recoder是做甚麼的?
+			//ResponseRecorder 是一个实现了 http.ResponseWriter 接口的类型
+			recoder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			url := "/user/login"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 
 			require.NoError(t, err)
