@@ -18,7 +18,7 @@ type PayloadSendVerifyEmail struct {
 }
 
 /*
-製作task
+製作task  這裡把所有資訊都包進task裡面  包括retry delay 甚至是要使用甚麼優先級的queue
 
 使用client enqueue task
 */
