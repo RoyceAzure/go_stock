@@ -201,7 +201,7 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	var gotUser UserResponseDTO
 	err = json.Unmarshal(data, &gotUser)
 	require.NoError(t, err)
-	require.Equal(t, newUserResponse(user), gotUser)
+	require.Equal(t, NewUserResponse(user), gotUser)
 }
 
 func requireBodyMatchLoginUser(t *testing.T, body *bytes.Buffer, user db.User) {
@@ -211,7 +211,7 @@ func requireBodyMatchLoginUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	var loginRes loginUserResponse
 	err = json.Unmarshal(data, &loginRes)
 	require.NoError(t, err)
-	require.Equal(t, newUserResponse(user), loginRes.User)
+	require.Equal(t, NewUserResponse(user), loginRes.User)
 }
 
 func TestCreateUserApi(t *testing.T) {
