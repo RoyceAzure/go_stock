@@ -29,7 +29,7 @@ type UserResponseDTO struct {
 	CrUser       string    `json:"cr_user"`
 }
 
-func newUserResponse(user db.User) UserResponseDTO {
+func NewUserResponse(user db.User) UserResponseDTO {
 	return UserResponseDTO{
 		UserID:       user.UserID,
 		UserName:     user.UserName,
@@ -77,7 +77,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	res := newUserResponse(user)
+	res := NewUserResponse(user)
 
 	ctx.JSON(http.StatusAccepted, res)
 }
@@ -105,7 +105,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	res := newUserResponse(user)
+	res := NewUserResponse(user)
 
 	ctx.JSON(http.StatusOK, res)
 }
@@ -137,7 +137,7 @@ func (server *Server) listUser(ctx *gin.Context) {
 
 	var responses []UserResponseDTO
 	for _, user := range users {
-		res := newUserResponse(user)
+		res := NewUserResponse(user)
 		responses = append(responses, res)
 	}
 
@@ -221,7 +221,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		AccessTokenExpiredAt: accessPayload.ExpiredAt,
 		RefreshToken:         refreshToken,
 		RefreshExpiredAt:     refreshPayload.ExpiredAt,
-		User:                 newUserResponse(user),
+		User:                 NewUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }

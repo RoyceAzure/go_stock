@@ -17,7 +17,7 @@ dropdb:
 	docker exec -it project7-postgres  dropdb --username=royce stock_info
 
 sqlc:
-	docker run --rm -v $(current_dir)/project:/src -w /src sqlc/sqlc generate
+	docker run --rm -v $(current_dir)/project:/src -w /src sqlc/sqlc:latest generate
 
 awsmigrateup:
 	migrate -path project/db/migrations/ -database $(DB_URL_AWS) --verbose up
@@ -46,6 +46,18 @@ db_docs:
 db_schema:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbml2sql --postgres -o schema.sql db.dbml
 
+protoc:
+	powershell -Command "Remove-Item -Path 'api/pb/*.go' -Force"
+	powershell -Command "Remove-Item -Path 'doc/swagger/*.swagger.json' -Force"
+	protoc   --grpc-gateway_out api/pb \
+	--proto_path=C:/Users/royce/go/pkg/mod/github.com/protocolbuffers/protobuf@v4.24.4+incompatible/src \
+	--proto_path=proto  --go_out=api/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \
+	--go-grpc_out=api/pb --go-grpc_opt=paths=source_relative --openapiv2_out doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=stock_info \
+	proto/*.proto
+	statik -src=./doc/swagger -dest=./doc -f
 
-.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema
+evans:
+	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl
+
+.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans
  

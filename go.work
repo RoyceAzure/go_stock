@@ -4,4 +4,6 @@ use(
     ./project
     ./shared
     ./api
+    ./doc
+    ./worker
 )

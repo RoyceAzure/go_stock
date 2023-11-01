@@ -186,18 +186,37 @@ func (q *Queries) Getusers(ctx context.Context, arg GetusersParams) ([]User, err
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE "user"
-SET user_name = $2
-WHERE user_id = $1
+SET 
+    user_name = COALESCE($1, user_name),  
+    hashed_password = COALESCE($2, hashed_password),
+    password_changed_at = COALESCE($3, password_changed_at),
+    sso_identifer = COALESCE($4, sso_identifer),
+    up_date = COALESCE($5, up_date),
+    up_user = COALESCE($6, up_user)
+WHERE user_id = $7
 RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user
 `
 
 type UpdateUserParams struct {
-	UserID   int64  `json:"user_id"`
-	UserName string `json:"user_name"`
+	UserName          sql.NullString `json:"user_name"`
+	HashedPassword    sql.NullString `json:"hashed_password"`
+	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
+	SsoIdentifer      sql.NullString `json:"sso_identifer"`
+	UpDate            sql.NullTime   `json:"up_date"`
+	UpUser            sql.NullString `json:"up_user"`
+	UserID            int64          `json:"user_id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.updateUserStmt, updateUser, arg.UserID, arg.UserName)
+	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
+		arg.UserName,
+		arg.HashedPassword,
+		arg.PasswordChangedAt,
+		arg.SsoIdentifer,
+		arg.UpDate,
+		arg.UpUser,
+		arg.UserID,
+	)
 	var i User
 	err := row.Scan(
 		&i.UserID,

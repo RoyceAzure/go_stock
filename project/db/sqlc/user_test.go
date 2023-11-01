@@ -32,7 +32,6 @@ func CreateRandomUser(t *testing.T) User {
 
 	require.Equal(t, arg.UserName, user.UserName)
 	require.Equal(t, arg.Email, user.Email)
-	require.Equal(t, arg.PasswordChangedAt.String, user.PasswordChangedAt.String)
 	require.Equal(t, arg.SsoIdentifer.String, user.SsoIdentifer.String)
 	require.Equal(t, arg.UserName, user.UserName)
 	require.True(t, user.PasswordChangedAt.UTC().IsZero())
@@ -71,12 +70,12 @@ func TestGetUser(t *testing.T) {
 	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
 }
 
-func TestUpdateUser(t *testing.T) {
+func TestUpdateOnlyUserName(t *testing.T) {
 	user := CreateRandomUser(t)
 
 	arg := UpdateUserParams{
 		UserID:   user.UserID,
-		UserName: utility.RandomString(10),
+		UserName: utility.StringToSqlNiStr(utility.RandomString(10)),
 	}
 	user2, err := testQueries.UpdateUser(context.Background(), arg)
 
@@ -84,9 +83,75 @@ func TestUpdateUser(t *testing.T) {
 	require.NotEmpty(t, user2)
 
 	require.Equal(t, arg.UserName, user2.UserName)
+	require.NotEqual(t, user2.UserName, user.UserName)
 	require.Equal(t, user.Email, user2.Email)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
 	require.Equal(t, user.SsoIdentifer.String, user2.SsoIdentifer.String)
+
+	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
+}
+
+func TestUpdateOnlyUserEmail(t *testing.T) {
+	user := CreateRandomUser(t)
+
+	arg := UpdateUserParams{
+		UserID:       user.UserID,
+		SsoIdentifer: utility.StringToSqlNiStr(utility.RandomSSOTypeStr()),
+	}
+	user2, err := testQueries.UpdateUser(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, arg.SsoIdentifer, user2.SsoIdentifer)
+	require.NotEqual(t, user2.SsoIdentifer, user.SsoIdentifer)
+	require.Equal(t, user.Email, user2.Email)
+	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user.UserName, user2.SsoIdentifer.String)
+
+	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
+}
+
+func TestUpdateOnlyUserPassword(t *testing.T) {
+	user := CreateRandomUser(t)
+	var update_time time.Time = time.Now().UTC()
+	arg := UpdateUserParams{
+		UserID:            user.UserID,
+		HashedPassword:    utility.StringToSqlNiStr(utility.RandomString(10)),
+		PasswordChangedAt: utility.TimeToSqlNiTime(update_time),
+	}
+	user2, err := testQueries.UpdateUser(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, arg.HashedPassword.String, user2.HashedPassword)
+	require.NotEqual(t, user2.HashedPassword, user.HashedPassword)
+	require.Equal(t, user.Email, user2.Email)
+
+	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
+}
+
+func TestUpdateUser(t *testing.T) {
+	user := CreateRandomUser(t)
+	var update_time time.Time = time.Now().UTC()
+	arg := UpdateUserParams{
+		UserID:            user.UserID,
+		UserName:          utility.StringToSqlNiStr(utility.RandomString(10)),
+		SsoIdentifer:      utility.StringToSqlNiStr(utility.RandomSSOTypeStr()),
+		HashedPassword:    utility.StringToSqlNiStr(utility.RandomString(10)),
+		PasswordChangedAt: utility.TimeToSqlNiTime(update_time),
+	}
+	user2, err := testQueries.UpdateUser(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, user2)
+
+	require.Equal(t, arg.HashedPassword.String, user2.HashedPassword)
+	require.NotEqual(t, user2.HashedPassword, user.HashedPassword)
+	require.NotEqual(t, user2.UserName, user.UserName)
+	require.NotEqual(t, user2.SsoIdentifer, user.SsoIdentifer)
+	require.Equal(t, user.Email, user2.Email)
 
 	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
 }

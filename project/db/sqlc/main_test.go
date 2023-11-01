@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"os"
 	_ "os"
 	"testing"
 
@@ -22,8 +23,8 @@ var testUser User
 var testUserStock UserStock
 
 func TestMain(m *testing.M) {
-	// setup()
-	// os.Exit(m.Run())
+	setup()
+	os.Exit(m.Run())
 }
 
 func setup() {
