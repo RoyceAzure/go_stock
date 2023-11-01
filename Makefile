@@ -28,6 +28,9 @@ migrateup:
 migratedown:
 	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7.2.2-alpine
+
 test:
 	go test -v -cover ./project/...
 	go test -v -cover ./shared/...
@@ -59,5 +62,5 @@ protoc:
 evans:
 	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl
 
-.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans
+.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans redis
  
