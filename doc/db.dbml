@@ -33,7 +33,7 @@ Table verify_email {
   secret_code varchar [not null]
   is_used bool [not null, default: false]
   cr_date timestamptz  [not null, default: `now()`]
-  expired_date timestamptz  [not null, default: `now() + interval '15 minutes'`]
+  expired_at timestamptz  [not null, default: `now() + interval '15 minutes'`]
 }
 
 Table session {
@@ -44,7 +44,7 @@ Table session {
   client_ip varchar [not null]
   is_blocked bool [not null, default: false]
   cr_date timestamptz  [not null, default: `now()`]
-  expired_date timestamptz  [not null, default: `now() + interval '3 days'`]
+  expired_at timestamptz  [not null, default: `now() + interval '3 days'`]
 }
 
 Table fund{
@@ -80,11 +80,11 @@ Table stock{
 
 Table user_stock{
   user_stock_id bigserial [pk, increment]
-  user_id bigint
-  stock_id bigint
-  quantity int [default: 1]
-  purchase_price_per_share decimal //購買時每股價格
-  purchased_date timestamp
+  user_id bigint [not null]
+  stock_id bigint [not null]
+  quantity int [not null, default: 1]
+  purchase_price_per_share decimal [not null] //購買時每股價格
+  purchased_date timestamp [not null]
   cr_date timestamptz  [not null, default: `now()`]
   up_date timestamptz
   cr_user varchar [not null]
@@ -100,12 +100,12 @@ Table user_stock{
 
 Table stock_transaction{
   TransationId bigserial [pk, increment]
-  user_id bigint
-  stock_id bigint
-  transaction_type varchar
-  transaction_date timestamp [default: `now()`]
-  transation_amt decimal
-  transation_proce_per_share decimal
+  user_id bigint [not null]
+  stock_id bigint [not null]
+  transaction_type varchar [not null]
+  transaction_date timestamp [not null, default: `now()`]
+  transation_amt int [not null]
+  transation_price_per_share decimal [not null] 
   cr_date timestamptz  [not null, default: `now()`]
   up_date timestamptz
   cr_user varchar [not null]

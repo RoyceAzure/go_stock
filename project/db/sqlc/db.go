@@ -42,6 +42,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createUserStockStmt, err = db.PrepareContext(ctx, createUserStock); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUserStock: %w", err)
 	}
+	if q.createVerifyEmailStmt, err = db.PrepareContext(ctx, createVerifyEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateVerifyEmail: %w", err)
+	}
 	if q.deleteFundStmt, err = db.PrepareContext(ctx, deleteFund); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteFund: %w", err)
 	}
@@ -150,6 +153,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserStockStmt, err = db.PrepareContext(ctx, updateUserStock); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserStock: %w", err)
 	}
+	if q.updateVerifyEmailStmt, err = db.PrepareContext(ctx, updateVerifyEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateVerifyEmail: %w", err)
+	}
 	return &q, nil
 }
 
@@ -183,6 +189,11 @@ func (q *Queries) Close() error {
 	if q.createUserStockStmt != nil {
 		if cerr := q.createUserStockStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createUserStockStmt: %w", cerr)
+		}
+	}
+	if q.createVerifyEmailStmt != nil {
+		if cerr := q.createVerifyEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createVerifyEmailStmt: %w", cerr)
 		}
 	}
 	if q.deleteFundStmt != nil {
@@ -365,6 +376,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserStockStmt: %w", cerr)
 		}
 	}
+	if q.updateVerifyEmailStmt != nil {
+		if cerr := q.updateVerifyEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateVerifyEmailStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -410,6 +426,7 @@ type Queries struct {
 	createStockTransactionStmt             *sql.Stmt
 	createUserStmt                         *sql.Stmt
 	createUserStockStmt                    *sql.Stmt
+	createVerifyEmailStmt                  *sql.Stmt
 	deleteFundStmt                         *sql.Stmt
 	deleteStockStmt                        *sql.Stmt
 	deleteStockTransactionStmt             *sql.Stmt
@@ -446,6 +463,7 @@ type Queries struct {
 	updateStockStmt                        *sql.Stmt
 	updateUserStmt                         *sql.Stmt
 	updateUserStockStmt                    *sql.Stmt
+	updateVerifyEmailStmt                  *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -458,6 +476,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createStockTransactionStmt:             q.createStockTransactionStmt,
 		createUserStmt:                         q.createUserStmt,
 		createUserStockStmt:                    q.createUserStockStmt,
+		createVerifyEmailStmt:                  q.createVerifyEmailStmt,
 		deleteFundStmt:                         q.deleteFundStmt,
 		deleteStockStmt:                        q.deleteStockStmt,
 		deleteStockTransactionStmt:             q.deleteStockTransactionStmt,
@@ -494,5 +513,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateStockStmt:                        q.updateStockStmt,
 		updateUserStmt:                         q.updateUserStmt,
 		updateUserStockStmt:                    q.updateUserStockStmt,
+		updateVerifyEmailStmt:                  q.updateVerifyEmailStmt,
 	}
 }

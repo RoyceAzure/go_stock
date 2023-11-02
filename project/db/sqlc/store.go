@@ -20,6 +20,7 @@ type Store interface {
 	Querier
 	TransferStockTx(ctx context.Context, arg TransferStockTxParams) (TransferStockTxResults, error)
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResults, error)
+	VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResults, error)
 }
 
 type SQLStore struct {
@@ -54,6 +55,7 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("tx err: %v, rb err : %v", err, rbErr)
 		}
+		return fmt.Errorf("tx rollback %v", err)
 	}
 
 	return tx.Commit()

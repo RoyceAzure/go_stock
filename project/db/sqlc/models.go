@@ -22,15 +22,15 @@ type Fund struct {
 	UpUser       sql.NullString `json:"up_user"`
 }
 
-type Sessions struct {
+type Session struct {
 	ID           uuid.UUID `json:"id"`
 	UserID       int64     `json:"user_id"`
 	RefreshToken string    `json:"refresh_token"`
 	UserAgent    string    `json:"user_agent"`
 	ClientIp     string    `json:"client_ip"`
 	IsBlocked    bool      `json:"is_blocked"`
-	ExpiredAt    time.Time `json:"expired_at"`
 	CrDate       time.Time `json:"cr_date"`
+	ExpiredAt    time.Time `json:"expired_at"`
 }
 
 type Stock struct {
@@ -70,6 +70,7 @@ type User struct {
 	UpDate            sql.NullTime   `json:"up_date"`
 	CrUser            string         `json:"cr_user"`
 	UpUser            sql.NullString `json:"up_user"`
+	IsEmailVerified   bool           `json:"is_email_verified"`
 }
 
 type UserStock struct {
@@ -83,4 +84,14 @@ type UserStock struct {
 	UpDate                sql.NullTime   `json:"up_date"`
 	CrUser                string         `json:"cr_user"`
 	UpUser                sql.NullString `json:"up_user"`
+}
+
+type VerifyEmail struct {
+	ID         int64     `json:"id"`
+	UserID     int64     `json:"user_id"`
+	Email      string    `json:"email"`
+	SecretCode string    `json:"secret_code"`
+	IsUsed     bool      `json:"is_used"`
+	CrDate     time.Time `json:"cr_date"`
+	ExpiredAt  time.Time `json:"expired_at"`
 }

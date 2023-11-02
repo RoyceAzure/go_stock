@@ -12,18 +12,19 @@ import (
 
 type Querier interface {
 	CreateFund(ctx context.Context, arg CreateFundParams) (Fund, error)
-	CreateSession(ctx context.Context, arg CreateSessionParams) (Sessions, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateStock(ctx context.Context, arg CreateStockParams) (Stock, error)
 	CreateStockTransaction(ctx context.Context, arg CreateStockTransactionParams) (StockTransaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserStock(ctx context.Context, arg CreateUserStockParams) (UserStock, error)
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteFund(ctx context.Context, fundID int64) error
 	DeleteStock(ctx context.Context, stockID int64) error
 	DeleteStockTransaction(ctx context.Context, transationid int64) error
 	DeleteUser(ctx context.Context, userID int64) error
 	DeleteUserStock(ctx context.Context, userStockID int64) error
 	GetFund(ctx context.Context, fundID int64) (Fund, error)
-	GetSession(ctx context.Context, id uuid.UUID) (Sessions, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetStock(ctx context.Context, stockID int64) (Stock, error)
 	GetStockTransaction(ctx context.Context, transationid int64) (StockTransaction, error)
 	GetStockTransactions(ctx context.Context, arg GetStockTransactionsParams) ([]StockTransaction, error)
@@ -53,6 +54,7 @@ type Querier interface {
 	UpdateStock(ctx context.Context, arg UpdateStockParams) (Stock, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserStock(ctx context.Context, arg UpdateUserStockParams) (UserStock, error)
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 }
 
 var _ Querier = (*Queries)(nil)

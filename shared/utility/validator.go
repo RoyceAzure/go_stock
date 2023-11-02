@@ -110,3 +110,14 @@ func ValidSSO(value string) error {
 	}
 	return nil
 }
+
+func ValidEmailID(value int64) error {
+	if value <= 0 {
+		return fmt.Errorf("value must be postive")
+	}
+	return nil
+}
+
+func ValidSecretCode(value string) error {
+	return ValidateString(value, 32, 128)
+}

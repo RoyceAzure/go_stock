@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -69,8 +71,33 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		// }
 		return fmt.Errorf("failed to get usesr %w", err)
 	}
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		UserID:     user.UserID,
+		Email:      user.Email,
+		SecretCode: utility.RandomString(32),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create verify email %w", err)
+	}
 
 	//TODO : send email to user
+	subject := "Welcome to StockInfo"
+	verifyURL := fmt.Sprintf("http://localhost:8080/v1/verify_email?email_id=%d&secret_code=%s",
+		verifyEmail.ID, verifyEmail.SecretCode)
+
+	content := fmt.Sprintf(`Hello %s, <br/>
+	Thank you for registering <br/>
+	Please <a href="%s">click here</a> to verify your email address.<br/>
+	`, user.UserName, verifyURL)
+
+	to := []string{user.Email}
+	bcc := []string{"roycewnag@gmail.com"}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, bcc, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create verify email %w", err)
+	}
+
 	log.Info().Str("type", task.Type()).
 		Bytes("task payload", task.Payload()).
 		Str("user email", user.Email).

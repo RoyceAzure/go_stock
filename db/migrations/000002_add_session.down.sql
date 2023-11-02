@@ -1,3 +1,0 @@
-DROP TABLE IF EXISTS "session" CASCADE;
-
-ALTER TABLE "session" DROP FOREIGN KEY ("user_id");

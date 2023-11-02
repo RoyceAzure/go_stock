@@ -13,6 +13,7 @@ import (
 	_ "github.com/RoyceAzure/go-stockinfo-doc/statik"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/mail"
 	worker "github.com/RoyceAzure/go-stockinfo-worker"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4"
@@ -55,7 +56,7 @@ func main() {
 
 	//因為qsynq.client 是concurrent
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(redisOpt, store)
+	go runTaskProcessor(config, redisOpt, store)
 	go runGRPCGatewayServer(config, store, taskDistributor)
 	runGRPCServer(config, store, taskDistributor)
 }
@@ -231,8 +232,9 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msgf("db migrate successfully")
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(config utility.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {

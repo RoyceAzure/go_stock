@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-02T10:05:55.036Z
+-- Generated at: 2023-11-02T11:33:30.923Z
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
@@ -23,7 +23,7 @@ CREATE TABLE "verify_email" (
   "secret_code" varchar NOT NULL,
   "is_used" bool NOT NULL DEFAULT false,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
-  "expired_date" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
+  "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
 );
 
 CREATE TABLE "session" (
@@ -34,7 +34,7 @@ CREATE TABLE "session" (
   "client_ip" varchar NOT NULL,
   "is_blocked" bool NOT NULL DEFAULT false,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
-  "expired_date" timestamptz NOT NULL DEFAULT (now() + interval '3 days')
+  "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '3 days')
 );
 
 CREATE TABLE "fund" (
@@ -62,11 +62,11 @@ CREATE TABLE "stock" (
 
 CREATE TABLE "user_stock" (
   "user_stock_id" BIGSERIAL PRIMARY KEY,
-  "user_id" bigint,
-  "stock_id" bigint,
-  "quantity" int DEFAULT 1,
-  "purchase_price_per_share" decimal,
-  "purchased_date" timestamp,
+  "user_id" bigint NOT NULL,
+  "stock_id" bigint NOT NULL,
+  "quantity" int NOT NULL DEFAULT 1,
+  "purchase_price_per_share" decimal NOT NULL,
+  "purchased_date" timestamp NOT NULL,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,
@@ -75,12 +75,12 @@ CREATE TABLE "user_stock" (
 
 CREATE TABLE "stock_transaction" (
   "TransationId" BIGSERIAL PRIMARY KEY,
-  "user_id" bigint,
-  "stock_id" bigint,
-  "transaction_type" varchar,
-  "transaction_date" timestamp DEFAULT (now()),
-  "transation_amt" decimal,
-  "transation_proce_per_share" decimal,
+  "user_id" bigint NOT NULL,
+  "stock_id" bigint NOT NULL,
+  "transaction_type" varchar NOT NULL,
+  "transaction_date" timestamp NOT NULL DEFAULT (now()),
+  "transation_amt" int NOT NULL,
+  "transation_price_per_share" decimal NOT NULL,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,
