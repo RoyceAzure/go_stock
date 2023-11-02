@@ -35,8 +35,10 @@ func NewStore(db *sql.DB) Store {
 	}
 }
 
-// 注意最後是return tx.Commit() 就表示有可能在commit時也會有error
-// 一個克制化的通用trans func
+/*
+雖然這裡的fn 參數只有接收*Queries
+但時實際上fn 使用時會用閉包的方式獲取外部參數
+*/
 func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {

@@ -22,6 +22,10 @@ type CreateUserTxResults struct {
 send email被放到call back裡面
 
 要根據err是不是nil來判斷成功失敗
+
+注意這裡call back為async操作  且該操作需要execTx完成db trasation
+
+如果遇到db高流量情況，trsation會delay, 所以async操作需要設置delay
 */
 func (store *SQLStore) CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResults, error) {
 	var result CreateUserTxResults
