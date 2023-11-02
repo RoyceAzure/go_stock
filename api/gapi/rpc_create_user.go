@@ -35,7 +35,6 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 			CrUser:         "SYSTEM",
 		},
 		AfterCreate: func(user db.User) error {
-			//TODO: use db trasation
 			//send and vertify email
 			taskPayload := &worker.PayloadSendVerifyEmail{
 				UserName: user.UserName,
@@ -46,7 +45,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 				asynq.ProcessIn(10 * time.Second),
 				asynq.Queue(worker.QueueCritical),
 			}
-			return server.taskDistributor.DisstributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
 
