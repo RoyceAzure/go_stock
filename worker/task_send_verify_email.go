@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
@@ -22,7 +21,7 @@ type PayloadSendVerifyEmail struct {
 
 使用client enqueue task
 */
-func (distributor *RedisTaskDistributor) DisstributeTaskSendVerifyEmail(
+func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	ctx context.Context,
 	payload *PayloadSendVerifyEmail,
 	opts ...asynq.Option,
@@ -53,6 +52,10 @@ func (distributor *RedisTaskDistributor) DisstributeTaskSendVerifyEmail(
 所以asynq內部會根據error內容作相應處理
 
 如果回傳得error 有wrap asynq.SkipRetry，則不會執行retry
+
+注意這段handler是在redis server內部執行  所以它回傳的err要額外設置  我們才能看得見
+
+err == sql.ErrNORows 有可能是db 還沒有完成commit，所以就讓他retry
 */
 func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var payload PayloadSendVerifyEmail
@@ -61,9 +64,9 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	}
 	user, err := processor.store.GetUser(ctx, payload.UserId)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("user doesn't exists %w", asynq.SkipRetry)
-		}
+		// if err == sql.ErrNoRows {
+		// 	return fmt.Errorf("user doesn't exists %w", asynq.SkipRetry)
+		// }
 		return fmt.Errorf("failed to get usesr %w", err)
 	}
 

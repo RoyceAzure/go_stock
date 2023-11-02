@@ -5,6 +5,7 @@ import (
 
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -26,9 +27,7 @@ type RedisTaskProcessor struct {
 }
 
 /*
-server是processot自己建立的? 應該不是
-因該是一個遠端host 已經有redis server相關組件並且已經啟動且監聽某個port
-這裡只是建立連線與設定才對
+server是processot自己建立的? 是host建立asynq server去遠端redis 拿取任務資料
 */
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
 	server := asynq.NewServer(
@@ -38,6 +37,14 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 				QueueCritical: 10,
 				QueueDefault:  5,
 			},
+			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+				log.Error().
+					Err(err).
+					Str("type", task.Type()).
+					Bytes("body", task.Payload()).
+					Msg("process task failed")
+			}),
+			Logger: NewLoggerAdapter(),
 		},
 	)
 
