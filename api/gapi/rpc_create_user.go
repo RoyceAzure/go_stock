@@ -2,11 +2,14 @@ package gapi
 
 import (
 	"context"
+	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-api/pb"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility/constants"
+	worker "github.com/RoyceAzure/go-stockinfo-worker"
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -23,17 +26,32 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, status.Errorf(codes.Internal, "failed to to hash password : %s", err)
 	}
 
-	arg := db.CreateUserParams{
-		UserName:       req.GetUserName(),
-		Email:          req.GetEmail(),
-		HashedPassword: hashed_password,
-		SsoIdentifer:   utility.StringToSqlNiStr(req.GetSsoIdentifer()),
-		CrUser:         "SYSTEM",
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			UserName:       req.GetUserName(),
+			Email:          req.GetEmail(),
+			HashedPassword: hashed_password,
+			SsoIdentifer:   utility.StringToSqlNiStr(req.GetSsoIdentifer()),
+			CrUser:         "SYSTEM",
+		},
+		AfterCreate: func(user db.User) error {
+			//TODO: use db trasation
+			//send and vertify email
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				UserName: user.UserName,
+				UserId:   user.UserID,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+			return server.taskDistributor.DisstributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
-	//send and vertify email
 
 	//注意  這裡的ctx是由gin.Context提供，這就表示要不要中止process是由gin框架控制
-	user, err := server.store.CreateUser(ctx, arg)
+	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok {
 			switch pgErr.Code.Name() {
@@ -45,7 +63,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 
 	res := &pb.CreateUserResponse{
-		User: convertUser(user),
+		User: convertUser(txResult.User),
 	}
 	return res, nil
 }
