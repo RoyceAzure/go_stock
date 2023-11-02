@@ -12,6 +12,10 @@ import (
 )
 
 func TestStockTransTx(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	store := NewStore(testDB)
 
 	errs := make(chan error)

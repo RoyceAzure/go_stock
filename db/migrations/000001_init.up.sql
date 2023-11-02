@@ -1,12 +1,11 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-02T10:05:55.036Z
+-- Generated at: 2023-11-02T09:57:41.602Z
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
   "user_name" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,
-  "is_email_verified" bool NOT NULL DEFAULT false,
   "hashed_password" varchar NOT NULL,
   "password_changed_at" timestamptz NOT NULL DEFAULT '0001-01-01 00:00:00Z',
   "sso_identifer" varchar,
@@ -14,27 +13,6 @@ CREATE TABLE "user" (
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,
   "up_user" varchar
-);
-
-CREATE TABLE "verify_email" (
-  "id" bigserial PRIMARY KEY,
-  "user_id" bigint NOT NULL,
-  "email" varchar NOT NULL,
-  "secret_code" varchar NOT NULL,
-  "is_used" bool NOT NULL DEFAULT false,
-  "cr_date" timestamptz NOT NULL DEFAULT (now()),
-  "expired_date" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
-);
-
-CREATE TABLE "session" (
-  "id" uuid PRIMARY KEY,
-  "user_id" bigint NOT NULL,
-  "refresh_token" varchar NOT NULL,
-  "user_agent" varchar NOT NULL,
-  "client_ip" varchar NOT NULL,
-  "is_blocked" bool NOT NULL DEFAULT false,
-  "cr_date" timestamptz NOT NULL DEFAULT (now()),
-  "expired_date" timestamptz NOT NULL DEFAULT (now() + interval '3 days')
 );
 
 CREATE TABLE "fund" (
@@ -106,10 +84,6 @@ CREATE INDEX ON "user_stock" ("stock_id");
 CREATE INDEX ON "stock_transaction" ("TransationId");
 
 CREATE INDEX ON "stock_transaction" ("user_id", "stock_id");
-
-ALTER TABLE "verify_email" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
-
-ALTER TABLE "session" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "fund" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 

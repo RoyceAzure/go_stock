@@ -11,3 +11,30 @@ Error: ENOENT: no such file or directory, stat '/app/data/app/data/db.dbml'
     at Module._compile (node:internal/modules/cjs/loader:1369:14)
     at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
 
+2023-11-02T09:57:19.335Z
+SyntaxError: You have a syntax error at "db.dbml" line 112 column 6. Can't find table "null"."user_stocks"
+    at /usr/local/lib/node_modules/@dbml/cli/lib/cli/utils.js:45:13
+    at Array.forEach (<anonymous>)
+    at generate (/usr/local/lib/node_modules/@dbml/cli/lib/cli/utils.js:39:14)
+    at exportHandler (/usr/local/lib/node_modules/@dbml/cli/lib/cli/export.js:28:27)
+    at Object.dbml2sql (/usr/local/lib/node_modules/@dbml/cli/lib/cli/index.js:19:23)
+    at Object.<anonymous> (/usr/local/lib/node_modules/@dbml/cli/bin/dbml2sql.js:4:19)
+    at Module._compile (node:internal/modules/cjs/loader:1369:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Module.load (node:internal/modules/cjs/loader:1201:32)
+    at Module._load (node:internal/modules/cjs/loader:1017:12)
+
+ROOT_ERROR:
+Error: Can't find table "null"."user_stocks"
+    at Endpoint.error (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/element.js:55:13)
+    at new Endpoint (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/endpoint.js:59:13)
+    at /usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/ref.js:71:31
+    at Array.forEach (<anonymous>)
+    at Ref.processEndpoints (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/ref.js:70:20)
+    at new Ref (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/ref.js:58:11)
+    at /usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/database.js:133:28
+    at Array.forEach (<anonymous>)
+    at Database.processSchemaElements (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/database.js:107:16)
+    at new Database (/usr/local/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/model_structure/database.js:68:11)
+{"start":{"offset":2690,"line":112,"column":6},"end":{"offset":2728,"line":112,"column":44}}
+

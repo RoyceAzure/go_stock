@@ -9,10 +9,11 @@ Project stockinfo{
 }
 
 
-Table users as U{
+Table user as U{
   user_id bigserial [pk]
   user_name varchar [not null]
   email varchar [unique, not null]
+  is_email_verified bool [not null, default: false]
   hashed_password varchar [not null]
   password_changed_at timestamptz [not null, default: '0001-01-01 00:00:00Z']
   sso_identifer varchar [null]
@@ -25,7 +26,28 @@ Table users as U{
   }
 }
 
-Table funds{
+Table verify_email {
+  id bigserial [pk]
+  user_id bigint [ref: > U.user_id, not null]
+  email varchar [not null]
+  secret_code varchar [not null]
+  is_used bool [not null, default: false]
+  cr_date timestamptz  [not null, default: `now()`]
+  expired_date timestamptz  [not null, default: `now() + interval '15 minutes'`]
+}
+
+Table session {
+  id uuid [pk]
+  user_id bigint [ref: > U.user_id, not null]
+  refresh_token varchar [not null]
+  user_agent varchar [not null]
+  client_ip varchar [not null]
+  is_blocked bool [not null, default: false]
+  cr_date timestamptz  [not null, default: `now()`]
+  expired_date timestamptz  [not null, default: `now() + interval '3 days'`]
+}
+
+Table fund{
   fund_id bigserial [pk, increment]
   user_id bigint [ref: > U.user_id, not null]
   balance decimal [not null]
@@ -41,7 +63,7 @@ Table funds{
   }
 }
 
-Table stocks{
+Table stock{
   stock_id bigserial [pk, increment]
   ticker_symbol varchar [not null]
   comp_name varchar [not null]
@@ -56,7 +78,7 @@ Table stocks{
   }
 }
 
-Table user_stocks{
+Table user_stock{
   user_stock_id bigserial [pk, increment]
   user_id bigint
   stock_id bigint
@@ -76,7 +98,7 @@ Table user_stocks{
   }
 }
 
-Table stock_transactions{
+Table stock_transaction{
   TransationId bigserial [pk, increment]
   user_id bigint
   stock_id bigint
@@ -96,7 +118,7 @@ Table stock_transactions{
   }
 }
 
-Ref: user_stocks.user_id > users.user_id 
-Ref: stock_transactions.user_id > users.user_id
-Ref: user_stocks.stock_id > stocks.stock_id 
-Ref: stock_transactions.stock_id > stocks.stock_id 
+Ref: user_stock.user_id > user.user_id 
+Ref: stock_transaction.user_id > user.user_id
+Ref: user_stock.stock_id > stock.stock_id 
+Ref: stock_transaction.stock_id > stock.stock_id 

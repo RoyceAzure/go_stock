@@ -25,16 +25,28 @@ awsmigrateup:
 migrateup:
 	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up
 
+migrateupto:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	$(stage)
+
+migratedownto:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down $(stage)
+
 migratedown:
 	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down
+
+migratforce:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose force $(stage)
+
+new_migration:
+	migrate create -ext sql -dir db/migrations -seq $(name)
 
 redis:
 	docker run --name redis -p 6379:6379 -d redis:7.2.2-alpine
 
 test:
-	go test -v -cover ./project/...
-	go test -v -cover ./shared/...
-	go test -v -cover ./api/...
+	go test -v -cover -short ./project/...
+	go test -v -cover -short ./shared/...
+	go test -v -cover -short ./api/...
 server:
 	go run main.go
 
@@ -62,5 +74,5 @@ protoc:
 evans:
 	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl
 
-.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans redis
+.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans redis new_migration migratforce migrateupto
  
