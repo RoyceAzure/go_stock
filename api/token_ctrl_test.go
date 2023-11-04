@@ -32,7 +32,7 @@ func TestRenewAccessToken(t *testing.T) {
 
 	store := mockdb.NewMockStore(ctrl)
 
-	session := db.Sessions{
+	session := db.Session{
 		ID:           refreshPayload.ID,
 		UserID:       user.UserID,
 		RefreshToken: refreshToken,

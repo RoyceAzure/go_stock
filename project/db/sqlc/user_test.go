@@ -82,7 +82,7 @@ func TestUpdateOnlyUserName(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
 
-	require.Equal(t, arg.UserName, user2.UserName)
+	require.Equal(t, arg.UserName.String, user2.UserName)
 	require.NotEqual(t, user2.UserName, user.UserName)
 	require.Equal(t, user.Email, user2.Email)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
@@ -91,12 +91,12 @@ func TestUpdateOnlyUserName(t *testing.T) {
 	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
 }
 
-func TestUpdateOnlyUserEmail(t *testing.T) {
+func TestUpdateOnlyUserSSO(t *testing.T) {
 	user := CreateRandomUser(t)
-
+	newSSO := utility.StringToSqlNiStr(utility.RandomSSOTypeStr())
 	arg := UpdateUserParams{
 		UserID:       user.UserID,
-		SsoIdentifer: utility.StringToSqlNiStr(utility.RandomSSOTypeStr()),
+		SsoIdentifer: newSSO,
 	}
 	user2, err := testQueries.UpdateUser(context.Background(), arg)
 
@@ -104,10 +104,10 @@ func TestUpdateOnlyUserEmail(t *testing.T) {
 	require.NotEmpty(t, user2)
 
 	require.Equal(t, arg.SsoIdentifer, user2.SsoIdentifer)
-	require.NotEqual(t, user2.SsoIdentifer, user.SsoIdentifer)
+	require.NotEqual(t, user.SsoIdentifer, arg.SsoIdentifer)
 	require.Equal(t, user.Email, user2.Email)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
-	require.Equal(t, user.UserName, user2.SsoIdentifer.String)
+	require.Equal(t, newSSO.String, user2.SsoIdentifer.String)
 
 	require.WithinDuration(t, user.CrDate, user2.CrDate, time.Second)
 }

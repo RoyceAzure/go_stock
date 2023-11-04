@@ -16,11 +16,11 @@ func TestCreateUserStock(t *testing.T) {
 func CreateRandomUserStock(t *testing.T) (User, Fund, Stock, UserStock) {
 	user, fund := CreateRandomFund(t)
 	stock := CreateRandomStock(t)
-	quantity := utility.RandomInt(1, 10)
+	quantity := int32(utility.RandomInt(1, 10))
 	userStock, err := testQueries.CreateUserStock(context.Background(), CreateUserStockParams{
 		UserID:                user.UserID,
 		StockID:               stock.StockID,
-		Quantity:              int32(quantity),
+		Quantity:              quantity,
 		PurchasePricePerShare: stock.CurrentPrice,
 		PurchasedDate:         time.Now().UTC(),
 		CrUser:                "royce",

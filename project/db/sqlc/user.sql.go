@@ -21,7 +21,7 @@ INSERT INTO "user"(
     cr_user
 ) VALUES(
     $1, $2, $3, $4, $5, $6
-)   RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user
+)   RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified
 `
 
 type CreateUserParams struct {
@@ -54,6 +54,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpDate,
 		&i.CrUser,
 		&i.UpUser,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -69,7 +70,7 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified FROM "user"
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -87,12 +88,13 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 		&i.UpDate,
 		&i.CrUser,
 		&i.UpUser,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified FROM "user"
 WHERE email = $1 LIMIT 1
 `
 
@@ -110,12 +112,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.UpDate,
 		&i.CrUser,
 		&i.UpUser,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const getUserForUpdateNoKey = `-- name: GetUserForUpdateNoKey :one
-SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified FROM "user"
 WHERE user_id = $1 LIMIT 1
 FOR NO KEY UPDATE
 `
@@ -134,12 +137,13 @@ func (q *Queries) GetUserForUpdateNoKey(ctx context.Context, userID int64) (User
 		&i.UpDate,
 		&i.CrUser,
 		&i.UpUser,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const getusers = `-- name: Getusers :many
-SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user FROM  "user"
+SELECT user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified FROM  "user"
 ORDER BY user_id
 LIMIT $1
 OFFSET $2
@@ -170,6 +174,7 @@ func (q *Queries) Getusers(ctx context.Context, arg GetusersParams) ([]User, err
 			&i.UpDate,
 			&i.CrUser,
 			&i.UpUser,
+			&i.IsEmailVerified,
 		); err != nil {
 			return nil, err
 		}
@@ -191,10 +196,11 @@ SET
     hashed_password = COALESCE($2, hashed_password),
     password_changed_at = COALESCE($3, password_changed_at),
     sso_identifer = COALESCE($4, sso_identifer),
-    up_date = COALESCE($5, up_date),
-    up_user = COALESCE($6, up_user)
-WHERE user_id = $7
-RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user
+    is_email_verified = COALESCE($5, is_email_verified),
+    up_date = COALESCE($6, up_date),
+    up_user = COALESCE($7, up_user)
+WHERE user_id = $8
+RETURNING user_id, user_name, email, hashed_password, password_changed_at, sso_identifer, cr_date, up_date, cr_user, up_user, is_email_verified
 `
 
 type UpdateUserParams struct {
@@ -202,6 +208,7 @@ type UpdateUserParams struct {
 	HashedPassword    sql.NullString `json:"hashed_password"`
 	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
 	SsoIdentifer      sql.NullString `json:"sso_identifer"`
+	IsEmailVerified   sql.NullBool   `json:"is_email_verified"`
 	UpDate            sql.NullTime   `json:"up_date"`
 	UpUser            sql.NullString `json:"up_user"`
 	UserID            int64          `json:"user_id"`
@@ -213,6 +220,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.HashedPassword,
 		arg.PasswordChangedAt,
 		arg.SsoIdentifer,
+		arg.IsEmailVerified,
 		arg.UpDate,
 		arg.UpUser,
 		arg.UserID,
@@ -229,6 +237,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.UpDate,
 		&i.CrUser,
 		&i.UpUser,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
