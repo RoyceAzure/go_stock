@@ -15,6 +15,10 @@ const (
 	authorizationPayloadKey = "authorization_payload"
 )
 
+/*
+從ctx 取得metadata
+從metadata取得authHeader => 檢查格式 => 檢查Bearer => 用tokenMaker 檢查token 內容
+*/
 func (server *Server) authorizUser(ctx context.Context) (*token.Payload, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
