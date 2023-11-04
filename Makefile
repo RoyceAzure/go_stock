@@ -50,10 +50,9 @@ test:
 server:
 	go run main.go
 
-# mockgen需要依賴go.mod  你的執行指令目錄或父目錄必須包含go.mod,  所以無法在root 目錄執行  因為只有go.work
-mock:
-	cd  project/
-	mockgen -package mockdb -destination db/mock/store.go github.com/RoyceAzure/go-stockinfo-project/db/sqlc Store
+# mock:
+# 	mockgen -source="./distributor.go" -package=mockwk -destination="mock/distributor_mock.go"
+# 	mockgen  . Store
 
 db_docs:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbdocs build ./db.dbml
