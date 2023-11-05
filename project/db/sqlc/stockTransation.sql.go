@@ -35,7 +35,7 @@ type CreateStockTransactionParams struct {
 }
 
 func (q *Queries) CreateStockTransaction(ctx context.Context, arg CreateStockTransactionParams) (StockTransaction, error) {
-	row := q.queryRow(ctx, q.createStockTransactionStmt, createStockTransaction,
+	row := q.db.QueryRowContext(ctx, createStockTransaction,
 		arg.UserID,
 		arg.StockID,
 		arg.TransactionType,
@@ -67,7 +67,7 @@ WHERE "TransationId" = $1
 `
 
 func (q *Queries) DeleteStockTransaction(ctx context.Context, transationid int64) error {
-	_, err := q.exec(ctx, q.deleteStockTransactionStmt, deleteStockTransaction, transationid)
+	_, err := q.db.ExecContext(ctx, deleteStockTransaction, transationid)
 	return err
 }
 
@@ -77,7 +77,7 @@ WHERE "TransationId" = $1 LIMIT 1
 `
 
 func (q *Queries) GetStockTransaction(ctx context.Context, transationid int64) (StockTransaction, error) {
-	row := q.queryRow(ctx, q.getStockTransactionStmt, getStockTransaction, transationid)
+	row := q.db.QueryRowContext(ctx, getStockTransaction, transationid)
 	var i StockTransaction
 	err := row.Scan(
 		&i.TransationId,
@@ -108,7 +108,7 @@ type GetStockTransactionsParams struct {
 }
 
 func (q *Queries) GetStockTransactions(ctx context.Context, arg GetStockTransactionsParams) ([]StockTransaction, error) {
-	rows, err := q.query(ctx, q.getStockTransactionsStmt, getStockTransactions, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getStockTransactions, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ type GetStockTransactionsByDateParams struct {
 }
 
 func (q *Queries) GetStockTransactionsByDate(ctx context.Context, arg GetStockTransactionsByDateParams) ([]StockTransaction, error) {
-	rows, err := q.query(ctx, q.getStockTransactionsByDateStmt, getStockTransactionsByDate, arg.TransactionDate, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getStockTransactionsByDate, arg.TransactionDate, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +206,7 @@ type GetStockTransactionsByStockIdParams struct {
 }
 
 func (q *Queries) GetStockTransactionsByStockId(ctx context.Context, arg GetStockTransactionsByStockIdParams) ([]StockTransaction, error) {
-	rows, err := q.query(ctx, q.getStockTransactionsByStockIdStmt, getStockTransactionsByStockId, arg.StockID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getStockTransactionsByStockId, arg.StockID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ type GetStockTransactionsByUserIdParams struct {
 }
 
 func (q *Queries) GetStockTransactionsByUserId(ctx context.Context, arg GetStockTransactionsByUserIdParams) ([]StockTransaction, error) {
-	rows, err := q.query(ctx, q.getStockTransactionsByUserIdStmt, getStockTransactionsByUserId, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getStockTransactionsByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

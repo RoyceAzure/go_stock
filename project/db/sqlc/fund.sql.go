@@ -29,7 +29,7 @@ type CreateFundParams struct {
 }
 
 func (q *Queries) CreateFund(ctx context.Context, arg CreateFundParams) (Fund, error) {
-	row := q.queryRow(ctx, q.createFundStmt, createFund,
+	row := q.db.QueryRowContext(ctx, createFund,
 		arg.UserID,
 		arg.Balance,
 		arg.CurrencyType,
@@ -55,7 +55,7 @@ WHERE fund_id = $1
 `
 
 func (q *Queries) DeleteFund(ctx context.Context, fundID int64) error {
-	_, err := q.exec(ctx, q.deleteFundStmt, deleteFund, fundID)
+	_, err := q.db.ExecContext(ctx, deleteFund, fundID)
 	return err
 }
 
@@ -65,7 +65,7 @@ WHERE fund_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetFund(ctx context.Context, fundID int64) (Fund, error) {
-	row := q.queryRow(ctx, q.getFundStmt, getFund, fundID)
+	row := q.db.QueryRowContext(ctx, getFund, fundID)
 	var i Fund
 	err := row.Scan(
 		&i.FundID,
@@ -92,7 +92,7 @@ type GetfundByUidandFidParams struct {
 }
 
 func (q *Queries) GetfundByUidandFid(ctx context.Context, arg GetfundByUidandFidParams) (Fund, error) {
-	row := q.queryRow(ctx, q.getfundByUidandFidStmt, getfundByUidandFid, arg.UserID, arg.FundID)
+	row := q.db.QueryRowContext(ctx, getfundByUidandFid, arg.UserID, arg.FundID)
 	var i Fund
 	err := row.Scan(
 		&i.FundID,
@@ -120,7 +120,7 @@ type GetfundByUidandFidForUpdateNoKParams struct {
 }
 
 func (q *Queries) GetfundByUidandFidForUpdateNoK(ctx context.Context, arg GetfundByUidandFidForUpdateNoKParams) (Fund, error) {
-	row := q.queryRow(ctx, q.getfundByUidandFidForUpdateNoKStmt, getfundByUidandFidForUpdateNoK, arg.UserID, arg.FundID)
+	row := q.db.QueryRowContext(ctx, getfundByUidandFidForUpdateNoK, arg.UserID, arg.FundID)
 	var i Fund
 	err := row.Scan(
 		&i.FundID,
@@ -149,7 +149,7 @@ type GetfundByUserIdParams struct {
 }
 
 func (q *Queries) GetfundByUserId(ctx context.Context, arg GetfundByUserIdParams) ([]Fund, error) {
-	rows, err := q.query(ctx, q.getfundByUserIdStmt, getfundByUserId, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getfundByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ type GetfundsParams struct {
 }
 
 func (q *Queries) Getfunds(ctx context.Context, arg GetfundsParams) ([]Fund, error) {
-	rows, err := q.query(ctx, q.getfundsStmt, getfunds, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getfunds, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ type UpdateFundParams struct {
 }
 
 func (q *Queries) UpdateFund(ctx context.Context, arg UpdateFundParams) (Fund, error) {
-	row := q.queryRow(ctx, q.updateFundStmt, updateFund,
+	row := q.db.QueryRowContext(ctx, updateFund,
 		arg.FundID,
 		arg.Balance,
 		arg.UpDate,

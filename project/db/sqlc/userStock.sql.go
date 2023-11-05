@@ -34,7 +34,7 @@ type CreateUserStockParams struct {
 }
 
 func (q *Queries) CreateUserStock(ctx context.Context, arg CreateUserStockParams) (UserStock, error) {
-	row := q.queryRow(ctx, q.createUserStockStmt, createUserStock,
+	row := q.db.QueryRowContext(ctx, createUserStock,
 		arg.UserID,
 		arg.StockID,
 		arg.Quantity,
@@ -64,7 +64,7 @@ WHERE user_stock_id = $1
 `
 
 func (q *Queries) DeleteUserStock(ctx context.Context, userStockID int64) error {
-	_, err := q.exec(ctx, q.deleteUserStockStmt, deleteUserStock, userStockID)
+	_, err := q.db.ExecContext(ctx, deleteUserStock, userStockID)
 	return err
 }
 
@@ -74,7 +74,7 @@ WHERE user_stock_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserStock(ctx context.Context, userStockID int64) (UserStock, error) {
-	row := q.queryRow(ctx, q.getUserStockStmt, getUserStock, userStockID)
+	row := q.db.QueryRowContext(ctx, getUserStock, userStockID)
 	var i UserStock
 	err := row.Scan(
 		&i.UserStockID,
@@ -104,7 +104,7 @@ type GetUserStocksParams struct {
 }
 
 func (q *Queries) GetUserStocks(ctx context.Context, arg GetUserStocksParams) ([]UserStock, error) {
-	rows, err := q.query(ctx, q.getUserStocksStmt, getUserStocks, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserStocks, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ type GetUserStocksByPDateParams struct {
 }
 
 func (q *Queries) GetUserStocksByPDate(ctx context.Context, arg GetUserStocksByPDateParams) ([]UserStock, error) {
-	rows, err := q.query(ctx, q.getUserStocksByPDateStmt, getUserStocksByPDate, arg.PurchasedDate, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserStocksByPDate, arg.PurchasedDate, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ type GetUserStocksByStockIdParams struct {
 }
 
 func (q *Queries) GetUserStocksByStockId(ctx context.Context, arg GetUserStocksByStockIdParams) ([]UserStock, error) {
-	rows, err := q.query(ctx, q.getUserStocksByStockIdStmt, getUserStocksByStockId, arg.StockID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserStocksByStockId, arg.StockID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +250,7 @@ type GetUserStocksByUserAStockParams struct {
 }
 
 func (q *Queries) GetUserStocksByUserAStock(ctx context.Context, arg GetUserStocksByUserAStockParams) ([]UserStock, error) {
-	rows, err := q.query(ctx, q.getUserStocksByUserAStockStmt, getUserStocksByUserAStock,
+	rows, err := q.db.QueryContext(ctx, getUserStocksByUserAStock,
 		arg.PurchasedDate,
 		arg.StockID,
 		arg.Limit,
@@ -303,7 +303,7 @@ type GetUserStocksByUserIdParams struct {
 }
 
 func (q *Queries) GetUserStocksByUserId(ctx context.Context, arg GetUserStocksByUserIdParams) ([]UserStock, error) {
-	rows, err := q.query(ctx, q.getUserStocksByUserIdStmt, getUserStocksByUserId, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getUserStocksByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +348,7 @@ type GetserStockByUidandSidParams struct {
 }
 
 func (q *Queries) GetserStockByUidandSid(ctx context.Context, arg GetserStockByUidandSidParams) (UserStock, error) {
-	row := q.queryRow(ctx, q.getserStockByUidandSidStmt, getserStockByUidandSid, arg.UserID, arg.StockID)
+	row := q.db.QueryRowContext(ctx, getserStockByUidandSid, arg.UserID, arg.StockID)
 	var i UserStock
 	err := row.Scan(
 		&i.UserStockID,
@@ -378,7 +378,7 @@ type GetserStockByUidandSidForUpdateNoKParams struct {
 }
 
 func (q *Queries) GetserStockByUidandSidForUpdateNoK(ctx context.Context, arg GetserStockByUidandSidForUpdateNoKParams) (UserStock, error) {
-	row := q.queryRow(ctx, q.getserStockByUidandSidForUpdateNoKStmt, getserStockByUidandSidForUpdateNoK, arg.UserID, arg.StockID)
+	row := q.db.QueryRowContext(ctx, getserStockByUidandSidForUpdateNoK, arg.UserID, arg.StockID)
 	var i UserStock
 	err := row.Scan(
 		&i.UserStockID,
@@ -418,7 +418,7 @@ type UpdateUserStockParams struct {
 }
 
 func (q *Queries) UpdateUserStock(ctx context.Context, arg UpdateUserStockParams) (UserStock, error) {
-	row := q.queryRow(ctx, q.updateUserStockStmt, updateUserStock,
+	row := q.db.QueryRowContext(ctx, updateUserStock,
 		arg.UserID,
 		arg.StockID,
 		arg.Quantity,

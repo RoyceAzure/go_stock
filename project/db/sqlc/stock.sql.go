@@ -31,7 +31,7 @@ type CreateStockParams struct {
 }
 
 func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) (Stock, error) {
-	row := q.queryRow(ctx, q.createStockStmt, createStock,
+	row := q.db.QueryRowContext(ctx, createStock,
 		arg.TickerSymbol,
 		arg.CompName,
 		arg.CurrentPrice,
@@ -59,7 +59,7 @@ WHERE stock_id = $1
 `
 
 func (q *Queries) DeleteStock(ctx context.Context, stockID int64) error {
-	_, err := q.exec(ctx, q.deleteStockStmt, deleteStock, stockID)
+	_, err := q.db.ExecContext(ctx, deleteStock, stockID)
 	return err
 }
 
@@ -69,7 +69,7 @@ WHERE stock_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetStock(ctx context.Context, stockID int64) (Stock, error) {
-	row := q.queryRow(ctx, q.getStockStmt, getStock, stockID)
+	row := q.db.QueryRowContext(ctx, getStock, stockID)
 	var i Stock
 	err := row.Scan(
 		&i.StockID,
@@ -99,7 +99,7 @@ type GetstockByCNParams struct {
 }
 
 func (q *Queries) GetstockByCN(ctx context.Context, arg GetstockByCNParams) ([]Stock, error) {
-	rows, err := q.query(ctx, q.getstockByCNStmt, getstockByCN, arg.CompName, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getstockByCN, arg.CompName, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ type GetstockByTSParams struct {
 }
 
 func (q *Queries) GetstockByTS(ctx context.Context, arg GetstockByTSParams) ([]Stock, error) {
-	rows, err := q.query(ctx, q.getstockByTSStmt, getstockByTS, arg.TickerSymbol, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getstockByTS, arg.TickerSymbol, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ type GetstocksParams struct {
 }
 
 func (q *Queries) Getstocks(ctx context.Context, arg GetstocksParams) ([]Stock, error) {
-	rows, err := q.query(ctx, q.getstocksStmt, getstocks, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getstocks, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ type UpdateStockParams struct {
 }
 
 func (q *Queries) UpdateStock(ctx context.Context, arg UpdateStockParams) (Stock, error) {
-	row := q.queryRow(ctx, q.updateStockStmt, updateStock,
+	row := q.db.QueryRowContext(ctx, updateStock,
 		arg.StockID,
 		arg.CurrentPrice,
 		arg.UpDate,

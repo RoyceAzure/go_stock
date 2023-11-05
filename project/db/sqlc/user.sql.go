@@ -34,7 +34,7 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.createUserStmt, createUser,
+	row := q.db.QueryRowContext(ctx, createUser,
 		arg.UserName,
 		arg.Email,
 		arg.HashedPassword,
@@ -65,7 +65,7 @@ WHERE user_id = $1
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
-	_, err := q.exec(ctx, q.deleteUserStmt, deleteUser, userID)
+	_, err := q.db.ExecContext(ctx, deleteUser, userID)
 	return err
 }
 
@@ -75,7 +75,7 @@ WHERE user_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
-	row := q.queryRow(ctx, q.getUserStmt, getUser, userID)
+	row := q.db.QueryRowContext(ctx, getUser, userID)
 	var i User
 	err := row.Scan(
 		&i.UserID,
@@ -99,7 +99,7 @@ WHERE email = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.UserID,
@@ -124,7 +124,7 @@ FOR NO KEY UPDATE
 `
 
 func (q *Queries) GetUserForUpdateNoKey(ctx context.Context, userID int64) (User, error) {
-	row := q.queryRow(ctx, q.getUserForUpdateNoKeyStmt, getUserForUpdateNoKey, userID)
+	row := q.db.QueryRowContext(ctx, getUserForUpdateNoKey, userID)
 	var i User
 	err := row.Scan(
 		&i.UserID,
@@ -155,7 +155,7 @@ type GetusersParams struct {
 }
 
 func (q *Queries) Getusers(ctx context.Context, arg GetusersParams) ([]User, error) {
-	rows, err := q.query(ctx, q.getusersStmt, getusers, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getusers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ type UpdateUserParams struct {
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
+	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.UserName,
 		arg.HashedPassword,
 		arg.PasswordChangedAt,
