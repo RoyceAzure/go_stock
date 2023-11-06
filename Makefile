@@ -26,10 +26,19 @@ migrateup:
 	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up
 
 migrateupto:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	$(stage)
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	to $(stage)
 
 migratedownto:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down $(stage)
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
+
+migrateup1:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	1
+
+migrateudown1:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down 1
+
+migratedownto:
+	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
 
 migratedown:
 	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down

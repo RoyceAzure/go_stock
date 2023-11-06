@@ -16,7 +16,7 @@ COPY start.sh .
 RUN chmod +x /app/start.sh
 COPY wait-for.sh .
 RUN chmod +x /app/wait-for.sh
-COPY project/db/migrations ./db/migration
+COPY project/db/migrations ./project/db/migration
 
 EXPOSE 8080
 CMD ["/app/main"]
