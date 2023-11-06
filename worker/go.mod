@@ -1,6 +1,6 @@
 module github.com/RoyceAzure/go-stockinfo-worker
 
-go 1.19
+go 1.21.3
 
 require github.com/hibiken/asynq v0.24.1
 
