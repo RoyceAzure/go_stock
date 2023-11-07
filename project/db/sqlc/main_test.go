@@ -8,7 +8,7 @@ import (
 	_ "os"
 	"testing"
 
-	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/config"
 	_ "github.com/lib/pq"
 )
 
@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 func setup() {
 	// 你的初始化代碼
 
-	config, err := utility.LoadConfig("../../..")
+	config, err := config.LoadConfig("../../..")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}

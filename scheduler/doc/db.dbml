@@ -1,0 +1,22 @@
+Project stockinfo{
+    database_type: 'PostgresSQL'
+    Note: '''
+        # Stock info Schduler
+    '''
+}
+
+Table stock_day_avg_all{
+  id bigserial [pk]
+  code varchar [not null]
+  stock_name varchar [not null]
+  close_price decimal [not null]
+  monthly_avg_price decimal [not null]
+  cr_date timestamptz  [not null, default: `now()`]
+  up_date timestamptz
+  cr_user varchar [not null, default: 'SYSTEM']
+  up_user varchar
+  Indexes{
+    code
+    stock_name
+  }
+}

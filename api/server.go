@@ -5,7 +5,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo-api/token"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/config"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -14,7 +14,7 @@ import (
 // 為何gin.Engine要使用*?
 // 需要改變Engine內部設置  效率
 type Server struct {
-	config     utility.Config
+	config     config.Config
 	store      db.Store
 	tokenMaker token.Maker
 	router     *gin.Engine
@@ -25,7 +25,7 @@ const (
 	DEFAULT_PAGE_SIZE = 10
 )
 
-func NewServer(config utility.Config, store db.Store) (*Server, error) {
+func NewServer(config config.Config, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create tokenMaker %w", err)

@@ -3,15 +3,16 @@ package mail
 import (
 	"testing"
 
-	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/config"
 	"github.com/stretchr/testify/require"
+
 )
 
 func TestSendEmailWithGmail(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
-	config, err := utility.LoadConfig("../../../")
+	config, err := config.LoadConfig("../../../../")
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 

@@ -1,0 +1,46 @@
+@startuml
+namespace repository {
+    class CreateSDAVGALLParams << (S,Aquamarine) >> {
+        + Code string
+        + StockName string
+        + ClosePrice string
+        + MonthlyAvgPrice string
+
+    }
+    interface DBTX  {
+        + ExecContext( context.Context,  string,  ...<font color=blue>interface</font>{}) (sql.Result, error)
+        + PrepareContext( context.Context,  string) (*sql.Stmt, error)
+        + QueryContext( context.Context,  string,  ...<font color=blue>interface</font>{}) (*sql.Rows, error)
+        + QueryRowContext( context.Context,  string,  ...<font color=blue>interface</font>{}) *sql.Row
+
+    }
+    interface Querier  {
+        + CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) (StockDayAvgAll, error)
+        + GetSDAVGALLs(ctx context.Context) ([]StockDayAvgAll, error)
+
+    }
+    class Queries << (S,Aquamarine) >> {
+        - db DBTX
+
+        + WithTx(tx *sql.Tx) *Queries
+        + CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) (StockDayAvgAll, error)
+        + GetSDAVGALLs(ctx context.Context) ([]StockDayAvgAll, error)
+
+    }
+    class StockDayAvgAll << (S,Aquamarine) >> {
+        + ID int64
+        + Code string
+        + StockName string
+        + ClosePrice string
+        + MonthlyAvgPrice string
+        + CrDate time.Time
+        + UpDate sql.NullTime
+        + CrUser string
+        + UpUser sql.NullString
+
+    }
+}
+
+"repository.Querier" <|-- "repository.Queries"
+
+@enduml
