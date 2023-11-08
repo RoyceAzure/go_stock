@@ -10,11 +10,21 @@ INSERT INTO "stock_day_avg_all" (
 
 -- name: GetSDAVGALLs :many
 SELECT * FROM "stock_day_avg_all"
+WHERE (sqlc.narg(id)::bigint IS NULL OR id = sqlc.narg(id))
+    AND (sqlc.narg(code)::varchar IS NULL OR code = sqlc.narg(code))
+    AND (sqlc.narg(stock_name)::varchar IS NULL OR stock_name = sqlc.narg(stock_name))
+    AND (sqlc.narg(cp_upper)::decimal IS NULL OR close_price <= sqlc.narg(cp_upper))
+    AND (sqlc.narg(cp_lower)::decimal IS NULL OR close_price >= sqlc.narg(cp_lower))
+    AND (sqlc.narg(map_upper)::decimal IS NULL OR monthly_avg_price <= sqlc.narg(map_upper))
+    AND (sqlc.narg(map_lower)::decimal IS NULL OR monthly_avg_price >= sqlc.narg(map_lower))
+    AND (sqlc.narg(cr_date_start)::timestamptz IS NULL OR cr_date >= sqlc.narg(cr_date_start))
+    AND (sqlc.narg(cr_date_end)::timestamptz IS NULL OR cr_date <= sqlc.narg(cr_date_end))
 ORDER BY code
-LIMIT $1
-OFFSET $2;
+LIMIT sqlc.arg(limits)
+OFFSET sqlc.arg(offsets);
 
 
 -- name: BatchDeleteSDAVGALL :exec
 DELETE FROM "stock_day_avg_all"
 WHERE  id = ANY($1::bigint[]);
+

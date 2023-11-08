@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/lib/pq"
 )
@@ -63,18 +64,48 @@ func (q *Queries) CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) 
 
 const getSDAVGALLs = `-- name: GetSDAVGALLs :many
 SELECT id, code, stock_name, close_price, monthly_avg_price, cr_date, up_date, cr_user, up_user FROM "stock_day_avg_all"
+WHERE ($1::bigint IS NULL OR id = $1)
+    AND ($2::varchar IS NULL OR code = $2)
+    AND ($3::varchar IS NULL OR stock_name = $3)
+    AND ($4::decimal IS NULL OR close_price <= $4)
+    AND ($5::decimal IS NULL OR close_price >= $5)
+    AND ($6::decimal IS NULL OR monthly_avg_price <= $6)
+    AND ($7::decimal IS NULL OR monthly_avg_price >= $7)
+    AND ($8::timestamptz IS NULL OR cr_date >= $8)
+    AND ($9::timestamptz IS NULL OR cr_date <= $9)
 ORDER BY code
-LIMIT $1
-OFFSET $2
+LIMIT $11
+OFFSET $10
 `
 
 type GetSDAVGALLsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	ID          sql.NullInt64  `json:"id"`
+	Code        sql.NullString `json:"code"`
+	StockName   sql.NullString `json:"stock_name"`
+	CpUpper     sql.NullString `json:"cp_upper"`
+	CpLower     sql.NullString `json:"cp_lower"`
+	MapUpper    sql.NullString `json:"map_upper"`
+	MapLower    sql.NullString `json:"map_lower"`
+	CrDateStart sql.NullTime   `json:"cr_date_start"`
+	CrDateEnd   sql.NullTime   `json:"cr_date_end"`
+	Offsets     int32          `json:"offsets"`
+	Limits      int32          `json:"limits"`
 }
 
 func (q *Queries) GetSDAVGALLs(ctx context.Context, arg GetSDAVGALLsParams) ([]StockDayAvgAll, error) {
-	rows, err := q.db.QueryContext(ctx, getSDAVGALLs, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getSDAVGALLs,
+		arg.ID,
+		arg.Code,
+		arg.StockName,
+		arg.CpUpper,
+		arg.CpLower,
+		arg.MapUpper,
+		arg.MapLower,
+		arg.CrDateStart,
+		arg.CrDateEnd,
+		arg.Offsets,
+		arg.Limits,
+	)
 	if err != nil {
 		return nil, err
 	}
