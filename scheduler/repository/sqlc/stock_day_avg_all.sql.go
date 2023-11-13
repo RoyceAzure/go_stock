@@ -7,9 +7,8 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const batchDeleteSDAVGALL = `-- name: BatchDeleteSDAVGALL :exec
@@ -18,8 +17,15 @@ WHERE  id = ANY($1::bigint[])
 `
 
 func (q *Queries) BatchDeleteSDAVGALL(ctx context.Context, dollar_1 []int64) error {
-	_, err := q.db.ExecContext(ctx, batchDeleteSDAVGALL, pq.Array(dollar_1))
+	_, err := q.db.Exec(ctx, batchDeleteSDAVGALL, dollar_1)
 	return err
+}
+
+type BulkInsertDAVGALLParams struct {
+	Code            string         `json:"code"`
+	StockName       string         `json:"stock_name"`
+	ClosePrice      pgtype.Numeric `json:"close_price"`
+	MonthlyAvgPrice pgtype.Numeric `json:"monthly_avg_price"`
 }
 
 const createSDAVGALL = `-- name: CreateSDAVGALL :one
@@ -34,14 +40,14 @@ INSERT INTO "stock_day_avg_all" (
 `
 
 type CreateSDAVGALLParams struct {
-	Code            string `json:"code"`
-	StockName       string `json:"stock_name"`
-	ClosePrice      string `json:"close_price"`
-	MonthlyAvgPrice string `json:"monthly_avg_price"`
+	Code            string         `json:"code"`
+	StockName       string         `json:"stock_name"`
+	ClosePrice      pgtype.Numeric `json:"close_price"`
+	MonthlyAvgPrice pgtype.Numeric `json:"monthly_avg_price"`
 }
 
 func (q *Queries) CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) (StockDayAvgAll, error) {
-	row := q.db.QueryRowContext(ctx, createSDAVGALL,
+	row := q.db.QueryRow(ctx, createSDAVGALL,
 		arg.Code,
 		arg.StockName,
 		arg.ClosePrice,
@@ -62,6 +68,25 @@ func (q *Queries) CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) 
 	return i, err
 }
 
+const deleteSDAVGALLCodePrexForTest = `-- name: DeleteSDAVGALLCodePrexForTest :exec
+DELETE FROM "stock_day_avg_all"
+WHERE id in (
+    SELECT id 
+    FROM "stock_day_avg_all" as s
+    WHERE substring(s.code, 0, $1) = $2
+)
+`
+
+type DeleteSDAVGALLCodePrexForTestParams struct {
+	Len        int32  `json:"len"`
+	CodePrefix string `json:"code_prefix"`
+}
+
+func (q *Queries) DeleteSDAVGALLCodePrexForTest(ctx context.Context, arg DeleteSDAVGALLCodePrexForTestParams) error {
+	_, err := q.db.Exec(ctx, deleteSDAVGALLCodePrexForTest, arg.Len, arg.CodePrefix)
+	return err
+}
+
 const getSDAVGALLs = `-- name: GetSDAVGALLs :many
 SELECT id, code, stock_name, close_price, monthly_avg_price, cr_date, up_date, cr_user, up_user FROM "stock_day_avg_all"
 WHERE ($1::bigint IS NULL OR id = $1)
@@ -79,21 +104,21 @@ OFFSET $10
 `
 
 type GetSDAVGALLsParams struct {
-	ID          sql.NullInt64  `json:"id"`
-	Code        sql.NullString `json:"code"`
-	StockName   sql.NullString `json:"stock_name"`
-	CpUpper     sql.NullString `json:"cp_upper"`
-	CpLower     sql.NullString `json:"cp_lower"`
-	MapUpper    sql.NullString `json:"map_upper"`
-	MapLower    sql.NullString `json:"map_lower"`
-	CrDateStart sql.NullTime   `json:"cr_date_start"`
-	CrDateEnd   sql.NullTime   `json:"cr_date_end"`
-	Offsets     int32          `json:"offsets"`
-	Limits      int32          `json:"limits"`
+	ID          pgtype.Int8        `json:"id"`
+	Code        pgtype.Text        `json:"code"`
+	StockName   pgtype.Text        `json:"stock_name"`
+	CpUpper     pgtype.Numeric     `json:"cp_upper"`
+	CpLower     pgtype.Numeric     `json:"cp_lower"`
+	MapUpper    pgtype.Numeric     `json:"map_upper"`
+	MapLower    pgtype.Numeric     `json:"map_lower"`
+	CrDateStart pgtype.Timestamptz `json:"cr_date_start"`
+	CrDateEnd   pgtype.Timestamptz `json:"cr_date_end"`
+	Offsets     int32              `json:"offsets"`
+	Limits      int32              `json:"limits"`
 }
 
 func (q *Queries) GetSDAVGALLs(ctx context.Context, arg GetSDAVGALLsParams) ([]StockDayAvgAll, error) {
-	rows, err := q.db.QueryContext(ctx, getSDAVGALLs,
+	rows, err := q.db.Query(ctx, getSDAVGALLs,
 		arg.ID,
 		arg.Code,
 		arg.StockName,
@@ -127,9 +152,6 @@ func (q *Queries) GetSDAVGALLs(ctx context.Context, arg GetSDAVGALLsParams) ([]S
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

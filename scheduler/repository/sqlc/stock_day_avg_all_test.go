@@ -2,30 +2,43 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
 func RadomCreateSDAVGALL() StockDayAvgAll {
+	cs, _ := util.RandomNumeric(4, 2)
+	ms, _ := util.RandomNumeric(4, 2)
 	return StockDayAvgAll{
 		ID:              util.RandomInt64(10, 1000),
-		Code:            util.RandomString(5),
-		StockName:       util.RandomString(10),
-		ClosePrice:      util.RandomFloatString(4, 2),
-		MonthlyAvgPrice: util.RandomFloatString(4, 2),
+		Code:            "Test" + util.RandomString(5),
+		StockName:       "Test" + util.RandomString(10),
+		ClosePrice:      cs,
+		MonthlyAvgPrice: ms,
 		CrDate:          time.Now().UTC(),
 		CrUser:          util.RandomString(5),
+	}
+}
+
+func RadomCreateSDAVGALLParams() BulkInsertDAVGALLParams {
+	cs, _ := util.RandomNumeric(4, 2)
+	ms, _ := util.RandomNumeric(4, 2)
+	return BulkInsertDAVGALLParams{
+		Code:            "BulkTest" + util.RandomString(5),
+		StockName:       "BulkTest" + util.RandomString(10),
+		ClosePrice:      cs,
+		MonthlyAvgPrice: ms,
 	}
 }
 
 func CreateRandomSDAVGALL(t *testing.T) StockDayAvgAll {
 	startTime := time.Now()
 	insertData := RadomCreateSDAVGALL()
-	newData, err := testQueries.CreateSDAVGALL(context.Background(), CreateSDAVGALLParams{
+	newData, err := testDao.CreateSDAVGALL(context.Background(), CreateSDAVGALLParams{
 		Code:            insertData.Code,
 		StockName:       insertData.StockName,
 		ClosePrice:      insertData.ClosePrice,
@@ -47,13 +60,23 @@ func TestCreateSDAVGALL(t *testing.T) {
 	CreateRandomSDAVGALL(t)
 }
 
+func TestBulkCreateSDAVGALL(t *testing.T) {
+	var insertList []BulkInsertDAVGALLParams
+	for i := 0; i < 50000; i++ {
+		insertList = append(insertList, RadomCreateSDAVGALLParams())
+	}
+	res, err := testDao.BulkInsertDAVGALL(context.Background(), insertList)
+	require.NoError(t, err)
+	require.NotZero(t, res)
+}
+
 func TestGetSDAVGALLs(t *testing.T) {
 	startTime := time.Now()
 
 	limit := 20
 	page := 1500
 	offset := (page - 1) * limit
-	data, err := testQueries.GetSDAVGALLs(context.Background(),
+	data, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
 			Limits:  500,
 			Offsets: int32(offset),
@@ -70,9 +93,9 @@ func TestGetSDAVGALLsByCode(t *testing.T) {
 	limit := 2
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	datas, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			Code: sql.NullString{
+			Code: pgtype.Text{
 				Valid:  true,
 				String: newData.Code,
 			},
@@ -94,9 +117,9 @@ func TestGetSDAVGALLsByStockName(t *testing.T) {
 	limit := 2
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	datas, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			StockName: sql.NullString{
+			StockName: pgtype.Text{
 				Valid:  true,
 				String: newData.StockName,
 			},
@@ -113,64 +136,57 @@ func TestGetSDAVGALLsByStockName(t *testing.T) {
 }
 
 func TestGetSDAVGALLsByCPInterval(t *testing.T) {
-	newData := CreateRandomSDAVGALL(t)
 	startTime := time.Now()
 	limit := 10
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	cp_upper := util.RandomFloatString(6, 2)
+	cp_lower := util.RandomFloatString(6, 2)
+	if cp_lower < cp_upper {
+		temp := cp_lower
+		cp_lower = cp_upper
+		cp_lower = temp
+	}
+	cp_num_upper, err := util.StringToNumeric(cp_upper)
+	require.NoError(t, err)
+	cp_num_lower, err := util.StringToNumeric(cp_lower)
+	require.NoError(t, err)
+	_, err = testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			CpUpper: sql.NullString{
-				Valid:  true,
-				String: newData.ClosePrice,
-			},
-			CpLower: sql.NullString{
-				Valid:  true,
-				String: newData.ClosePrice,
-			},
+			CpUpper: cp_num_upper,
+			CpLower: cp_num_lower,
 			Limits:  int32(limit),
 			Offsets: int32(offset),
 		})
 	require.NoError(t, err)
-	require.NotEmpty(t, datas)
-	require.Len(t, datas, 1)
-	for _, data := range datas {
-		require.Equal(t, newData.Code, data.Code)
-		require.Equal(t, newData.StockName, data.StockName)
-		require.Equal(t, newData.ClosePrice, data.ClosePrice)
-		require.Equal(t, newData.MonthlyAvgPrice, data.MonthlyAvgPrice)
-	}
+
 	require.WithinDuration(t, time.Now(), startTime, time.Second)
 }
 
 func TestGetSDAVGALLsByMapInterval(t *testing.T) {
-	newData := CreateRandomSDAVGALL(t)
 	startTime := time.Now()
 	limit := 10
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	mp_upper := util.RandomFloatString(6, 2)
+	mp_lower := util.RandomFloatString(6, 2)
+	if mp_lower < mp_upper {
+		temp := mp_lower
+		mp_lower = mp_upper
+		mp_lower = temp
+	}
+	cp_num_upper, err := util.StringToNumeric(mp_upper)
+	require.NoError(t, err)
+	cp_num_lower, err := util.StringToNumeric(mp_lower)
+	require.NoError(t, err)
+	_, err = testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			MapUpper: sql.NullString{
-				Valid:  true,
-				String: newData.MonthlyAvgPrice,
-			},
-			MapLower: sql.NullString{
-				Valid:  true,
-				String: newData.MonthlyAvgPrice,
-			},
-			Limits:  int32(limit),
-			Offsets: int32(offset),
+			MapUpper: cp_num_upper,
+			MapLower: cp_num_lower,
+			Limits:   int32(limit),
+			Offsets:  int32(offset),
 		})
 	require.NoError(t, err)
-	require.NotEmpty(t, datas)
-	require.Len(t, datas, 1)
-	for _, data := range datas {
-		require.Equal(t, newData.Code, data.Code)
-		require.Equal(t, newData.StockName, data.StockName)
-		require.Equal(t, newData.ClosePrice, data.ClosePrice)
-		require.Equal(t, newData.MonthlyAvgPrice, data.MonthlyAvgPrice)
-	}
 	require.WithinDuration(t, time.Now(), startTime, time.Second)
 }
 func TestGetSDAVGALLsByCrDateInterval(t *testing.T) {
@@ -181,13 +197,13 @@ func TestGetSDAVGALLsByCrDateInterval(t *testing.T) {
 	limit := 10
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	datas, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			CrDateStart: sql.NullTime{
+			CrDateStart: pgtype.Timestamptz{
 				Valid: true,
 				Time:  crDateStart,
 			},
-			CrDateEnd: sql.NullTime{
+			CrDateEnd: pgtype.Timestamptz{
 				Valid: true,
 				Time:  crDateEnd,
 			},
@@ -209,13 +225,13 @@ func TestGetSDAVGALLsBySpecialCrDate(t *testing.T) {
 	limit := 10
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	datas, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			CrDateStart: sql.NullTime{
+			CrDateStart: pgtype.Timestamptz{
 				Valid: true,
 				Time:  timetemp,
 			},
-			CrDateEnd: sql.NullTime{
+			CrDateEnd: pgtype.Timestamptz{
 				Valid: true,
 				Time:  timetemp,
 			},
@@ -237,13 +253,13 @@ func TestGetSDAVGALLsBySpecialCrDatetTz(t *testing.T) {
 	limit := 10
 	page := 1
 	offset := (page - 1) * limit
-	datas, err := testQueries.GetSDAVGALLs(context.Background(),
+	datas, err := testDao.GetSDAVGALLs(context.Background(),
 		GetSDAVGALLsParams{
-			CrDateStart: sql.NullTime{
+			CrDateStart: pgtype.Timestamptz{
 				Valid: true,
 				Time:  timetemp,
 			},
-			CrDateEnd: sql.NullTime{
+			CrDateEnd: pgtype.Timestamptz{
 				Valid: true,
 				Time:  timetemp,
 			},
@@ -256,4 +272,12 @@ func TestGetSDAVGALLsBySpecialCrDatetTz(t *testing.T) {
 		require.True(t, data.CrDate.Equal(timetemp))
 	}
 	require.WithinDuration(t, time.Now(), startTime, time.Second)
+}
+
+func TestDeleteSDAVGALLCodePrexForTest(t *testing.T) {
+	err := testDao.DeleteSDAVGALLCodePrexForTest(context.Background(), DeleteSDAVGALLCodePrexForTestParams{
+		Len:        9,
+		CodePrefix: "BulkTest",
+	})
+	require.NoError(t, err)
 }

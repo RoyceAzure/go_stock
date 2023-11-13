@@ -1,6 +1,8 @@
 package repository
 
-import "database/sql"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type Dao interface {
 	Querier
@@ -8,12 +10,12 @@ type Dao interface {
 
 type SQLDao struct {
 	*Queries
-	db *sql.DB
+	connPool *pgxpool.Pool
 }
 
-func NewSQLDao(db *sql.DB) Dao {
+func NewSQLDao(connPool *pgxpool.Pool) Dao {
 	return &SQLDao{
-		Queries: New(db),
-		db:      db,
+		Queries:  New(connPool),
+		connPool: connPool,
 	}
 }

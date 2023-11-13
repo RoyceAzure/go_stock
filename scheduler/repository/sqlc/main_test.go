@@ -1,16 +1,17 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
 	"os"
 	"testing"
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
-var testQueries *Queries
-var testDB *sql.DB
+var testDao Dao
+var testDB *pgxpool.Pool
 
 func TestMain(m *testing.M) {
 	setUp()
@@ -22,9 +23,10 @@ func setUp() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("err load config")
 	}
-	testDB, err = sql.Open(config.DBDriver, config.DBSource)
+	ctx := context.Background()
+	testDB, err = pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}
-	testQueries = New(testDB)
+	testDao = NewSQLDao(testDB)
 }

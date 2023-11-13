@@ -8,6 +8,16 @@ INSERT INTO "stock_day_avg_all" (
     $1, $2, $3, $4
 ) RETURNING *;
 
+-- name: BulkInsertDAVGALL :copyfrom
+INSERT INTO "stock_day_avg_all" (
+    code,
+    stock_name,
+    close_price,
+    monthly_avg_price
+) VALUES(
+    $1, $2, $3, $4
+);
+
 -- name: GetSDAVGALLs :many
 SELECT * FROM "stock_day_avg_all"
 WHERE (sqlc.narg(id)::bigint IS NULL OR id = sqlc.narg(id))
@@ -28,3 +38,10 @@ OFFSET sqlc.arg(offsets);
 DELETE FROM "stock_day_avg_all"
 WHERE  id = ANY($1::bigint[]);
 
+-- name: DeleteSDAVGALLCodePrexForTest :exec
+DELETE FROM "stock_day_avg_all"
+WHERE id in (
+    SELECT id 
+    FROM "stock_day_avg_all" as s
+    WHERE substring(s.code, 0, sqlc.arg(len)) = sqlc.arg(code_prefix)
+);

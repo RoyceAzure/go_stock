@@ -5,18 +5,19 @@
 package repository
 
 import (
-	"database/sql"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type StockDayAvgAll struct {
-	ID              int64          `json:"id"`
-	Code            string         `json:"code"`
-	StockName       string         `json:"stock_name"`
-	ClosePrice      string         `json:"close_price"`
-	MonthlyAvgPrice string         `json:"monthly_avg_price"`
-	CrDate          time.Time      `json:"cr_date"`
-	UpDate          sql.NullTime   `json:"up_date"`
-	CrUser          string         `json:"cr_user"`
-	UpUser          sql.NullString `json:"up_user"`
+	ID              int64              `json:"id"`
+	Code            string             `json:"code"`
+	StockName       string             `json:"stock_name"`
+	ClosePrice      pgtype.Numeric     `json:"close_price"`
+	MonthlyAvgPrice pgtype.Numeric     `json:"monthly_avg_price"`
+	CrDate          time.Time          `json:"cr_date"`
+	UpDate          pgtype.Timestamptz `json:"up_date"`
+	CrUser          string             `json:"cr_user"`
+	UpUser          pgtype.Text        `json:"up_user"`
 }

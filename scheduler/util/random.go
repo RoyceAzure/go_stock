@@ -4,6 +4,9 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -66,4 +69,24 @@ func RandomFloatString(n int, point int) string {
 		sb.WriteByte(c)
 	}
 	return sb.String()
+}
+
+func RandomDecimal(n int, point int) (decimal.Decimal, error) {
+	numeric_string := RandomFloatString(n, point)
+	var de decimal.Decimal
+	de, err := decimal.NewFromString(numeric_string)
+	if err != nil {
+		de = decimal.NewFromInt(RandomInt64(1, 10000))
+	}
+	return de, err
+}
+
+func RandomNumeric(n int, point int) (pgtype.Numeric, error) {
+	return StringToNumeric(RandomFloatString(n, point))
+}
+
+func StringToNumeric(value string) (pgtype.Numeric, error) {
+	var result pgtype.Numeric
+	err := result.Scan(value)
+	return result, err
 }

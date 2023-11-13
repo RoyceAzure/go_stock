@@ -1,10 +1,18 @@
 package main
 
 import (
-	"log"
+	"context"
+	"os"
 	"time"
 
+	"github.com/RoyceAzure/go-stockinfo-schduler/api"
+	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-schduler/service"
+	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
 	"github.com/go-co-op/gocron"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var task = func() {
@@ -12,6 +20,26 @@ var task = func() {
 }
 
 func main() {
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot load config")
+	}
+	if config.Enviornmant == "development" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	ctx := context.Background()
+	pgxPool, err := pgxpool.New(ctx, config.DBSource)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
+	dao := repository.NewSQLDao(pgxPool)
+
+	service := service.NewService(dao)
+	go runGinServer(config, dao, service)
+
 	s := gocron.NewScheduler(time.Local)
 
 	// Every starts the job immediately and then runs at the
@@ -68,4 +96,22 @@ func main() {
 
 	// stop the scheduler and notify the `StartBlocking()` to exit
 	s.StopBlockingChan()
+}
+
+/*
+build Server and run
+*/
+func runGinServer(configs config.Config, dao repository.Dao, service service.SyncDataService) {
+	server, err := api.NewServer(configs, dao, service)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start server")
+	}
+	err = server.Start(configs.HttpServerAddress)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start server")
+	}
 }
