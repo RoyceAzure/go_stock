@@ -65,8 +65,8 @@ Table fund{
 
 Table stock{
   stock_id bigserial [pk, increment]
-  ticker_symbol varchar [not null]
-  comp_name varchar [not null]
+  stock_code varchar [not null]
+  stock_name varchar [not null]
   current_price decimal [not null]
   market_cap bigint [not null] //Market Capitalization，市值
   cr_date timestamptz  [not null, default: `now()`]

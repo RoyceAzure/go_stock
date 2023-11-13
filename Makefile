@@ -82,5 +82,5 @@ protoc:
 evans:
 	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl
 
-.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans redis new_migration migrateforce migrateupto
+.PHONY: postgresup postgresrm createdb dropdb test server mock awsmigrateup db_docs db_schema protoc evans redis new_migration migrateforce migrateupto migratedownto
  

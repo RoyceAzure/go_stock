@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-07T07:28:57.992Z
+-- Generated at: 2023-11-13T06:49:21.721Z
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
@@ -50,8 +50,8 @@ CREATE TABLE "fund" (
 
 CREATE TABLE "stock" (
   "stock_id" BIGSERIAL PRIMARY KEY,
-  "ticker_symbol" varchar NOT NULL,
-  "comp_name" varchar NOT NULL,
+  "stock_code" varchar NOT NULL,
+  "stock_name" varchar NOT NULL,
   "current_price" decimal NOT NULL,
   "market_cap" bigint NOT NULL,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),

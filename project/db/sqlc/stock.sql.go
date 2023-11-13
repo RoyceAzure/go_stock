@@ -12,19 +12,19 @@ import (
 
 const createStock = `-- name: CreateStock :one
 INSERT INTO stock(
-    ticker_symbol,
-    comp_name,
+    stock_code,
+    stock_name,
     current_price,
     market_cap,
     cr_user
 ) VALUES(
     $1, $2, $3, $4, $5
-)   RETURNING stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user
+)   RETURNING stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user
 `
 
 type CreateStockParams struct {
-	TickerSymbol string `json:"ticker_symbol"`
-	CompName     string `json:"comp_name"`
+	StockCode    string `json:"stock_code"`
+	StockName    string `json:"stock_name"`
 	CurrentPrice string `json:"current_price"`
 	MarketCap    int64  `json:"market_cap"`
 	CrUser       string `json:"cr_user"`
@@ -32,8 +32,8 @@ type CreateStockParams struct {
 
 func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) (Stock, error) {
 	row := q.db.QueryRowContext(ctx, createStock,
-		arg.TickerSymbol,
-		arg.CompName,
+		arg.StockCode,
+		arg.StockName,
 		arg.CurrentPrice,
 		arg.MarketCap,
 		arg.CrUser,
@@ -41,8 +41,8 @@ func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) (Stock
 	var i Stock
 	err := row.Scan(
 		&i.StockID,
-		&i.TickerSymbol,
-		&i.CompName,
+		&i.StockCode,
+		&i.StockName,
 		&i.CurrentPrice,
 		&i.MarketCap,
 		&i.CrDate,
@@ -64,7 +64,7 @@ func (q *Queries) DeleteStock(ctx context.Context, stockID int64) error {
 }
 
 const getStock = `-- name: GetStock :one
-SELECT stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
+SELECT stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
 WHERE stock_id = $1 LIMIT 1
 `
 
@@ -73,8 +73,8 @@ func (q *Queries) GetStock(ctx context.Context, stockID int64) (Stock, error) {
 	var i Stock
 	err := row.Scan(
 		&i.StockID,
-		&i.TickerSymbol,
-		&i.CompName,
+		&i.StockCode,
+		&i.StockName,
 		&i.CurrentPrice,
 		&i.MarketCap,
 		&i.CrDate,
@@ -86,20 +86,20 @@ func (q *Queries) GetStock(ctx context.Context, stockID int64) (Stock, error) {
 }
 
 const getstockByCN = `-- name: GetstockByCN :many
-SELECT stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
-WHERE comp_name = $1
+SELECT stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
+WHERE stock_name = $1
 LIMIT $2
 OFFSET $3
 `
 
 type GetstockByCNParams struct {
-	CompName string `json:"comp_name"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	StockName string `json:"stock_name"`
+	Limit     int32  `json:"limit"`
+	Offset    int32  `json:"offset"`
 }
 
 func (q *Queries) GetstockByCN(ctx context.Context, arg GetstockByCNParams) ([]Stock, error) {
-	rows, err := q.db.QueryContext(ctx, getstockByCN, arg.CompName, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getstockByCN, arg.StockName, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +109,8 @@ func (q *Queries) GetstockByCN(ctx context.Context, arg GetstockByCNParams) ([]S
 		var i Stock
 		if err := rows.Scan(
 			&i.StockID,
-			&i.TickerSymbol,
-			&i.CompName,
+			&i.StockCode,
+			&i.StockName,
 			&i.CurrentPrice,
 			&i.MarketCap,
 			&i.CrDate,
@@ -132,20 +132,20 @@ func (q *Queries) GetstockByCN(ctx context.Context, arg GetstockByCNParams) ([]S
 }
 
 const getstockByTS = `-- name: GetstockByTS :many
-SELECT stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
-WHERE ticker_symbol = $1
+SELECT stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM stock
+WHERE stock_code = $1
 LIMIT $2
 OFFSET $3
 `
 
 type GetstockByTSParams struct {
-	TickerSymbol string `json:"ticker_symbol"`
-	Limit        int32  `json:"limit"`
-	Offset       int32  `json:"offset"`
+	StockCode string `json:"stock_code"`
+	Limit     int32  `json:"limit"`
+	Offset    int32  `json:"offset"`
 }
 
 func (q *Queries) GetstockByTS(ctx context.Context, arg GetstockByTSParams) ([]Stock, error) {
-	rows, err := q.db.QueryContext(ctx, getstockByTS, arg.TickerSymbol, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getstockByTS, arg.StockCode, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +155,8 @@ func (q *Queries) GetstockByTS(ctx context.Context, arg GetstockByTSParams) ([]S
 		var i Stock
 		if err := rows.Scan(
 			&i.StockID,
-			&i.TickerSymbol,
-			&i.CompName,
+			&i.StockCode,
+			&i.StockName,
 			&i.CurrentPrice,
 			&i.MarketCap,
 			&i.CrDate,
@@ -178,7 +178,7 @@ func (q *Queries) GetstockByTS(ctx context.Context, arg GetstockByTSParams) ([]S
 }
 
 const getstocks = `-- name: Getstocks :many
-SELECT stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM  stock
+SELECT stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user FROM  stock
 ORDER BY stock_id
 LIMIT $1
 OFFSET $2
@@ -200,8 +200,8 @@ func (q *Queries) Getstocks(ctx context.Context, arg GetstocksParams) ([]Stock, 
 		var i Stock
 		if err := rows.Scan(
 			&i.StockID,
-			&i.TickerSymbol,
-			&i.CompName,
+			&i.StockCode,
+			&i.StockName,
 			&i.CurrentPrice,
 			&i.MarketCap,
 			&i.CrDate,
@@ -228,7 +228,7 @@ SET current_price = $2,
 up_date = $3,
 up_user = $4
 WHERE stock_id = $1
-RETURNING stock_id, ticker_symbol, comp_name, current_price, market_cap, cr_date, up_date, cr_user, up_user
+RETURNING stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user
 `
 
 type UpdateStockParams struct {
@@ -248,8 +248,8 @@ func (q *Queries) UpdateStock(ctx context.Context, arg UpdateStockParams) (Stock
 	var i Stock
 	err := row.Scan(
 		&i.StockID,
-		&i.TickerSymbol,
-		&i.CompName,
+		&i.StockCode,
+		&i.StockName,
 		&i.CurrentPrice,
 		&i.MarketCap,
 		&i.CrDate,

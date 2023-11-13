@@ -1,7 +1,7 @@
 -- name: CreateStock :one
 INSERT INTO stock(
-    ticker_symbol,
-    comp_name,
+    stock_code,
+    stock_name,
     current_price,
     market_cap,
     cr_user
@@ -15,13 +15,13 @@ WHERE stock_id = $1 LIMIT 1;
 
 -- name: GetstockByTS :many
 SELECT * FROM stock
-WHERE ticker_symbol = $1
+WHERE stock_code = $1
 LIMIT $2
 OFFSET $3;
 
 -- name: GetstockByCN :many
 SELECT * FROM stock
-WHERE comp_name = $1
+WHERE stock_name = $1
 LIMIT $2
 OFFSET $3;
 
