@@ -7,7 +7,9 @@ import (
 
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
@@ -26,7 +28,12 @@ func NewTestSevice() {
 	}
 	dao := repository.NewSQLDao(pgxPool)
 
-	testService = NewService(dao)
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
+	testService = NewService(dao, taskDistributor)
 }
 
 func TestMain(m *testing.M) {

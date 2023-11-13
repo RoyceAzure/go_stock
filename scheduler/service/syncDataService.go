@@ -3,12 +3,16 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
+	"strconv"
 	"sync"
+	"time"
 
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
+	worker "github.com/RoyceAzure/go-stockinfo-schduler/worker"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
 )
@@ -24,7 +28,7 @@ TODO: 身分驗證 , insert 失敗資料且入DB
 
 type SyncDataService interface {
 	DownloadAndInsertDataSVAA(ctx context.Context) (int64, error)
-	SyncFund(ctx context.Context) (int64, error)
+	SyncStock(ctx context.Context) (int64, []error)
 }
 
 type STOCK_DAY_AVG_ALL_DTO struct {
@@ -92,8 +96,74 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 	return insertDatas, nil
 }
 
-func (service *SchdulerService) SyncFund(ctx context.Context) (int64, error) {
-	return 0, errors.New("not implement")
+/*
+batchSize 1000
+*/
+func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) {
+	startTime := time.Now().UTC()
+	var errs []error
+	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
+	cr_date_end := cr_date_start.AddDate(0, 0, 1).Add(-time.Nanosecond)
+	stock_day_alls, err := service.dao.GetSDAVGALLs(ctx, repository.GetSDAVGALLsParams{
+		CrDateStart: pgtype.Timestamptz{
+			Time:  cr_date_start,
+			Valid: true,
+		},
+		CrDateEnd: pgtype.Timestamptz{
+			Time:  cr_date_end,
+			Valid: true,
+		},
+		Limits:  100000,
+		Offsets: 0,
+	})
+	if err != nil {
+		errs = append(errs, fmt.Errorf("failed to get SDAVGALL, %w", err))
+		return 0, errs
+	}
+	var wg sync.WaitGroup
+	var payload []worker.BatchUpdateStockPayload
+
+	wg.Add(3)
+	unprocessed := make(chan []repository.StockDayAvgAll)
+	processed := make(chan worker.BatchUpdateStockPayload)
+	batchSize := 1000
+	go util.TaskDistributor(unprocessed, batchSize, stock_day_alls, &wg)
+	go util.TaskWorker("woker1", unprocessed, processed, cvSDAVGALLEntity2BatchPayload, nil, &wg)
+	go util.TaskWorker("worker2", unprocessed, processed, cvSDAVGALLEntity2BatchPayload, nil, &wg)
+
+	go func() {
+		wg.Wait()
+		close(processed)
+	}()
+
+	task_count := 0
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+	for batch := range processed {
+		payload = append(payload, batch)
+		if len(payload)%batchSize == 0 {
+			err := service.taskDistributor.DistributeTaskBatchUpdateStock(ctx, payload, opts...)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				task_count += batchSize
+			}
+			payload = make([]worker.BatchUpdateStockPayload, 0)
+		}
+	}
+	if len(payload) > 0 {
+		err := service.taskDistributor.DistributeTaskBatchUpdateStock(ctx, payload, opts...)
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			task_count += batchSize
+		}
+	}
+
+	return int64(task_count), errs
 }
 
 func convertSDAVGALLDTO2E(dto STOCK_DAY_AVG_ALL_DTO) (repository.CreateSDAVGALLParams, error) {
@@ -143,5 +213,23 @@ func convertSDAVGALLDTO2BulkEntity(dto STOCK_DAY_AVG_ALL_DTO) (repository.BulkIn
 		StockName:       dto.StockName,
 		ClosePrice:      cp,
 		MonthlyAvgPrice: mp,
+	}, nil
+}
+
+/*
+BatchUpdateStockPayload.MarketCap 目前寫死10000
+*/
+func cvSDAVGALLEntity2BatchPayload(entity repository.StockDayAvgAll) (worker.BatchUpdateStockPayload, error) {
+	var result worker.BatchUpdateStockPayload
+	close_price, err := entity.ClosePrice.Float64Value()
+	if err != nil {
+		return result, fmt.Errorf("error to convert stock_day_avg_all to batch_update_stoc_payload")
+	}
+
+	return worker.BatchUpdateStockPayload{
+		StockCode:    entity.Code,
+		StockName:    entity.StockName,
+		CurrentPrice: strconv.FormatFloat(close_price.Float64, 'f', -1, 64),
+		MarketCap:    10000,
 	}, nil
 }

@@ -7,9 +7,11 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/api"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service"
+	service "github.com/RoyceAzure/go-stockinfo-schduler/service"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/go-co-op/gocron"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -36,8 +38,12 @@ func main() {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}
 	dao := repository.NewSQLDao(pgxPool)
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	service := service.NewService(dao)
+	service := service.NewService(dao, taskDistributor)
 	go runGinServer(config, dao, service)
 
 	s := gocron.NewScheduler(time.Local)
