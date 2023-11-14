@@ -98,6 +98,7 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 
 /*
 batchSize 1000
+TODO : 若當日沒有資料，要有警示
 */
 func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) {
 	startTime := time.Now().UTC()
@@ -118,6 +119,10 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 	})
 	if err != nil {
 		errs = append(errs, fmt.Errorf("failed to get SDAVGALL, %w", err))
+		return 0, errs
+	}
+	if len(stock_day_alls) == 0 {
+		errs = append(errs, fmt.Errorf("stock_day_alls has no data today"))
 		return 0, errs
 	}
 	var wg sync.WaitGroup

@@ -11,7 +11,6 @@ import (
         db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
         gomock "github.com/golang/mock/gomock"
         uuid "github.com/google/uuid"
-
 )
 
 // MockStore is a mock of Store interface.
@@ -124,7 +123,7 @@ func (m *MockStore) CreateUserStock(arg0 context.Context, arg1 db.CreateUserStoc
 // CreateUserStock indicates an expected call of CreateUserStock.
 func (mr *MockStoreMockRecorder) CreateUserStock(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserStock", reflect.TypeOf((*MockStore)(nil).CreateUserStock), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserStock", reflect.TypeOf((*MockStore)(nil).CreateUserStock), arg0, arg1)       
 }
 
 // CreateUserTx mocks base method.
@@ -154,7 +153,7 @@ func (m *MockStore) CreateVerifyEmail(arg0 context.Context, arg1 db.CreateVerify
 // CreateVerifyEmail indicates an expected call of CreateVerifyEmail.
 func (mr *MockStoreMockRecorder) CreateVerifyEmail(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVerifyEmail", reflect.TypeOf((*MockStore)(nil).CreateVerifyEmail), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVerifyEmail", reflect.TypeOf((*MockStore)(nil).CreateVerifyEmail), arg0, arg1)   
 }
 
 // DeleteFund mocks base method.
@@ -224,7 +223,7 @@ func (m *MockStore) DeleteUserStock(arg0 context.Context, arg1 int64) error {
 // DeleteUserStock indicates an expected call of DeleteUserStock.
 func (mr *MockStoreMockRecorder) DeleteUserStock(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserStock", reflect.TypeOf((*MockStore)(nil).DeleteUserStock), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserStock", reflect.TypeOf((*MockStore)(nil).DeleteUserStock), arg0, arg1)       
 }
 
 // GetFund mocks base method.
@@ -303,7 +302,7 @@ func (mr *MockStoreMockRecorder) GetStockTransactions(arg0, arg1 interface{}) *g
 }
 
 // GetStockTransactionsByDate mocks base method.
-func (m *MockStore) GetStockTransactionsByDate(arg0 context.Context, arg1 db.GetStockTransactionsByDateParams) ([]db.StockTransaction, error) {
+func (m *MockStore) GetStockTransactionsByDate(arg0 context.Context, arg1 db.GetStockTransactionsByDateParams) ([]db.StockTransaction, error) {       
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetStockTransactionsByDate", arg0, arg1)
         ret0, _ := ret[0].([]db.StockTransaction)
@@ -314,11 +313,11 @@ func (m *MockStore) GetStockTransactionsByDate(arg0 context.Context, arg1 db.Get
 // GetStockTransactionsByDate indicates an expected call of GetStockTransactionsByDate.
 func (mr *MockStoreMockRecorder) GetStockTransactionsByDate(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStockTransactionsByDate", reflect.TypeOf((*MockStore)(nil).GetStockTransactionsByDate), arg0, arg1)  
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStockTransactionsByDate", reflect.TypeOf((*MockStore)(nil).GetStockTransactionsByDate), arg0, arg1)
 }
 
 // GetStockTransactionsByStockId mocks base method.
-func (m *MockStore) GetStockTransactionsByStockId(arg0 context.Context, arg1 db.GetStockTransactionsByStockIdParams) ([]db.StockTransaction, error) {
+func (m *MockStore) GetStockTransactionsByStockId(arg0 context.Context, arg1 db.GetStockTransactionsByStockIdParams) ([]db.StockTransaction, error) { 
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetStockTransactionsByStockId", arg0, arg1)
         ret0, _ := ret[0].([]db.StockTransaction)
@@ -333,7 +332,7 @@ func (mr *MockStoreMockRecorder) GetStockTransactionsByStockId(arg0, arg1 interf
 }
 
 // GetStockTransactionsByUserId mocks base method.
-func (m *MockStore) GetStockTransactionsByUserId(arg0 context.Context, arg1 db.GetStockTransactionsByUserIdParams) ([]db.StockTransaction, error) {
+func (m *MockStore) GetStockTransactionsByUserId(arg0 context.Context, arg1 db.GetStockTransactionsByUserIdParams) ([]db.StockTransaction, error) {   
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetStockTransactionsByUserId", arg0, arg1)
         ret0, _ := ret[0].([]db.StockTransaction)
@@ -389,7 +388,8 @@ func (m *MockStore) GetUserForUpdateNoKey(arg0 context.Context, arg1 int64) (db.
 // GetUserForUpdateNoKey indicates an expected call of GetUserForUpdateNoKey.
 func (mr *MockStoreMockRecorder) GetUserForUpdateNoKey(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserForUpdateNoKey", reflect.TypeOf((*MockStore)(nil).GetUserForUpdateNoKey), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserForUpdateNoKey", reflect.TypeOf((*MockStore)(nil).GetUserForUpdateNoKey), arg0, 
+arg1)
 }
 
 // GetUserStock mocks base method.
@@ -464,7 +464,7 @@ func (m *MockStore) GetUserStocksByUserAStock(arg0 context.Context, arg1 db.GetU
 // GetUserStocksByUserAStock indicates an expected call of GetUserStocksByUserAStock.
 func (mr *MockStoreMockRecorder) GetUserStocksByUserAStock(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByUserAStock", reflect.TypeOf((*MockStore)(nil).GetUserStocksByUserAStock), arg0, arg1)    
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByUserAStock", reflect.TypeOf((*MockStore)(nil).GetUserStocksByUserAStock), arg0, arg1)
 }
 
 // GetUserStocksByUserId mocks base method.
@@ -479,7 +479,8 @@ func (m *MockStore) GetUserStocksByUserId(arg0 context.Context, arg1 db.GetUserS
 // GetUserStocksByUserId indicates an expected call of GetUserStocksByUserId.
 func (mr *MockStoreMockRecorder) GetUserStocksByUserId(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByUserId", reflect.TypeOf((*MockStore)(nil).GetUserStocksByUserId), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByUserId", reflect.TypeOf((*MockStore)(nil).GetUserStocksByUserId), arg0, 
+arg1)
 }
 
 // GetfundByUidandFid mocks base method.
@@ -494,7 +495,7 @@ func (m *MockStore) GetfundByUidandFid(arg0 context.Context, arg1 db.GetfundByUi
 // GetfundByUidandFid indicates an expected call of GetfundByUidandFid.
 func (mr *MockStoreMockRecorder) GetfundByUidandFid(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetfundByUidandFid", reflect.TypeOf((*MockStore)(nil).GetfundByUidandFid), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetfundByUidandFid", reflect.TypeOf((*MockStore)(nil).GetfundByUidandFid), arg0, arg1) 
 }
 
 // GetfundByUidandFidForUpdateNoK mocks base method.
@@ -524,7 +525,7 @@ func (m *MockStore) GetfundByUserId(arg0 context.Context, arg1 db.GetfundByUserI
 // GetfundByUserId indicates an expected call of GetfundByUserId.
 func (mr *MockStoreMockRecorder) GetfundByUserId(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetfundByUserId", reflect.TypeOf((*MockStore)(nil).GetfundByUserId), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetfundByUserId", reflect.TypeOf((*MockStore)(nil).GetfundByUserId), arg0, arg1)       
 }
 
 // Getfunds mocks base method.
@@ -558,8 +559,7 @@ func (mr *MockStoreMockRecorder) GetserStockByUidandSid(arg0, arg1 interface{}) 
 }
 
 // GetserStockByUidandSidForUpdateNoK mocks base method.
-func (m *MockStore) GetserStockByUidandSidForUpdateNoK(arg0 context.Context, arg1 db.GetserStockByUidandSidForUpdateNoKParams) (db.UserStock, error) {
-        m.ctrl.T.Helper()
+func (m *MockStore) GetserStockByUidandSidForUpdateNoK(arg0 context.Context, arg1 db.GetserStockByUidandSidForUpdateNoKParams) (db.UserStock, error) {        m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetserStockByUidandSidForUpdateNoK", arg0, arg1)
         ret0, _ := ret[0].(db.UserStock)
         ret1, _ := ret[1].(error)
@@ -644,7 +644,7 @@ func (m *MockStore) TransferStockTx(arg0 context.Context, arg1 db.TransferStockT
 // TransferStockTx indicates an expected call of TransferStockTx.
 func (mr *MockStoreMockRecorder) TransferStockTx(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferStockTx", reflect.TypeOf((*MockStore)(nil).TransferStockTx), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferStockTx", reflect.TypeOf((*MockStore)(nil).TransferStockTx), arg0, arg1)       
 }
 
 // UpdateFund mocks base method.
@@ -677,6 +677,21 @@ func (mr *MockStoreMockRecorder) UpdateStock(arg0, arg1 interface{}) *gomock.Cal
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStock", reflect.TypeOf((*MockStore)(nil).UpdateStock), arg0, arg1)
 }
 
+// UpdateStockCPByCode mocks base method.
+func (m *MockStore) UpdateStockCPByCode(arg0 context.Context, arg1 db.UpdateStockCPByCodeParams) (db.Stock, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "UpdateStockCPByCode", arg0, arg1)
+        ret0, _ := ret[0].(db.Stock)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// UpdateStockCPByCode indicates an expected call of UpdateStockCPByCode.
+func (mr *MockStoreMockRecorder) UpdateStockCPByCode(arg0, arg1 interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStockCPByCode", reflect.TypeOf((*MockStore)(nil).UpdateStockCPByCode), arg0, arg1)
+}
+
 // UpdateUser mocks base method.
 func (m *MockStore) UpdateUser(arg0 context.Context, arg1 db.UpdateUserParams) (db.User, error) {
         m.ctrl.T.Helper()
@@ -704,7 +719,7 @@ func (m *MockStore) UpdateUserStock(arg0 context.Context, arg1 db.UpdateUserStoc
 // UpdateUserStock indicates an expected call of UpdateUserStock.
 func (mr *MockStoreMockRecorder) UpdateUserStock(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserStock", reflect.TypeOf((*MockStore)(nil).UpdateUserStock), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserStock", reflect.TypeOf((*MockStore)(nil).UpdateUserStock), arg0, arg1)       
 }
 
 // UpdateVerifyEmail mocks base method.
@@ -719,7 +734,7 @@ func (m *MockStore) UpdateVerifyEmail(arg0 context.Context, arg1 db.UpdateVerify
 // UpdateVerifyEmail indicates an expected call of UpdateVerifyEmail.
 func (mr *MockStoreMockRecorder) UpdateVerifyEmail(arg0, arg1 interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVerifyEmail", reflect.TypeOf((*MockStore)(nil).UpdateVerifyEmail), arg0, arg1)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVerifyEmail", reflect.TypeOf((*MockStore)(nil).UpdateVerifyEmail), arg0, arg1)   
 }
 
 // VerifyEmailTx mocks base method.

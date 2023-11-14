@@ -42,3 +42,11 @@ RETURNING *;
 -- name: DeleteStock :exec
 DELETE FROM stock
 WHERE stock_id = $1;
+
+-- name: UpdateStockCPByCode :one
+UPDATE stock
+SET 
+    stock_name = COALESCE(sqlc.narg(stock_name), stock_name),
+    current_price = COALESCE(sqlc.narg(current_price), current_price)
+WHERE stock.stock_code = sqlc.arg(stock_code)
+RETURNING *;

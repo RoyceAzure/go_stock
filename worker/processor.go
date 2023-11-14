@@ -19,7 +19,9 @@ asynq有定義 processor 的interface
 */
 type TaskProcessor interface {
 	Start() error
+	StartWithHandler(handler *asynq.ServeMux) error
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
+	ProcessTaskBatchUpdateStock(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -67,6 +69,9 @@ error是指 sersver startup 過程的錯誤
 func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
-
+	mux.HandleFunc(TaskBatchUpdateStock, processor.ProcessTaskBatchUpdateStock)
 	return processor.server.Start(mux)
+}
+func (processor *RedisTaskProcessor) StartWithHandler(handler *asynq.ServeMux) error {
+	return processor.server.Start(handler)
 }

@@ -52,6 +52,7 @@ type Querier interface {
 	Getusers(ctx context.Context, arg GetusersParams) ([]User, error)
 	UpdateFund(ctx context.Context, arg UpdateFundParams) (Fund, error)
 	UpdateStock(ctx context.Context, arg UpdateStockParams) (Stock, error)
+	UpdateStockCPByCode(ctx context.Context, arg UpdateStockCPByCodeParams) (Stock, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserStock(ctx context.Context, arg UpdateUserStockParams) (UserStock, error)
 	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)

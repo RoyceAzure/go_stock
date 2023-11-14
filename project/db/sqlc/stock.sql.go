@@ -259,3 +259,35 @@ func (q *Queries) UpdateStock(ctx context.Context, arg UpdateStockParams) (Stock
 	)
 	return i, err
 }
+
+const updateStockCPByCode = `-- name: UpdateStockCPByCode :one
+UPDATE stock
+SET 
+    stock_name = COALESCE($1, stock_name),
+    current_price = COALESCE($2, current_price)
+WHERE stock.stock_code = $3
+RETURNING stock_id, stock_code, stock_name, current_price, market_cap, cr_date, up_date, cr_user, up_user
+`
+
+type UpdateStockCPByCodeParams struct {
+	StockName    sql.NullString `json:"stock_name"`
+	CurrentPrice sql.NullString `json:"current_price"`
+	StockCode    string         `json:"stock_code"`
+}
+
+func (q *Queries) UpdateStockCPByCode(ctx context.Context, arg UpdateStockCPByCodeParams) (Stock, error) {
+	row := q.db.QueryRowContext(ctx, updateStockCPByCode, arg.StockName, arg.CurrentPrice, arg.StockCode)
+	var i Stock
+	err := row.Scan(
+		&i.StockID,
+		&i.StockCode,
+		&i.StockName,
+		&i.CurrentPrice,
+		&i.MarketCap,
+		&i.CrDate,
+		&i.UpDate,
+		&i.CrUser,
+		&i.UpUser,
+	)
+	return i, err
+}
