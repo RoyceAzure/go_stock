@@ -4,7 +4,12 @@ go 1.21.3
 
 require github.com/go-co-op/gocron v1.35.3
 
-require github.com/shopspring/decimal v1.3.1 // indirect
+require (
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
+)
 
 require (
 	github.com/google/uuid v1.4.0 // indirect
@@ -16,5 +21,6 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
+	google.golang.org/grpc v1.59.0
 )

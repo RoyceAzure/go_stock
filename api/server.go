@@ -52,7 +52,7 @@ func (server *Server) SetupRouter() {
 	router.POST("/user/login", server.loginUser)
 	router.POST("/user", server.createUser)
 	router.POST("/token/renew_access", server.renewAccessToken)
-
+	router.GET("/stock/init", server.initSyncStock)
 	//路由前缀: router.Group()的第一個參數是前缀。
 	//在此例中，前缀是"/"，這意味著它沒有添加任何特定的前缀到群組內的路由。
 	//如果前缀是/api，那麼/user路由就會變成/api/user。

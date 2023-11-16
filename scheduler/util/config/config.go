@@ -7,19 +7,19 @@ import (
 )
 
 type Config struct {
-	Enviornmant          string        `mapstructure:"ENVIRONMENT"`
-	DBDriver             string        `mapstructure:"DB_DRIVER"`
-	DBSource             string        `mapstructure:"DB_SOURCE"`
-	MigrateURL           string        `mapstructure:"MIGRATE_URL"`
-	HttpServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
-	EmailSenderName      string        `mapstructure:"EMAIL_SENDER_NAME"`
-	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
-	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
+	Enviornmant                  string        `mapstructure:"ENVIRONMENT"`
+	DBDriver                     string        `mapstructure:"DB_DRIVER"`
+	DBSource                     string        `mapstructure:"DB_SOURCE"`
+	MigrateURL                   string        `mapstructure:"MIGRATE_URL"`
+	HttpServerAddress            string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	SCHDULER_GRPC_SERVER_ADDRESS string        `mapstructure:"SCHDULER_GRPC_SERVER_ADDRESS"`
+	TokenSymmetricKey            string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration          time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration         time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	RedisAddress                 string        `mapstructure:"REDIS_ADDRESS"`
+	EmailSenderName              string        `mapstructure:"EMAIL_SENDER_NAME"`
+	EmailSenderAddress           string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
+	EmailSenderPassword          string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

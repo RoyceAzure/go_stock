@@ -57,6 +57,7 @@ func main() {
 	//因為qsynq.client 是concurrent
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 	go runTaskProcessor(config, redisOpt, store)
+	// runGinServer(config, store)
 	go runGRPCGatewayServer(config, store, taskDistributor)
 	runGRPCServer(config, store, taskDistributor)
 }

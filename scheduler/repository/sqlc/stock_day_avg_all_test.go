@@ -191,7 +191,7 @@ func TestGetSDAVGALLsByMapInterval(t *testing.T) {
 }
 func TestGetSDAVGALLsByCrDateInterval(t *testing.T) {
 	CreateRandomSDAVGALL(t)
-	startTime := time.Now()
+	startTime := time.Now().UTC()
 	crDateStart := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
 	crDateEnd := crDateStart.AddDate(0, 0, 1).Add(-time.Nanosecond)
 	limit := 10

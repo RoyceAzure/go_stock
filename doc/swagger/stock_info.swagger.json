@@ -12,6 +12,9 @@
   "tags": [
     {
       "name": "StockInfo"
+    },
+    {
+      "name": "StockInfoSchduler"
     }
   ],
   "consumes": [
@@ -86,6 +89,54 @@
         ],
         "tags": [
           "StockInfo"
+        ]
+      }
+    },
+    "/v1/stock/init": {
+      "get": {
+        "summary": "Init stock data",
+        "description": "Use this API to Init stock data",
+        "operationId": "StockInfo_InitStock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbInitStockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/stock_day_avg": {
+      "get": {
+        "summary": "Get stock_day_avg",
+        "description": "Use this API to get stock_day_avg",
+        "operationId": "StockInfoSchduler_GetStockDayAvg",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbStockDayAvgResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfoSchduler"
         ]
       }
     },
@@ -186,6 +237,52 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbInitStockResponse": {
+      "type": "object",
+      "properties": {
+        "successCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "failedCount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbStockDayAvg": {
+      "type": "object",
+      "properties": {
+        "stockCode": {
+          "type": "string"
+        },
+        "stockName": {
+          "type": "string"
+        },
+        "closePrice": {
+          "type": "string"
+        },
+        "monthlyAvg": {
+          "type": "string"
+        },
+        "upDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbStockDayAvgResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbStockDayAvg"
+          }
         }
       }
     },

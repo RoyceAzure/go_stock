@@ -1,0 +1,21 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-api/pb";
+
+message StockDayAvg{
+    string stock_code = 1;
+    string stock_name = 2;
+    string close_price = 3;
+    string monthly_avg = 4;
+    google.protobuf.Timestamp  up_date= 5;
+}
+
+message StockDayAvgResponse{
+    repeated StockDayAvg result = 1;
+}
+
+message StockDayAvgRequest{
+}

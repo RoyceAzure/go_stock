@@ -24,6 +24,7 @@ const (
 /*
 download data STOCK_DAY_AVG_ALL
 TODO: 身分驗證 , insert 失敗資料且入DB
+排程功能
 */
 
 type SyncDataService interface {
@@ -97,7 +98,7 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 }
 
 /*
-batchSize 1000
+batchSize 1000，撈取SDAA資料，丟入asynq redis, 再由消費者處理
 TODO : 若當日沒有資料，要有警示
 */
 func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) {
