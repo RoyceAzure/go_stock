@@ -30,6 +30,7 @@ TODO: 身分驗證 , insert 失敗資料且入DB
 type SyncDataService interface {
 	DownloadAndInsertDataSVAA(ctx context.Context) (int64, error)
 	SyncStock(ctx context.Context) (int64, []error)
+	SyncStockPriceRealTime(ctx context.Context) (int64, []error)
 }
 
 type STOCK_DAY_AVG_ALL_DTO struct {
@@ -40,6 +41,7 @@ type STOCK_DAY_AVG_ALL_DTO struct {
 }
 
 func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (int64, error) {
+	log.Info().Msg("start download and insert data SVAA")
 	var dtos []STOCK_DAY_AVG_ALL_DTO
 	var entities []repository.BulkInsertDAVGALLParams
 	byteData, err := util.SendRequest(constants.METHOD_GET,
@@ -63,7 +65,7 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 	go util.TaskWorker("worker 1", unprocessed, processed, convertSDAVGALLDTO2BulkEntity, func(err error) {
 		log.Warn().Err(err).Msg("err to process data")
 	}, &wg)
-	go util.TaskWorker("worker 1", unprocessed, processed, convertSDAVGALLDTO2BulkEntity, func(err error) {
+	go util.TaskWorker("worker 2", unprocessed, processed, convertSDAVGALLDTO2BulkEntity, func(err error) {
 		log.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 
@@ -94,6 +96,7 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 			insertDatas += res
 		}
 	}
+	log.Info().Msg("end download and insert data SVAA")
 	return insertDatas, nil
 }
 
@@ -102,6 +105,7 @@ batchSize 1000，撈取SDAA資料，丟入asynq redis, 再由消費者處理
 TODO : 若當日沒有資料，要有警示
 */
 func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) {
+	log.Info().Msg("start sync stock")
 	startTime := time.Now().UTC()
 	var errs []error
 	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
@@ -136,7 +140,6 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 	go util.TaskDistributor(unprocessed, batchSize, stock_day_alls, &wg)
 	go util.TaskWorker("woker1", unprocessed, processed, cvSDAVGALLEntity2BatchPayload, nil, &wg)
 	go util.TaskWorker("worker2", unprocessed, processed, cvSDAVGALLEntity2BatchPayload, nil, &wg)
-
 	go func() {
 		wg.Wait()
 		close(processed)
@@ -168,6 +171,104 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 			task_count += batchSize
 		}
 	}
+	log.Info().Msg("end sync stock")
+	return int64(task_count), errs
+}
+
+func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int64, []error) {
+	log.Info().Msg("start sync stock price realtime")
+	startTime := time.Now().UTC()
+	var errs []error
+
+	//用今日時間撈取prototype資料  用於製作假資料
+	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
+	cr_date_end := cr_date_start.AddDate(0, 0, 1).Add(-time.Nanosecond)
+	stock_day_alls, err := service.dao.GetSDAVGALLs(ctx, repository.GetSDAVGALLsParams{
+		CrDateStart: pgtype.Timestamptz{
+			Time:  cr_date_start,
+			Valid: true,
+		},
+		CrDateEnd: pgtype.Timestamptz{
+			Time:  cr_date_end,
+			Valid: true,
+		},
+		Limits:  100000,
+		Offsets: 0,
+	})
+	if err != nil {
+		errs = append(errs, err)
+		return 0, errs
+	}
+
+	//製作prototype
+	var wg sync.WaitGroup
+	var prototypePayload []repository.StockPriceRealtime
+
+	wg.Add(5)
+	prounprocessed := make(chan []repository.StockDayAvgAll)
+	proprocessed := make(chan *repository.StockPriceRealtime)
+	batchSize := 2000
+	go util.TaskDistributor(prounprocessed, batchSize, stock_day_alls, &wg)
+	go util.TaskWorker("worker1", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker2", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker3", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker4", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
+	go func() {
+		wg.Wait()
+		close(proprocessed)
+	}()
+
+	for batch := range proprocessed {
+		prototypePayload = append(prototypePayload, *batch)
+	}
+
+	fakedataService := FakeSPRDataService{}
+	fakedataService.SetPrototype(prototypePayload)
+	fakesprs, err := fakedataService.GenerateFakeData()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("generate fake data get err"))
+		return 0, errs
+	}
+	var payload []repository.BulkInsertSPRParams
+
+	wg.Add(5)
+	unprocessed := make(chan []repository.StockPriceRealtime)
+	processed := make(chan *repository.BulkInsertSPRParams)
+	go util.TaskDistributor(unprocessed, batchSize, fakesprs, &wg)
+	go util.TaskWorker("woker1", unprocessed, processed, cvSPR2BulkInsertSPRParams, nil, &wg)
+	go util.TaskWorker("worker2", unprocessed, processed, cvSPR2BulkInsertSPRParams, nil, &wg)
+	go util.TaskWorker("worker3", unprocessed, processed, cvSPR2BulkInsertSPRParams, nil, &wg)
+	go util.TaskWorker("worker4", unprocessed, processed, cvSPR2BulkInsertSPRParams, nil, &wg)
+	go func() {
+		wg.Wait()
+		close(processed)
+	}()
+
+	task_count := int64(0)
+	for batch := range processed {
+		payload = append(payload, *batch)
+		if len(payload)%batchSize == 0 {
+			insertRows, err := service.dao.BulkInsertSPR(ctx, payload)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				task_count += insertRows
+			}
+			payload = make([]repository.BulkInsertSPRParams, 0)
+		}
+	}
+	if len(payload) > 0 {
+		insertRows, err := service.dao.BulkInsertSPR(ctx, payload)
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			task_count += insertRows
+		}
+	}
+	if int64(len(fakesprs)) != task_count {
+		log.Warn().Msg("sync stock_pricerealtime result count doens't mathc source")
+	}
+	log.Info().Msg("end sync stock price realtime")
 
 	return int64(task_count), errs
 }
@@ -237,5 +338,21 @@ func cvSDAVGALLEntity2BatchPayload(entity repository.StockDayAvgAll) (worker.Bat
 		StockName:    entity.StockName,
 		CurrentPrice: strconv.FormatFloat(close_price.Float64, 'f', -1, 64),
 		MarketCap:    10000,
+	}, nil
+}
+
+func cvSPR2BulkInsertSPRParams(value repository.StockPriceRealtime) (*repository.BulkInsertSPRParams, error) {
+	return &repository.BulkInsertSPRParams{
+		Code:         value.Code,
+		StockName:    value.StockName,
+		TradeVolume:  value.TradeVolume,
+		TradeValue:   value.TradeValue,
+		OpeningPrice: value.OpeningPrice,
+		HighestPrice: value.HighestPrice,
+		LowestPrice:  value.LowestPrice,
+		ClosingPrice: value.ClosingPrice,
+		Change:       value.Change,
+		Transaction:  value.Transaction,
+		TransTime:    value.TransTime,
 	}, nil
 }

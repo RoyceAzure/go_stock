@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-13T06:49:21.721Z
+-- Generated at: 2023-11-16T09:04:48.284Z
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,

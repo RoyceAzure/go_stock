@@ -12,10 +12,14 @@ type Service interface {
 type SchdulerService struct {
 	dao             repository.Dao
 	taskDistributor worker.TaskDistributor
+	fakeDataService FakeDataService[repository.StockPriceRealtime]
 }
 
 var _ SyncDataService = (*SchdulerService)(nil)
 
+/*
+內部組件支持異步
+*/
 func NewService(dao repository.Dao, taskDistributor worker.TaskDistributor) *SchdulerService {
 	return &SchdulerService{
 		dao:             dao,

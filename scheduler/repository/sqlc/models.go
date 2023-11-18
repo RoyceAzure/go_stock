@@ -21,3 +21,17 @@ type StockDayAvgAll struct {
 	CrUser          string             `json:"cr_user"`
 	UpUser          pgtype.Text        `json:"up_user"`
 }
+
+type StockPriceRealtime struct {
+	Code         string         `json:"code"`
+	StockName    string         `json:"stock_name"`
+	TradeVolume  pgtype.Numeric `json:"trade_volume"`
+	TradeValue   pgtype.Numeric `json:"trade_value"`
+	OpeningPrice pgtype.Numeric `json:"opening_price"`
+	HighestPrice pgtype.Numeric `json:"highest_price"`
+	LowestPrice  pgtype.Numeric `json:"lowest_price"`
+	ClosingPrice pgtype.Numeric `json:"closing_price"`
+	Change       pgtype.Numeric `json:"change"`
+	Transaction  pgtype.Numeric `json:"transaction"`
+	TransTime    time.Time      `json:"trans_time"`
+}

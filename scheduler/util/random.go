@@ -81,12 +81,10 @@ func RandomDecimal(n int, point int) (decimal.Decimal, error) {
 	return de, err
 }
 
+/*
+n : 整數位數
+point : 小數位數
+*/
 func RandomNumeric(n int, point int) (pgtype.Numeric, error) {
 	return StringToNumeric(RandomFloatString(n, point))
-}
-
-func StringToNumeric(value string) (pgtype.Numeric, error) {
-	var result pgtype.Numeric
-	err := result.Scan(value)
-	return result, err
 }

@@ -20,3 +20,17 @@ Table stock_day_avg_all{
     stock_name
   }
 }
+
+Table stock_price_realtime{
+  code varchar [not null]
+  stock_name varchar [not null]
+  trade_volume decimal [not null]
+  trade_value decimal [not null]
+  opening_price decimal [not null]
+  highest_price decimal [not null]
+  lowest_price decimal [not null]
+  closing_price decimal [not null]
+  change decimal [not null]
+  transaction decimal [not null]
+  trans_time timestamptz  [not null]
+}

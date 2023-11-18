@@ -18,3 +18,10 @@ func TestSyncStock(t *testing.T) {
 	require.Len(t, errs, 0)
 	require.NotEmpty(t, res)
 }
+
+func TestSyncStockPriceRealTime(t *testing.T) {
+	res, errs := testService.SyncStockPriceRealTime(context.Background())
+	require.Len(t, errs, 0)
+	require.Greater(t, res, int64(0))
+	require.NotEmpty(t, res)
+}

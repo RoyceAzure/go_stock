@@ -4,15 +4,20 @@ import (
 	"context"
 	"net"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/api"
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/gapi"
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
+	"github.com/RoyceAzure/go-stockinfo-schduler/cronwoeker"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	service "github.com/RoyceAzure/go-stockinfo-schduler/service"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
 	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/hibiken/asynq"
+	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -21,6 +26,7 @@ import (
 )
 
 func main() {
+	zerolog.TimeFieldFormat = time.RFC3339
 	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal().
@@ -28,7 +34,7 @@ func main() {
 			Msg("cannot load config")
 	}
 	if config.Enviornmant == "development" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
 	}
 
 	ctx := context.Background()
@@ -37,21 +43,62 @@ func main() {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}
 	defer pgxPool.Close()
+	pgxPool.Config().AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxdecimal.Register(conn.TypeMap())
+		return nil
+	}
 	dao := repository.NewSQLDao(pgxPool)
 	redisOpt := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
 	}
+
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
 	service := service.NewService(dao, taskDistributor)
-	go runGrpcServer(config, dao, service)
-	runGinServer(config, dao, service)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	chGrpcServer := make(chan error, 1)
+	chGinServer := make(chan error, 1)
+
+	cronWorker := cronworker.NewSchdulerWorker(service)
+	cronWorker.SetUpSchdulerWorker(ctx)
+	defer cronWorker.StopAsync()
+
+	go runGoCron(ctx, cronWorker)
+	go runGrpcServer(chGrpcServer, config, dao, service)
+	go runGinServer(chGinServer, config, dao, service)
+
+	select {
+	case err = <-chGrpcServer:
+		log.Fatal().
+			Err(err).
+			Msg("failed to run grpc server")
+	case err = <-chGinServer:
+		log.Fatal().
+			Err(err).
+			Msg("failed to run gin server")
+	case <-ctx.Done():
+		log.Warn().Msg("Received stop signal, app will shut down after 10 second")
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		// 等待超时或者其他中断信号
+		select {
+		case <-timeout.Done():
+			// 超时发生，程序结束
+			log.Warn().Msg("Timeout reached, shutting down.")
+		case <-ctx.Done():
+			// 如果在超时期间收到另一个中断信号，立即结束程序
+			log.Warn().Msg("Received another stop signal, shutting down immediately.")
+		}
+	}
 }
 
 /*
 build Server and run
 */
-func runGinServer(configs config.Config, dao repository.Dao, service service.SyncDataService) {
+func runGinServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService) {
 	server, err := api.NewServer(configs, dao, service)
 	if err != nil {
 		log.Fatal().
@@ -66,7 +113,7 @@ func runGinServer(configs config.Config, dao repository.Dao, service service.Syn
 	}
 }
 
-func runGrpcServer(configs config.Config, dao repository.Dao, service service.SyncDataService) {
+func runGrpcServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService) {
 	server, err := gapi.NewServer(configs, dao, service)
 	if err != nil {
 		log.Fatal().
@@ -99,64 +146,14 @@ func runGrpcServer(configs config.Config, dao repository.Dao, service service.Sy
 		log.Fatal().
 			Err(err).
 			Msg("cannot start gRPC server")
+		ch <- err
 	}
 }
 
-func runGoCron() {
-	// s := gocron.NewScheduler(time.Local)
-
-	// Every starts the job immediately and then runs at the
-	// specified interval
-	// job, err := s.Every(5).Seconds().Do(task)
-	// if err != nil {
-	// 	// handle the error related to setting up the job
-	// }
-
-	// to wait for the interval to pass before running the first job
-	// use WaitForSchedule or WaitForScheduleAll
-	// s.Every(5).Second().WaitForSchedule().Do(task)
-
-	// s.WaitForScheduleAll()
-	// s.Every(5).Second().Do(task) // waits for schedule
-	// s.Every(5).Second().Do(task) // waits for schedule
-
-	// // strings parse to duration
-	// s.Every("5m").Do(task)
-
-	// s.Every(5).Days().Do(task)
-
-	// s.Every(1).Month(1, 2, 3).Do(task)
-
-	// // set time
-	// s.Every(1).Day().At("10:30").Do(task)
-
-	// // set multiple times
-	// s.Every(1).Day().At("10:30;08:00").Do(task)
-
-	// s.Every(1).Day().At("10:30").At("08:00").Do(task)
-
-	// // Schedule each last day of the month
-	// s.Every(1).MonthLastDay().Do(task)
-
-	// // Or each last day of every other month
-	// s.Every(2).MonthLastDay().Do(task)
-
-	// cron expressions supported
-	// s.Cron("* * * * *").Do(task) // every minute
-
-	// cron second-level expressions supported
-	// s.CronWithSeconds("*/3 * 18 * * *").Do(task) // every second
-
-	// you can start running the scheduler in two different ways:
-	// starts the scheduler asynchronously
-	// s.StartAsync()
-	// starts the scheduler and blocks current execution path
-	// s.StartBlocking()
-
-	// stop the running scheduler in two different ways:
-	// stop the scheduler
-	// s.Stop()
-
-	// stop the scheduler and notify the `StartBlocking()` to exit
-	// s.StopBlockingChan()
+/*
+main 最好能保有組件控制權
+*/
+func runGoCron(ctx context.Context, cronWorker cronworker.CornWorker) {
+	log.Info().Msg("start cron worker")
+	cronWorker.Start()
 }
