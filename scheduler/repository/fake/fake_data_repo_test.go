@@ -1,4 +1,4 @@
-package service
+package fake
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ func TestGenerateFakeData(t *testing.T) {
 	fakedataService := FakeSPRDataService{
 		dao: testDao,
 	}
-	prototype, err := fakedataService.GeneratePrototype()
+	prototype, err := fakedataService.GeneratePrototype(true)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, prototype)

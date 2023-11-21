@@ -71,13 +71,11 @@ db_schema:
 
 protoc:
 	powershell -Command "Remove-Item -Path 'api/pb/*.go' -Force"
-	powershell -Command "Remove-Item -Path 'doc/swagger/*.swagger.json' -Force"
 	protoc   --grpc-gateway_out api/pb \
 	--proto_path=C:/Users/royce/go/pkg/mod/github.com/protocolbuffers/protobuf@v4.24.4+incompatible/src \
 	--proto_path=proto  --go_out=api/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \
-	--go-grpc_out=api/pb --go-grpc_opt=paths=source_relative --openapiv2_out doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=stock_info \
+	--go-grpc_out=api/pb --go-grpc_opt=paths=source_relative \
 	proto/*.proto
-	statik -src=./doc/swagger -dest=./doc -f
 
 evans:
 	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl

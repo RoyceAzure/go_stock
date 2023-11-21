@@ -4,13 +4,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
+	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
 	"github.com/redis/go-redis/v9"
 )
 
+type JRedisDao interface {
+	BulkInsertSPR(context.Context, string, []repository.StockPriceRealtime) error
+	FindSPRByID(context.Context, string) ([]repository.StockPriceRealtime, error)
+	DeleteSPRByID(context.Context, string) error
+	SetSPRLatestKey(string)
+	GetSPRLatestKey() string
+}
+
 type Jredis struct {
-	client *redis.Client
+	client       *redis.Client
+	sprLatestKey string
+	lock         sync.RWMutex
 }
 
 var ErrNotExists = errors.New("data not exists")

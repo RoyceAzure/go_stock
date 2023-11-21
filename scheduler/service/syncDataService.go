@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RoyceAzure/go-stockinfo-schduler/repository/fake"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
@@ -31,6 +32,7 @@ type SyncDataService interface {
 	DownloadAndInsertDataSVAA(ctx context.Context) (int64, error)
 	SyncStock(ctx context.Context) (int64, []error)
 	SyncStockPriceRealTime(ctx context.Context) (int64, []error)
+	RedisSyncStockPriceRealTime(ctx context.Context) []error
 }
 
 type STOCK_DAY_AVG_ALL_DTO struct {
@@ -209,10 +211,10 @@ func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int
 	proprocessed := make(chan *repository.StockPriceRealtime)
 	batchSize := 2000
 	go util.TaskDistributor(prounprocessed, batchSize, stock_day_alls, &wg)
-	go util.TaskWorker("worker1", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
-	go util.TaskWorker("worker2", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
-	go util.TaskWorker("worker3", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
-	go util.TaskWorker("worker4", prounprocessed, proprocessed, Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker1", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker2", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker3", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker4", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
 	go func() {
 		wg.Wait()
 		close(proprocessed)
@@ -222,13 +224,15 @@ func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int
 		prototypePayload = append(prototypePayload, *batch)
 	}
 
-	fakedataService := FakeSPRDataService{}
+	fakedataService := fake.FakeSPRDataService{}
 	fakedataService.SetPrototype(prototypePayload)
 	fakesprs, err := fakedataService.GenerateFakeData()
 	if err != nil {
 		errs = append(errs, fmt.Errorf("generate fake data get err"))
 		return 0, errs
 	}
+	//以上可以用正式API取得資料來替換
+
 	var payload []repository.BulkInsertSPRParams
 
 	wg.Add(5)
@@ -271,6 +275,90 @@ func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int
 	log.Info().Msg("end sync stock price realtime")
 
 	return int64(task_count), errs
+}
+
+/*
+需要當日
+*/
+func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context) []error {
+	log.Info().Msg("start sync spr redis")
+	startTime := time.Now().UTC()
+	var errs []error
+
+	//用今日時間撈取prototype資料  用於製作假資料
+	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
+	cr_date_end := cr_date_start.AddDate(0, 0, 1).Add(-time.Nanosecond)
+	stock_day_alls, err := service.dao.GetSDAVGALLs(ctx, repository.GetSDAVGALLsParams{
+		CrDateStart: pgtype.Timestamptz{
+			Time:  cr_date_start,
+			Valid: true,
+		},
+		CrDateEnd: pgtype.Timestamptz{
+			Time:  cr_date_end,
+			Valid: true,
+		},
+		Limits:  100000,
+		Offsets: 0,
+	})
+	if err != nil {
+		errs = append(errs, err)
+		return errs
+	}
+
+	//製作prototype
+	var wg sync.WaitGroup
+	var prototypePayload []repository.StockPriceRealtime
+
+	wg.Add(5)
+	prounprocessed := make(chan []repository.StockDayAvgAll)
+	proprocessed := make(chan *repository.StockPriceRealtime)
+	batchSize := 2000
+	go util.TaskDistributor(prounprocessed, batchSize, stock_day_alls, &wg)
+	go util.TaskWorker("worker1", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker2", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker3", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go util.TaskWorker("worker4", prounprocessed, proprocessed, fake.Sdavg2StockPriceRealTime, nil, &wg)
+	go func() {
+		wg.Wait()
+		close(proprocessed)
+	}()
+
+	for batch := range proprocessed {
+		prototypePayload = append(prototypePayload, *batch)
+	}
+
+	fakedataService := fake.FakeSPRDataService{}
+	fakedataService.SetPrototype(prototypePayload)
+	fakesprs, err := fakedataService.GenerateFakeData()
+	if err != nil {
+		errs = append(errs, fmt.Errorf("generate fake data get err"))
+		return errs
+	}
+	//以上可以用正式API取得資料來替換
+
+	//模擬資料時間
+	dataTime := time.Now().UTC()
+	second := dataTime.Second()
+	if (second % 10) < 5 {
+		dataTime = dataTime.Add(-time.Duration(second%10) * time.Second)
+	} else {
+		dataTime = dataTime.Add(time.Second * 5)
+		second = dataTime.Second()
+		dataTime = dataTime.Add(-time.Duration(second%10) * time.Second)
+	}
+	formattedTime := dataTime.Format("15:04:05")
+
+	key := "spr" + formattedTime
+	err = service.redisDao.BulkInsertSPR(ctx, key, fakesprs)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("insert to redis get err : %w", err))
+		return errs
+	}
+	service.redisDao.SetSPRLatestKey(key)
+
+	log.Info().Msg("end sync spr redis")
+
+	return nil
 }
 
 func convertSDAVGALLDTO2E(dto STOCK_DAY_AVG_ALL_DTO) (repository.CreateSDAVGALLParams, error) {

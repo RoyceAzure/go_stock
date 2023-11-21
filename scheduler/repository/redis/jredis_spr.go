@@ -58,3 +58,17 @@ func (jredis *Jredis) DeleteSPRByID(ctx context.Context, key string) error {
 
 	return nil
 }
+
+func (jredis *Jredis) SetSPRLatestKey(newKey string) {
+	jredis.lock.Lock()
+	jredis.sprLatestKey = newKey
+	jredis.lock.Unlock()
+}
+
+// RLock 只會block 寫操作
+func (jredis *Jredis) GetSPRLatestKey() string {
+	jredis.lock.RLock()
+	key := jredis.sprLatestKey
+	jredis.lock.RUnlock()
+	return key
+}

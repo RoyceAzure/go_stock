@@ -11,8 +11,10 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/gapi"
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
 	"github.com/RoyceAzure/go-stockinfo-schduler/cronwoeker"
+	"github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	service "github.com/RoyceAzure/go-stockinfo-schduler/service"
+	"github.com/RoyceAzure/go-stockinfo-schduler/service/redisService"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
 	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/hibiken/asynq"
@@ -54,7 +56,9 @@ func main() {
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	service := service.NewService(dao, taskDistributor)
+	redisDao := jredis.NewJredis(config)
+
+	service := service.NewService(dao, taskDistributor, redisDao)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -66,8 +70,12 @@ func main() {
 	cronWorker.SetUpSchdulerWorker(ctx)
 	defer cronWorker.StopAsync()
 
+	jr := jredis.NewJredis(config)
+
+	jservice := redisService.NewJRedisService(jr)
+
 	go runGoCron(ctx, cronWorker)
-	go runGrpcServer(chGrpcServer, config, dao, service)
+	go runGrpcServer(chGrpcServer, config, dao, service, jservice)
 	go runGinServer(chGinServer, config, dao, service)
 
 	select {
@@ -113,8 +121,8 @@ func runGinServer(ch chan<- error, configs config.Config, dao repository.Dao, se
 	}
 }
 
-func runGrpcServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService) {
-	server, err := gapi.NewServer(configs, dao, service)
+func runGrpcServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService, redisService redisService.RedisService) {
+	server, err := gapi.NewServer(configs, dao, service, redisService)
 	if err != nil {
 		log.Fatal().
 			Err(err).

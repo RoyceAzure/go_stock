@@ -1,4 +1,4 @@
-package service
+package redisService
 
 import (
 	"context"
@@ -8,19 +8,17 @@ import (
 	jredis "github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
-	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/gin-gonic/gin"
-	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
 )
 
-var testService SyncDataService
 var testDao repository.Dao
+var testRedisService *JRedisService
 
 func NewTestSevice() {
-	config, err := config.LoadConfig("../")
+	config, err := config.LoadConfig("../../")
 	if err != nil {
 		log.Fatal().Err(err).Msg("err load config")
 	}
@@ -30,12 +28,9 @@ func NewTestSevice() {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}
 	testDao = repository.NewSQLDao(pgxPool)
-	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
-	}
-	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
 	redisDao := jredis.NewJredis(config)
-	testService = NewService(testDao, taskDistributor, redisDao)
+	testRedisService = NewJRedisService(redisDao)
 }
 
 func TestMain(m *testing.M) {

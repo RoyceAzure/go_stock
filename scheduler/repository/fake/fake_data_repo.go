@@ -1,7 +1,7 @@
-package service
+package fake
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -9,19 +9,24 @@ import (
 
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
 )
 
+var BATCH_SIZE = 2000
+
 type FakeDataService[T any] interface {
 	GenerateFakeData() []T
 	SetPrototype(prototype []T)
-	GeneratePrototype() ([]T, error)
+	GetPrototype() []T
+	GeneratePrototype(bool) ([]T, error)
 }
 
 type FakeSPRDataService struct {
 	dao       repository.Dao
 	prototype []repository.StockPriceRealtime
+	mutex     sync.RWMutex
 }
 
 func NewFakeSPRDataService(dao repository.Dao) *FakeSPRDataService {
@@ -31,20 +36,16 @@ func NewFakeSPRDataService(dao repository.Dao) *FakeSPRDataService {
 }
 
 func (fakeService *FakeSPRDataService) SetPrototype(prototype []repository.StockPriceRealtime) {
-	// sourceData, err := fakeService.dao.GetSDAVGALLs(context.Background(), repository.GetSDAVGALLsParams{
-	// 	CrDateStart: pgtype.Timestamptz{
-	// 		Time:  startTime,
-	// 		Valid: true,
-	// 	},
-	// 	CrDateEnd: pgtype.Timestamptz{
-	// 		Time:  endTime,
-	// 		Valid: true,
-	// 	},
-	// })
-	// if err != nil {
-	// 	return fmt.Errorf("get ssdavg has err: %w", err)
-	// }
+	fakeService.mutex.Lock()
 	fakeService.prototype = prototype
+	fakeService.mutex.Unlock()
+}
+
+func (fakeService *FakeSPRDataService) GetPrototype() []repository.StockPriceRealtime {
+	fakeService.mutex.RLock()
+	prototype := fakeService.prototype
+	fakeService.mutex.RUnlock()
+	return prototype
 }
 
 /*
@@ -66,7 +67,7 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 	unprocessed := make(chan []repository.StockPriceRealtime)
 	processed := make(chan repository.StockPriceRealtime)
 	wg.Add(4)
-	go util.TaskDistributor(unprocessed, BATCH_SIZE, fakeService.prototype, &wg)
+	go util.TaskDistributor(unprocessed, BATCH_SIZE, fakeService.GetPrototype(), &wg)
 	go util.TaskWorker("worker 1", unprocessed, processed, createSCRFromPrototype, func(err error) {
 		log.Warn().Err(err).Msg("err to process data")
 	}, &wg)
@@ -88,32 +89,41 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 	return result, nil
 }
 
-func (fakeService *FakeSPRDataService) GeneratePrototype() ([]repository.StockPriceRealtime, error) {
+func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]repository.StockPriceRealtime, error) {
+	log.Info().
+		Msg("end of generate prototype")
 	var result []repository.StockPriceRealtime
-
+	var stock_day_alls []repository.StockDayAvgAll
+	var filePath string = "./fake_source/STOCK_DAY_ALL.json"
+	var byteData []byte
+	var err error
 	startTime := time.Now().UTC()
-	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
-	cr_date_end := cr_date_start.AddDate(0, 0, 1).Add(-time.Nanosecond)
-	ctx := context.Background()
-	stock_day_alls, err := fakeService.dao.GetSDAVGALLs(ctx, repository.GetSDAVGALLsParams{
-		CrDateStart: pgtype.Timestamptz{
-			Time:  cr_date_start,
-			Valid: true,
-		},
-		CrDateEnd: pgtype.Timestamptz{
-			Time:  cr_date_end,
-			Valid: true,
-		},
-		Limits:  100000,
-		Offsets: 0,
-	})
 
+	if refresh {
+		byteData, err = util.SendRequest(constants.METHOD_GET,
+			constants.URL_STOCK_DAY_AVG_ALL,
+			nil)
+		if err != nil {
+			return nil, fmt.Errorf("generate prototype get err : %w", err)
+		}
+
+		err = util.WriteJsonFile(filePath, byteData)
+		if err != nil {
+			return nil, fmt.Errorf("generate prototype write file get err : %w", err)
+		}
+	}
+
+	byteData, err = util.ReadJsonFile(filePath)
 	if err != nil {
-		return result, fmt.Errorf("generate prottype get err : %w", err)
+		return result, fmt.Errorf("generate prototype get err : %w", err)
+	}
+	err = json.Unmarshal(byteData, &stock_day_alls)
+	if err != nil {
+		return result, fmt.Errorf("generate prototype , unmarshal get err : %w", err)
 	}
 
 	if len(stock_day_alls) == 0 {
-		return result, fmt.Errorf("generate protoype get err failed, no source data")
+		return result, fmt.Errorf("generate prototype get err failed, no source data")
 	}
 
 	//製作prototype
@@ -136,7 +146,8 @@ func (fakeService *FakeSPRDataService) GeneratePrototype() ([]repository.StockPr
 	for batch := range processed {
 		result = append(result, *batch)
 	}
-
+	elapsed := time.Now().UTC().Sub(startTime)
+	log.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
 	return result, nil
 }
 

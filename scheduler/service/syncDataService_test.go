@@ -25,3 +25,8 @@ func TestSyncStockPriceRealTime(t *testing.T) {
 	require.Greater(t, res, int64(0))
 	require.NotEmpty(t, res)
 }
+
+func TestRedisSyncStockPriceRealTime(t *testing.T) {
+	errs := testService.RedisSyncStockPriceRealTime(context.Background())
+	require.Len(t, errs, 0)
+}

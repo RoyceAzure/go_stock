@@ -13,11 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/*
-交互測試
-TODO : 使用mock
-*/
-func TestGetStockDayAvg(t *testing.T) {
+func TestGetStockPriceRealTime(t *testing.T) {
 	config, err := config.LoadConfig("../../")
 	require.NoError(t, err)
 
@@ -29,11 +25,11 @@ func TestGetStockDayAvg(t *testing.T) {
 
 	jr := jredis.NewJredis(config)
 
-	jservice := redisService.NewJRedisService(jr)
+	_ = redisService.NewJRedisService(jr)
 
-	server := newTestServer(t, config, dao, nil, jservice)
+	server := newTestServer(t, config, dao, nil, nil)
 
-	res, err := server.GetStockDayAvg(ctx, &pb.StockDayAvgRequest{})
+	res, err := server.GetStockPriceRealTime(ctx, &pb.StockPriceRealTimeRequest{})
 	require.NoError(t, err)
 	require.NotEmpty(t, res)
 	require.Greater(t, len(res.Result), 0)
