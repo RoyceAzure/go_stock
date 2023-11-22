@@ -1,5 +1,5 @@
 current_dir = $(shell echo %cd%)
-DB_URL_LOCAL=postgres://royce:royce@localhost:5432/stock_info_scheduler?sslmode=disable
+DB_URL_LOCAL=postgres://royce:royce@localhost:5432/stock_info_distributor?sslmode=disable
 DB_URL_AWS=postgres://royce:gqD2yhIOpUpuwK6IX6xz@stockinfo.cblayv8xneas.ap-northeast-1.rds.amazonaws.com:5432/stockinfo
 
 postgresup:
@@ -17,34 +17,34 @@ dropdb:
 	docker exec -it project7-postgres  dropdb --username=royce stock_info
 
 sqlc:
-	docker run --rm -v $(current_dir)/repository:/src -w /src sqlc/sqlc:latest generate
+	docker run --rm -v $(current_dir)/repository/db:/src -w /src sqlc/sqlc:latest generate
 
 awsmigrateup:
-	migrate -path repository/migrations/ -database $(DB_URL_AWS) --verbose up
+	migrate -path repository/db/migrations -database $(DB_URL_AWS) --verbose up
 
 migrateup:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose up
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose up
 
 migrateupto:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose up	to $(stage)
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose up	to $(stage)
 
 migratedownto:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose down to $(stage)
 
 migrateup1:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose up	1
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose up	1
 
 migrateudown1:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose down 1
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose down 1
 
 migratedownto:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose down to $(stage)
 
 migratedown:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose down
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose down
 
 migrateforce:
-	migrate -path repository/migrations/ -database $(DB_URL_LOCAL) --verbose force $(stage)
+	migrate -path repository/db/migrations -database $(DB_URL_LOCAL) --verbose force $(stage)
 
 new_migration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
@@ -67,7 +67,7 @@ db_docs:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbdocs build ./db.dbml
 
 db_schema:
-	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbml2sql --postgres -o schduler_schema.sql db.dbml
+	docker run --rm -v $(current_dir)/doc:/app -w /app node_docs dbml2sql --postgres -o schduler_schema.sql db.dbml
 
 protoc:
 	powershell -Command "Remove-Item -Path 'api/pb/*.go' -Force"
