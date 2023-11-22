@@ -70,9 +70,7 @@ func main() {
 	cronWorker.SetUpSchdulerWorker(ctx)
 	defer cronWorker.StopAsync()
 
-	jr := jredis.NewJredis(config)
-
-	jservice := redisService.NewJRedisService(jr)
+	jservice := redisService.NewJRedisService(redisDao)
 
 	go runGoCron(ctx, cronWorker)
 	go runGrpcServer(chGrpcServer, config, dao, service, jservice)

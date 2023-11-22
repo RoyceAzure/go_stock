@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
-	"github.com/RoyceAzure/go-stockinfo-shared/utility"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
@@ -26,8 +25,8 @@ func CreateRandomSPR(t *testing.T) StockPriceRealtime {
 	change, _ := util.RandomNumeric(6, 2)
 	trasation, _ := util.RandomNumeric(6, 2)
 	arg := CreateSPRParams{
-		Code:         utility.RandomString(6),
-		StockName:    utility.RandomString(10),
+		Code:         util.RandomString(6),
+		StockName:    util.RandomString(10),
 		TradeVolume:  trade_vol,
 		TradeValue:   trade_val,
 		OpeningPrice: open_price,

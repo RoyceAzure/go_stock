@@ -92,3 +92,10 @@ func processfun(data int) (res float32, err error) {
 	res = float32(data) + 0.01
 	return res, nil
 }
+
+func TestWriteJsonFile(t *testing.T) {
+	byteData, err := ReadJsonFile("./STOCK_DAY_ALL.json")
+	require.NoError(t, err)
+	err = WriteJsonFile("./STOCK_DAY_ALL.json", byteData)
+	require.NoError(t, err)
+}

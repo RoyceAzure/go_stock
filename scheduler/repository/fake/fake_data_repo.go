@@ -8,6 +8,7 @@ import (
 	"time"
 
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
+	dto "github.com/RoyceAzure/go-stockinfo-schduler/shared/model/DTO"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -91,10 +92,10 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 
 func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]repository.StockPriceRealtime, error) {
 	log.Info().
-		Msg("end of generate prototype")
+		Msg("start of generate prototype")
 	var result []repository.StockPriceRealtime
-	var stock_day_alls []repository.StockDayAvgAll
-	var filePath string = "./fake_source/STOCK_DAY_ALL.json"
+	var stock_day_alls []dto.StockDayAvgAllDTO
+	var filePath string = "./doc/fake_source/STOCK_DAY_ALL.json"
 	var byteData []byte
 	var err error
 	startTime := time.Now().UTC()
@@ -130,7 +131,7 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 	var wg sync.WaitGroup
 
 	wg.Add(5)
-	unprocessed := make(chan []repository.StockDayAvgAll)
+	unprocessed := make(chan []dto.StockDayAvgAllDTO)
 	processed := make(chan *repository.StockPriceRealtime)
 	batchSize := 2000
 	go util.TaskDistributor(unprocessed, batchSize, stock_day_alls, &wg)
@@ -146,7 +147,10 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 	for batch := range processed {
 		result = append(result, *batch)
 	}
-	elapsed := time.Now().UTC().Sub(startTime)
+
+	fakeService.SetPrototype(result)
+
+	elapsed := time.Since(startTime)
 	log.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
 	return result, nil
 }
@@ -203,7 +207,7 @@ func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository
 /*
 for generate prototype
 */
-func Sdavg2StockPriceRealTime(value repository.StockDayAvgAll) (*repository.StockPriceRealtime, error) {
+func Sdavg2StockPriceRealTime(value dto.StockDayAvgAllDTO) (*repository.StockPriceRealtime, error) {
 	return &repository.StockPriceRealtime{
 		Code:         value.Code,
 		StockName:    value.StockName,
@@ -215,6 +219,6 @@ func Sdavg2StockPriceRealTime(value repository.StockDayAvgAll) (*repository.Stoc
 		ClosingPrice: pgtype.Numeric{Valid: true},
 		Change:       pgtype.Numeric{Valid: true},
 		Transaction:  pgtype.Numeric{Valid: true},
-		TransTime:    value.CrDate,
+		TransTime:    time.Now().UTC(),
 	}, nil
 }
