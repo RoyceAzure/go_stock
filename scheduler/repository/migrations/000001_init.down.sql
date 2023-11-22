@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS "stock_day_avg_all";

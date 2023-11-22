@@ -23,6 +23,7 @@ const (
 	StockInfo_UpdateUser_FullMethodName  = "/pb.StockInfo/UpdateUser"
 	StockInfo_LoginUser_FullMethodName   = "/pb.StockInfo/LoginUser"
 	StockInfo_VerifyEmail_FullMethodName = "/pb.StockInfo/VerifyEmail"
+	StockInfo_InitStock_FullMethodName   = "/pb.StockInfo/InitStock"
 )
 
 // StockInfoClient is the client API for StockInfo service.
@@ -33,6 +34,7 @@ type StockInfoClient interface {
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
 	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
+	InitStock(ctx context.Context, in *InitStockRequest, opts ...grpc.CallOption) (*InitStockResponse, error)
 }
 
 type stockInfoClient struct {
@@ -79,6 +81,15 @@ func (c *stockInfoClient) VerifyEmail(ctx context.Context, in *VerifyEmailReques
 	return out, nil
 }
 
+func (c *stockInfoClient) InitStock(ctx context.Context, in *InitStockRequest, opts ...grpc.CallOption) (*InitStockResponse, error) {
+	out := new(InitStockResponse)
+	err := c.cc.Invoke(ctx, StockInfo_InitStock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockInfoServer is the server API for StockInfo service.
 // All implementations must embed UnimplementedStockInfoServer
 // for forward compatibility
@@ -87,6 +98,7 @@ type StockInfoServer interface {
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
 	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
+	InitStock(context.Context, *InitStockRequest) (*InitStockResponse, error)
 	mustEmbedUnimplementedStockInfoServer()
 }
 
@@ -105,6 +117,9 @@ func (UnimplementedStockInfoServer) LoginUser(context.Context, *LoginUserRequest
 }
 func (UnimplementedStockInfoServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
+}
+func (UnimplementedStockInfoServer) InitStock(context.Context, *InitStockRequest) (*InitStockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InitStock not implemented")
 }
 func (UnimplementedStockInfoServer) mustEmbedUnimplementedStockInfoServer() {}
 
@@ -191,6 +206,24 @@ func _StockInfo_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockInfo_InitStock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitStockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockInfoServer).InitStock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockInfo_InitStock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockInfoServer).InitStock(ctx, req.(*InitStockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockInfo_ServiceDesc is the grpc.ServiceDesc for StockInfo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -213,6 +246,10 @@ var StockInfo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyEmail",
 			Handler:    _StockInfo_VerifyEmail_Handler,
+		},
+		{
+			MethodName: "InitStock",
+			Handler:    _StockInfo_InitStock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

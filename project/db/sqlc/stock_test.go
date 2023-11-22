@@ -15,8 +15,8 @@ func TestCreateStock(t *testing.T) {
 
 func CreateRandomStock(t *testing.T) Stock {
 	arg := CreateStockParams{
-		TickerSymbol: utility.RandomString(6),
-		CompName:     utility.RandomString(10),
+		StockCode:    utility.RandomString(6),
+		StockName:    utility.RandomString(10),
 		CurrentPrice: "600000",
 		MarketCap:    99999999,
 		CrUser:       "royce",
@@ -26,8 +26,8 @@ func CreateRandomStock(t *testing.T) Stock {
 	require.NoError(t, err)
 	require.NotEmpty(t, stock)
 
-	require.Equal(t, arg.TickerSymbol, stock.TickerSymbol)
-	require.Equal(t, arg.CompName, stock.CompName)
+	require.Equal(t, arg.StockCode, stock.StockCode)
+	require.Equal(t, arg.StockName, stock.StockName)
 	require.Equal(t, arg.CurrentPrice, stock.CurrentPrice)
 	require.Equal(t, arg.MarketCap, stock.MarketCap)
 	require.Equal(t, arg.CrUser, stock.CrUser)
@@ -40,8 +40,8 @@ func CreateRandomStock(t *testing.T) Stock {
 
 func CreateRandomStockNoTest() Stock {
 	arg := CreateStockParams{
-		TickerSymbol: utility.RandomString(6),
-		CompName:     utility.RandomString(10),
+		StockCode:    utility.RandomString(6),
+		StockName:    utility.RandomString(10),
 		CurrentPrice: "600000",
 		MarketCap:    99999999,
 		CrUser:       "royce",

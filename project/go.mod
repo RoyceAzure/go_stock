@@ -1,6 +1,6 @@
 module github.com/RoyceAzure/go-stockinfo-project
 
-go 1.19
+go 1.21.3
 
 require github.com/RoyceAzure/go-stockinfo-shared v0.0.0
 

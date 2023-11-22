@@ -35,8 +35,8 @@ type Session struct {
 
 type Stock struct {
 	StockID      int64          `json:"stock_id"`
-	TickerSymbol string         `json:"ticker_symbol"`
-	CompName     string         `json:"comp_name"`
+	StockCode    string         `json:"stock_code"`
+	StockName    string         `json:"stock_name"`
 	CurrentPrice string         `json:"current_price"`
 	MarketCap    int64          `json:"market_cap"`
 	CrDate       time.Time      `json:"cr_date"`

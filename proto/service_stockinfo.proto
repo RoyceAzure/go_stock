@@ -4,6 +4,7 @@ import "rpc_create_user.proto";
 import "rpc_update_user.proto";
 import "rpc_login_user.proto";
 import "rpc_verify_email.proto";
+import "rpc_stock.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 package pb;
@@ -62,4 +63,14 @@ service StockInfo{
         summary: "Verify email";
       };
   }
+
+  rpc InitStock (InitStockRequest) returns (InitStockResponse){
+    option (google.api.http) = {
+        get: "/v1/stock/init"
+        };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to Init stock data";
+      summary: "Init stock data";
+    };
+}
 }

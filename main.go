@@ -12,7 +12,7 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-api/pb"
 	_ "github.com/RoyceAzure/go-stockinfo-doc/statik"
 	db "github.com/RoyceAzure/go-stockinfo-project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-shared/utility"
+	"github.com/RoyceAzure/go-stockinfo-shared/utility/config"
 	"github.com/RoyceAzure/go-stockinfo-shared/utility/mail"
 	worker "github.com/RoyceAzure/go-stockinfo-worker"
 	"github.com/golang-migrate/migrate/v4"
@@ -31,7 +31,7 @@ import (
 )
 
 func main() {
-	config, err := utility.LoadConfig(".") //表示讀取當前資料夾
+	config, err := config.LoadConfig(".") //表示讀取當前資料夾
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -57,19 +57,20 @@ func main() {
 	//因為qsynq.client 是concurrent
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 	go runTaskProcessor(config, redisOpt, store)
+	// runGinServer(config, store)
 	go runGRPCGatewayServer(config, store, taskDistributor)
 	runGRPCServer(config, store, taskDistributor)
 }
 
-func runGinServer(config utility.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+func runGinServer(configs config.Config, store db.Store) {
+	server, err := api.NewServer(configs, store)
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("cannot start server")
 	}
 
-	err = server.Start(config.HttpServerAddress)
+	err = server.Start(configs.HttpServerAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -77,8 +78,8 @@ func runGinServer(config utility.Config, store db.Store) {
 	}
 }
 
-func runGRPCServer(config utility.Config, store db.Store, taskDistributor worker.TaskDistributor) {
-	server, err := gapi.NewServer(config, store, taskDistributor)
+func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(configs, store, taskDistributor)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -101,7 +102,7 @@ func runGRPCServer(config utility.Config, store db.Store, taskDistributor worker
 	//reflection.Register 允許客戶端使用反射來獲知伺服器上的服務和方法。
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", config.GRPCServerAddress)
+	listener, err := net.Listen("tcp", configs.GRPCServerAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -117,9 +118,9 @@ func runGRPCServer(config utility.Config, store db.Store, taskDistributor worker
 }
 
 // runGRPCGatewayServer 啟動gRPC Gateway伺服器。此伺服器提供了一個HTTP接口，允許通過HTTP與gRPC服務進行交互。
-func runGRPCGatewayServer(config utility.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+func runGRPCGatewayServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	// 創建新的gRPC伺服器
-	server, err := gapi.NewServer(config, store, taskDistributor)
+	server, err := gapi.NewServer(configs, store, taskDistributor)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -196,7 +197,7 @@ func runGRPCGatewayServer(config utility.Config, store db.Store, taskDistributor
 	mux.Handle("/swagger/", swaggerHandler)
 
 	// 在指定地址上建立監聽
-	listener, err := net.Listen("tcp", config.HttpServerAddress)
+	listener, err := net.Listen("tcp", configs.HttpServerAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -232,8 +233,8 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msgf("db migrate successfully")
 }
 
-func runTaskProcessor(config utility.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
-	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+func runTaskProcessor(configs config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGmailSender(configs.EmailSenderName, configs.EmailSenderAddress, configs.EmailSenderPassword)
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()

@@ -1,6 +1,6 @@
 module github.com/RoyceAzure/go-stockinfo-shared
 
-go 1.19
+go 1.21.3
 
 require (
 	github.com/spf13/viper v1.17.0
