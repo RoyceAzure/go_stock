@@ -1,0 +1,1 @@
+module github.com/RoyceAzure/go-stockinfo-distributor

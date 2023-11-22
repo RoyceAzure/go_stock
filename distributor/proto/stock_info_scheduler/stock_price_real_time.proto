@@ -1,0 +1,27 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-distributor/pb";
+
+message StockPriceRealTime{
+    string stock_code = 1;
+    string stock_name = 2;
+    string trade_volume = 3;
+    string trade_value = 4;
+    string open_price = 5;
+    string highest_price = 6;
+    string lowest_price = 7;
+    string close_price = 8;
+    string change = 9;
+    string transaction = 10;
+    google.protobuf.Timestamp  trans_time= 11;
+}
+
+message StockPriceRealTimeResponse{
+    repeated StockPriceRealTime result = 1;
+}
+
+message StockPriceRealTimeRequest{
+}
