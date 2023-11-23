@@ -51,35 +51,40 @@ func (q *Queries) DeleteFrontendClient(ctx context.Context, clientUid uuid.UUID)
 	return err
 }
 
-const getFrontendClientByID = `-- name: GetFrontendClientByID :many
+const getFrontendClientByID = `-- name: GetFrontendClientByID :one
 SELECT client_uid, ip, region, created_at, updated_at FROM "frontend_client"
 WHERE client_uid = $1
 `
 
-func (q *Queries) GetFrontendClientByID(ctx context.Context, clientUid uuid.UUID) ([]FrontendClient, error) {
-	rows, err := q.db.Query(ctx, getFrontendClientByID, clientUid)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []FrontendClient{}
-	for rows.Next() {
-		var i FrontendClient
-		if err := rows.Scan(
-			&i.ClientUid,
-			&i.Ip,
-			&i.Region,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetFrontendClientByID(ctx context.Context, clientUid uuid.UUID) (FrontendClient, error) {
+	row := q.db.QueryRow(ctx, getFrontendClientByID, clientUid)
+	var i FrontendClient
+	err := row.Scan(
+		&i.ClientUid,
+		&i.Ip,
+		&i.Region,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getFrontendClientByIP = `-- name: GetFrontendClientByIP :one
+SELECT client_uid, ip, region, created_at, updated_at FROM "frontend_client"
+WHERE Ip = $1
+`
+
+func (q *Queries) GetFrontendClientByIP(ctx context.Context, ip string) (FrontendClient, error) {
+	row := q.db.QueryRow(ctx, getFrontendClientByIP, ip)
+	var i FrontendClient
+	err := row.Scan(
+		&i.ClientUid,
+		&i.Ip,
+		&i.Region,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getFrontendClients = `-- name: GetFrontendClients :many

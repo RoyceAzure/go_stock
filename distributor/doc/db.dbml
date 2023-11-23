@@ -36,7 +36,7 @@ Table user_register{
 
 Table frontend_client as fc{
   client_uid uuid [pk ,default: `uuid_generate_v4()`]
-  ip varchar [not null]
+  ip varchar [not null, unique]
   region varchar [not null]
   created_at timestamptz  [not null, default: `now()`]
   updated_at timestamptz

@@ -2,8 +2,13 @@ package util
 
 import "sync"
 
-func SliceBatchIterator[T any](ch chan<- []T, batchSize int, target []T) {
+func SliceBatchIterator[T any](ch chan<- []T, batchSize int, target []T, fiterFuncList []func([]T) []T) {
 	i := 0
+	if length := len(fiterFuncList); length != 0 {
+		for i := 0; i < length; i++ {
+			target = fiterFuncList[i](target)
+		}
+	}
 	length := len(target)
 	for i < length {
 		end := i + batchSize

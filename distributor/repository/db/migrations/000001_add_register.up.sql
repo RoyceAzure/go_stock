@@ -17,7 +17,7 @@ CREATE TABLE "user_register" (
 
 CREATE TABLE "frontend_client" (
   "client_uid" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  "ip" varchar NOT NULL,
+  "ip" varchar UNIQUE NOT NULL,
   "region" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz

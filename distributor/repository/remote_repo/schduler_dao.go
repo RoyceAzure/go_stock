@@ -22,7 +22,7 @@ type JSchdulerInfoDao struct {
 	mutex    sync.RWMutex
 }
 
-func NewJSchdulerInfoDao(network string, address string) (SchdulerInfoDao, error) {
+func NewJSchdulerInfoDao(address string) (SchdulerInfoDao, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 

@@ -7,9 +7,13 @@ INSERT INTO "frontend_client"(
     $1, $2, $3
 )   RETURNING *;
 
--- name: GetFrontendClientByID :many
+-- name: GetFrontendClientByID :one
 SELECT * FROM "frontend_client"
 WHERE client_uid = sqlc.arg(client_uid);
+
+-- name: GetFrontendClientByIP :one
+SELECT * FROM "frontend_client"
+WHERE Ip = sqlc.arg(Ip);
 
 -- name: GetFrontendClients :many
 SELECT * FROM  "frontend_client"

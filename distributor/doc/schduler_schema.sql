@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-22T13:43:39.011Z
+-- Generated at: 2023-11-23T05:43:45.202Z
 
 CREATE TABLE "client_register" (
   "client_uid" uuid NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE "user_register" (
 
 CREATE TABLE "frontend_client" (
   "client_uid" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  "ip" varchar NOT NULL,
+  "ip" varchar UNIQUE NOT NULL,
   "region" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz

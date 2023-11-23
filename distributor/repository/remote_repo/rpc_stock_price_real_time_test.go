@@ -14,7 +14,7 @@ func TestGetStockPriceRealTime(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 
-	dao, err := NewJSchdulerInfoDao("tcp", config.GrpcSchedulerAddress)
+	dao, err := NewJSchdulerInfoDao(config.GrpcSchedulerAddress)
 	require.NoError(t, err)
 	require.NotEmpty(t, dao)
 
