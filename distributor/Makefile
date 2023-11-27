@@ -70,7 +70,7 @@ db_schema:
 	docker run --rm -v $(current_dir)/doc:/app -w /app node_docs dbml2sql --postgres -o schduler_schema.sql db.dbml
 
 protoc:
-	powershell -Command "Remove-Item -Path 'api/pb/*.go' -Force"
+	powershell -Command "Remove-Item -Path 'shared/pb/*.go' -Force"
 	protoc   --grpc-gateway_out shared/pb \
 	--proto_path=C:/Users/royce/go/pkg/mod/github.com/protocolbuffers/protobuf@v4.24.4+incompatible/src \
 	--proto_path=proto  --go_out=shared/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \

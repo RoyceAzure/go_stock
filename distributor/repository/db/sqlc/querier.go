@@ -19,6 +19,7 @@ type Querier interface {
 	DeleteUserRegister(ctx context.Context, arg DeleteUserRegisterParams) error
 	GetClientRegisterByClientUID(ctx context.Context, clientUid uuid.UUID) ([]ClientRegister, error)
 	GetClientRegisters(ctx context.Context, arg GetClientRegistersParams) ([]ClientRegister, error)
+	GetDistinctStockCode(ctx context.Context) ([]string, error)
 	GetFrontendClientByID(ctx context.Context, clientUid uuid.UUID) (FrontendClient, error)
 	GetFrontendClientByIP(ctx context.Context, ip string) (FrontendClient, error)
 	GetFrontendClients(ctx context.Context, arg GetFrontendClientsParams) ([]FrontendClient, error)

@@ -48,13 +48,14 @@ defer wg.Done()
 */
 func TaskWorker[T any, T1 any](name string, unprocessed <-chan []T,
 	porcessed chan<- T1,
-	processFunc func(data T) (T1, error),
+	processFunc func(data T, parms ...any) (T1, error),
 	errorFunc func(error),
-	wg *sync.WaitGroup) {
+	wg *sync.WaitGroup,
+	parms ...any) {
 	defer wg.Done()
 	for dataBatch := range unprocessed {
 		for _, data := range dataBatch {
-			res, err := processFunc(data)
+			res, err := processFunc(data, parms)
 			if err != nil {
 				if errorFunc != nil {
 					errorFunc(err)

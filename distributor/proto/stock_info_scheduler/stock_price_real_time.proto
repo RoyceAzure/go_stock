@@ -20,7 +20,8 @@ message StockPriceRealTime{
 }
 
 message StockPriceRealTimeResponse{
-    repeated StockPriceRealTime result = 1;
+    string key_time = 1;
+    repeated StockPriceRealTime result = 2;
 }
 
 message StockPriceRealTimeRequest{

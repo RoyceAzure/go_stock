@@ -19,15 +19,15 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (*pb.Sto
 
 		res, err := dao.client.GetStockPriceRealTime(ctx, req)
 		if err != nil {
-			cache := dao.GetSprCache()
-			if cache == nil {
+			cache := dao.GetSprCache(ctx)
+			if cache.Result == nil {
 				return nil, fmt.Errorf("get stock price real time get err : %w", err)
 			}
 			log.Warn().Msg("get stock price realtime from cache")
-			res.Result = cache
+			res.Result = cache.Result
 			return res, nil
 		}
-		dao.SetSprCache(res.Result)
+		dao.SetSprCache(ctx, res.Result, res.GetKeyTime())
 		log.Info().Msg("end get stock price realtime")
 		return res, nil
 	}

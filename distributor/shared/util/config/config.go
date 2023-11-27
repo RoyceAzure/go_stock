@@ -7,15 +7,17 @@ import (
 )
 
 type Config struct {
-	Enviornmant          string        `mapstructure:"ENVIRONMENT"`
-	DBDriver             string        `mapstructure:"DB_DRIVER"`
-	DBSource             string        `mapstructure:"DB_SOURCE"`
-	HttpServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
-	GrpcSchedulerAddress string        `mapstructure:"GRPC_SCHEDULER_ADDRESS"`
+	Enviornmant             string        `mapstructure:"ENVIRONMENT"`
+	DBDriver                string        `mapstructure:"DB_DRIVER"`
+	DBSource                string        `mapstructure:"DB_SOURCE"`
+	HttpServerAddress       string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	TokenSymmetricKey       string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration     time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration    time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	RedisAddress            string        `mapstructure:"REDIS_ADDRESS"`
+	GrpcSchedulerAddress    string        `mapstructure:"GRPC_SCHEDULER_ADDRESS"`
+	KafkaDistributorAddress string        `mapstructure:"KAFKA_DISTRIBUTOR_ADDRESS"`
+	MigrateFilePath         string        `mapstructure:"MIGRATE_FILE_PATH"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

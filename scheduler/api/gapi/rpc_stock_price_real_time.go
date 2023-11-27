@@ -30,7 +30,7 @@ func (server *Server) GetStockPriceRealTime(ctx context.Context, req *pb.StockPr
 	log.Info().Msg("get stock price realtime start")
 	startTime := time.Now().UTC()
 
-	sprs, err := server.redisService.GetLatestSPR(ctx)
+	sprs, keyTime, err := server.redisService.GetLatestSPR(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get stock price real time : %s", err)
 	}
@@ -60,7 +60,8 @@ func (server *Server) GetStockPriceRealTime(ctx context.Context, req *pb.StockPr
 	log.Info().Dur("elapse time", time.Duration(time.Now().UTC().Sub(startTime))).Msg("get stock price realtime end")
 
 	return &pb.StockPriceRealTimeResponse{
-		Result: resultList,
+		KeyTime: keyTime,
+		Result:  resultList,
 	}, nil
 }
 

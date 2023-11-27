@@ -12,6 +12,11 @@ INSERT INTO "client_register"(
 SELECT * FROM "client_register"
 WHERE client_uid = $1;
 
+
+-- name: GetDistinctStockCode :many
+SELECT DISTINCT stock_code FROM "client_register";
+
+
 -- name: GetClientRegisters :many
 SELECT * FROM  "client_register"
 ORDER BY client_uid

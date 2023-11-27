@@ -29,7 +29,7 @@ func TestGetFilterSPRByIP(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, sqlDao)
 
-	s := NewDistributorService(remoteDao, sqlDao)
+	s := NewDistributorService(remoteDao, sqlDao, nil)
 
 	res, err := s.GetFilterSPRByIP(ctx, "127.0.0.1")
 	require.NoError(t, err)

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/config"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/random"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +30,7 @@ func CreateClientRegister(t *testing.T) ClientRegister {
 	dao := NewSQLDistributorDao(conn)
 	require.NotEmpty(t, dao)
 
-	stockCode := util.RandomString(5)
+	stockCode := random.RandomStrInt(5)
 	res, err := dao.CreateClientRegister(ctx, CreateClientRegisterParams{
 		ClientUid: testClient.ClientUid,
 		StockCode: stockCode,

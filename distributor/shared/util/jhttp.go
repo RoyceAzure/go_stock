@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 )
 
@@ -45,4 +46,9 @@ func SendRequest(method string, url string, data any) ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
+}
+
+func IsValidIP(ip string) bool {
+	parsedIP := net.ParseIP(ip)
+	return parsedIP != nil
 }

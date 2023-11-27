@@ -26,18 +26,18 @@ type StockPriceRealtimeDTO struct {
 }
 
 type RedisServiceSPR interface {
-	GetLatestSPR(ctx context.Context) ([]StockPriceRealtimeDTO, error)
+	GetLatestSPR(ctx context.Context) ([]StockPriceRealtimeDTO, string, error)
 }
 
-func (j *JRedisService) GetLatestSPR(ctx context.Context) ([]StockPriceRealtimeDTO, error) {
+func (j *JRedisService) GetLatestSPR(ctx context.Context) ([]StockPriceRealtimeDTO, string, error) {
 	latestKey := j.redisDao.GetSPRLatestKey()
 	if latestKey == "" {
-		return nil, fmt.Errorf("there is no latest data in redis")
+		return nil, "", fmt.Errorf("there is no latest data in redis")
 	}
 
 	sprs, err := j.redisDao.FindSPRByID(ctx, latestKey)
 	if err != nil {
-		return nil, fmt.Errorf("get latest spr data in redis return err : %w", err)
+		return nil, "", fmt.Errorf("get latest spr data in redis return err : %w", err)
 	}
 
 	var result []StockPriceRealtimeDTO
@@ -59,7 +59,7 @@ func (j *JRedisService) GetLatestSPR(ctx context.Context) ([]StockPriceRealtimeD
 		result = append(result, *data)
 	}
 
-	return result, nil
+	return result, latestKey, nil
 }
 
 func cvSprEntity2DTO(value repository.StockPriceRealtime) (*StockPriceRealtimeDTO, error) {

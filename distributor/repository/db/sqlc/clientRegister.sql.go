@@ -130,3 +130,27 @@ func (q *Queries) GetClientRegisters(ctx context.Context, arg GetClientRegisters
 	}
 	return items, nil
 }
+
+const getDistinctStockCode = `-- name: GetDistinctStockCode :many
+SELECT DISTINCT stock_code FROM "client_register"
+`
+
+func (q *Queries) GetDistinctStockCode(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getDistinctStockCode)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var stock_code string
+		if err := rows.Scan(&stock_code); err != nil {
+			return nil, err
+		}
+		items = append(items, stock_code)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
