@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	dto "github.com/RoyceAzure/go-stockinfo-distributor/shared/model/dto"
@@ -15,6 +16,11 @@ import (
 )
 
 var ErrAlreadyRetrieved error = errors.New("spr already retirves")
+
+type SPRKafkaVO struct {
+	DataTime string
+	Data     dto.StockPriceRealTimeDTO
+}
 
 /*
 Get frontend register spr data
@@ -124,10 +130,8 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 	preDataTime := s.GetPreSuccessedSprtime(ctx)
 
 	if preDataTime == sprRes.DataTime {
-		if err != nil {
-			log.Info().Msg("spr already retrives!!")
-			return nil
-		}
+		log.Info().Msg("spr already retrives!!")
+		return nil
 	}
 	sprDatas = sprRes.Data
 	sprTime = sprRes.DataTime
@@ -172,8 +176,8 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 		log.Warn().Err(err)
 	}
 
-	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg)
-	go util.TaskWorker("worker2", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg)
+	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg, sprTime)
+	go util.TaskWorker("worker2", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg, sprTime)
 
 	go func() {
 		wg.Wait()
@@ -182,17 +186,18 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 
 	for item := range processed {
 		res = append(res, item)
-
 	}
 
-	err = s.jkafkaWrite.WriteMessages(ctx, res)
-	if err != nil {
-		return err
+	if len(res) > 0 {
+		err = s.jkafkaWrite.WriteMessages(ctx, res)
+		if err != nil {
+			return err
+		}
+
+		s.SetPreSuccessedSprtime(ctx, sprTime)
 	}
 
-	s.SetPreSuccessedSprtime(ctx, sprTime)
-
-	log.Info().Msg("end gget filter spr by ip and send to ka")
+	log.Info().Msg("end get filter spr by ip and send to ka")
 	return nil
 }
 
@@ -221,21 +226,29 @@ parms must pass spr time, and only spr time
 func cvSpr2KafkaMsg(value *pb.StockPriceRealTime, parms ...any) (kafka.Message, error) {
 	var res kafka.Message
 
-	dto := dto.StockPriceRealTimeDTO{
-		StockCode:    value.StockCode,
-		StockName:    value.StockName,
-		TradeVolume:  value.TradeVolume,
-		TradeValue:   value.TradeValue,
-		OpenPrice:    value.OpenPrice,
-		HighestPrice: value.HighestPrice,
-		LowestPrice:  value.LowestPrice,
-		ClosePrice:   value.ClosePrice,
-		Change:       value.Change,
-		Transaction:  value.Transaction,
-		TransTime:    value.TransTime.AsTime(),
+	if len(parms) == 0 {
+		return res, fmt.Errorf("spr data time is empty")
+	}
+	sprTime := parms[0].(string)
+	dataTime := strings.Replace(strings.Split(sprTime, "_")[1], ":", "", -1)
+	vo := SPRKafkaVO{
+		DataTime: dataTime,
+		Data: dto.StockPriceRealTimeDTO{
+			StockCode:    value.StockCode,
+			StockName:    value.StockName,
+			TradeVolume:  value.TradeVolume,
+			TradeValue:   value.TradeValue,
+			OpenPrice:    value.OpenPrice,
+			HighestPrice: value.HighestPrice,
+			LowestPrice:  value.LowestPrice,
+			ClosePrice:   value.ClosePrice,
+			Change:       value.Change,
+			Transaction:  value.Transaction,
+			TransTime:    value.TransTime.AsTime(),
+		},
 	}
 
-	msgValue, err := json.Marshal(dto)
+	msgValue, err := json.Marshal(vo)
 	if err != nil {
 		return res, fmt.Errorf("marsh spr 2 kafka msg get err : %w", err)
 	}

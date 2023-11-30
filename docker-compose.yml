@@ -61,8 +61,8 @@ services:
 
   distributor:
     build:
-      context: ./Dockerfile.distributor
-      dockerfile: DistributorDockerfile
+      context: ./distributor
+      dockerfile: Dockerfile.distributor
     ports:
       - "8083:8083"
     environment:
