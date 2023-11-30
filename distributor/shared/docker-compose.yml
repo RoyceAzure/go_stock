@@ -1,6 +1,5 @@
 version: '3.9'
 services:
-
   postgres:
     image: postgres:12-alpine
     environment:
@@ -11,23 +10,15 @@ services:
       - "5432:5432"
     volumes:
       - ps_data-volume:/var/lib/postgresql/data
-
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-
-  redis-scheduler:
-    image: redis:7-alpine
-    ports:
-      - "6380:6379"
-
   asynqmon:
     image: hibiken/asynqmon
     ports:
       - "8081:8080"
     command: ["--redis-addr=redis:6379"]
-
   api:
     build:
       context: .
@@ -42,36 +33,6 @@ services:
       - postgres
       - redis
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
-    command: ["/app/main"]
-
-  scheduler:
-    build:
-      context: ./scheduler
-      dockerfile: Dockerfile.scheduler
-    ports:
-      - "8082:8082"
-      - "9091:9091"
-    environment:
-      - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_scheduler?sslmode=disable
-      - REDIS_SCHDULER_ADDRESS=redis-scheduler:6379
-    depends_on:
-      - postgres
-      - redis-scheduler
-    command: ["/app/main"]
-
-  distributor:
-    build:
-      context: ./Dockerfile.distributor
-      dockerfile: DistributorDockerfile
-    ports:
-      - "8083:8083"
-    environment:
-      - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_distributor?sslmode=disable
-      - GRPC_SCHEDULER_ADDRESS=scheduler:9091
-      - KAFKA_DISTRIBUTOR_ADDRESS=kafka:9092
-    depends_on:
-      - scheduler
-      - kafka
     command: ["/app/main"]
 
   kafka:

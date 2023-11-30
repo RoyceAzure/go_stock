@@ -2,33 +2,19 @@ package util
 
 import "sync"
 
-func SliceBatchIterator[T any](ch chan<- []T, batchSize int, target []T, fiterFuncList []func([]T) []T) {
-	i := 0
-	if length := len(fiterFuncList); length != 0 {
-		for i := 0; i < length; i++ {
-			target = fiterFuncList[i](target)
-		}
-	}
-	length := len(target)
-	for i < length {
-		end := i + batchSize
-		if end > length {
-			end = length
-		}
-		targetSlice := target[i:end]
-		ch <- targetSlice
-		i += batchSize
-	}
-	close(ch)
-}
-
 /*
 將資料已batchSize的大小分配slice，並儲存到ch裡面
 分配資料完畢時關閉ch
 由於有關閉通道行為，所以只能由一個goroutine啟動
 */
-func TaskDistributor[T any](ch chan<- []T, batchSize int, target []T, wg *sync.WaitGroup) {
+func TaskDistributor[T any](ch chan<- []T, batchSize int, target []T, fiterFuncList []func([]T) []T, wg *sync.WaitGroup) {
 	defer wg.Done()
+	defer close(ch)
+	if length := len(fiterFuncList); length != 0 {
+		for i := 0; i < length; i++ {
+			target = fiterFuncList[i](target)
+		}
+	}
 	for i := 0; i < len(target); i += batchSize {
 		end := i + batchSize
 		if end > len(target) {
@@ -36,7 +22,6 @@ func TaskDistributor[T any](ch chan<- []T, batchSize int, target []T, wg *sync.W
 		}
 		ch <- target[i:end]
 	}
-	close(ch)
 }
 
 /*
@@ -55,7 +40,7 @@ func TaskWorker[T any, T1 any](name string, unprocessed <-chan []T,
 	defer wg.Done()
 	for dataBatch := range unprocessed {
 		for _, data := range dataBatch {
-			res, err := processFunc(data, parms)
+			res, err := processFunc(data, parms...)
 			if err != nil {
 				if errorFunc != nil {
 					errorFunc(err)

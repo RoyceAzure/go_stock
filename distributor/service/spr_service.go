@@ -14,7 +14,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-var SprAlreadyRetrives error = errors.New("spr already retirves")
+var ErrAlreadyRetrieved error = errors.New("spr already retirves")
 
 /*
 Get frontend register spr data
@@ -35,20 +35,19 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 		return nil, fmt.Errorf("client ip is not exists, %w", err)
 	}
 
-	clientRegister, err := s.dbDao.GetClientRegisterByClientUID(ctx, client.ClientUid)
+	crs, err := s.dbDao.GetClientRegisterByClientUID(ctx, client.ClientUid)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
 	//make map to filter
-	var stockCodeMap map[string]bool
-	for _, item := range clientRegister {
-		stockCodeMap[item.StockCode] = true
+	stockCodeMap := make(map[string]struct{})
+	for _, cr := range crs {
+		stockCodeMap[cr.StockCode] = struct{}{}
 	}
-
 	//get and filter spr
-	sprCache := s.schdulerDao.GetSprCache(ctx)
-	if sprCache == nil {
+	sprCache := s.schdulerDao.GetSprData(ctx)
+	if sprCache.DataTime == "" {
 		return nil, fmt.Errorf("sprCache is empty")
 	}
 
@@ -61,18 +60,18 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 
 	var wg sync.WaitGroup
 	wg.Add(3)
-	go util.SliceBatchIterator(upprodessed, batchSize, sprCache.Result, []func([]*pb.StockPriceRealTime) []*pb.StockPriceRealTime{
+	go util.TaskDistributor(upprodessed, batchSize, sprCache.Data, []func([]*pb.StockPriceRealTime) []*pb.StockPriceRealTime{
 		func(sprcahce []*pb.StockPriceRealTime) []*pb.StockPriceRealTime {
 			var result []*pb.StockPriceRealTime
 			length := len(sprcahce)
 			for i := 0; i < length; i++ {
-				if stockCodeMap[sprcahce[i].StockCode] {
+				if _, exists := stockCodeMap[sprcahce[i].StockCode]; exists {
 					result = append(result, sprcahce[i])
 				}
 			}
 			return result
 		},
-	})
+	}, &wg)
 
 	errfunc := func(err error) {
 		log.Warn().Err(err)
@@ -94,36 +93,44 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 	return res, nil
 }
 
-func (s *DistributorService) GetPreSprtime(ctx context.Context) string {
+func (s *DistributorService) GetPreSuccessedSprtime(ctx context.Context) string {
 	s.sprLock.RLock()
 	defer s.sprLock.RUnlock()
 	return s.preSprtime
 }
 
-func (s *DistributorService) SetPreSprtime(ctx context.Context, preSprtime string) {
+func (s *DistributorService) SetPreSuccessedSprtime(ctx context.Context, preSprtime string) {
 	s.sprLock.Lock()
 	defer s.sprLock.Unlock()
 	s.preSprtime = preSprtime
 }
 
 /*
+透過schdulerDao取資料，無法得知資料是最新從sdchduler回傳，還是cache裡的資料
+
 必須是有狀態的  因為要避免塞入重複資料造成效能損耗
 
 會對應多個client  取出所有註冊的distinct stock code，撈取對應資料  放入kafka
 */
-func (s *DistributorService) GetFilterSPRByIPAndSendToKa(ctx context.Context, ip string) error {
-	log.Info().Msg("start get filter spr by ip")
+func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) error {
+	log.Info().Msg("start get filter spr by ip and send to ka")
+	var sprDatas []*pb.StockPriceRealTime
+	var sprTime string
 
-	preDataTime := s.GetPreSprtime(ctx)
-
-	sprCache := s.schdulerDao.GetSprCache(ctx)
-	if sprCache == nil {
-		return fmt.Errorf("sprCache is empty")
+	sprRes, err := s.schdulerDao.GetStockPriceRealTime(ctx)
+	if err != nil {
+		return fmt.Errorf("get spr from schduler failed%w", err)
 	}
+	preDataTime := s.GetPreSuccessedSprtime(ctx)
 
-	if preDataTime == sprCache.ResultTimeStr {
-		return SprAlreadyRetrives
+	if preDataTime == sprRes.DataTime {
+		if err != nil {
+			log.Info().Msg("spr already retrives!!")
+			return nil
+		}
 	}
+	sprDatas = sprRes.Data
+	sprTime = sprRes.DataTime
 
 	//get frontend register stock
 	regisStockCodes, err := s.dbDao.GetDistinctStockCode(ctx)
@@ -132,41 +139,41 @@ func (s *DistributorService) GetFilterSPRByIPAndSendToKa(ctx context.Context, ip
 	}
 
 	//make map to filter
-	var stockCodeMap map[string]bool
+	stockCodeMap := make(map[string]struct{})
 	for _, item := range regisStockCodes {
-		stockCodeMap[item] = true
+		stockCodeMap[item] = struct{}{}
 	}
 
 	//get and filter spr
 
 	var res []kafka.Message
 
-	batchSize := 2000
+	batchSize := 5000
 
-	upprodessed := make(chan []*pb.StockPriceRealTime)
-	processed := make(chan kafka.Message)
+	upprodessed := make(chan []*pb.StockPriceRealTime, 10)
+	processed := make(chan kafka.Message, 10)
 
 	var wg sync.WaitGroup
 	wg.Add(3)
-	go util.SliceBatchIterator(upprodessed, batchSize, sprCache.Result, []func([]*pb.StockPriceRealTime) []*pb.StockPriceRealTime{
+	go util.TaskDistributor(upprodessed, batchSize, sprDatas, []func([]*pb.StockPriceRealTime) []*pb.StockPriceRealTime{
 		func(sprcahce []*pb.StockPriceRealTime) []*pb.StockPriceRealTime {
 			var result []*pb.StockPriceRealTime
 			length := len(sprcahce)
 			for i := 0; i < length; i++ {
-				if stockCodeMap[sprcahce[i].StockCode] {
+				if _, exists := stockCodeMap[sprcahce[i].StockCode]; exists {
 					result = append(result, sprcahce[i])
 				}
 			}
 			return result
 		},
-	})
+	}, &wg)
 
 	errfunc := func(err error) {
 		log.Warn().Err(err)
 	}
 
-	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg, sprCache.ResultTimeStr)
-	go util.TaskWorker("worker2", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg, sprCache.ResultTimeStr)
+	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg)
+	go util.TaskWorker("worker2", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg)
 
 	go func() {
 		wg.Wait()
@@ -175,6 +182,7 @@ func (s *DistributorService) GetFilterSPRByIPAndSendToKa(ctx context.Context, ip
 
 	for item := range processed {
 		res = append(res, item)
+
 	}
 
 	err = s.jkafkaWrite.WriteMessages(ctx, res)
@@ -182,9 +190,9 @@ func (s *DistributorService) GetFilterSPRByIPAndSendToKa(ctx context.Context, ip
 		return err
 	}
 
-	s.schdulerDao.SetPreSprTime(ctx, sprCache.ResultTimeStr)
+	s.SetPreSuccessedSprtime(ctx, sprTime)
 
-	log.Info().Msg("end get filter spr by ip")
+	log.Info().Msg("end gget filter spr by ip and send to ka")
 	return nil
 }
 
@@ -213,10 +221,6 @@ parms must pass spr time, and only spr time
 func cvSpr2KafkaMsg(value *pb.StockPriceRealTime, parms ...any) (kafka.Message, error) {
 	var res kafka.Message
 
-	if len(parms) == 0 {
-		return res, fmt.Errorf("spr time is empty")
-	}
-
 	dto := dto.StockPriceRealTimeDTO{
 		StockCode:    value.StockCode,
 		StockName:    value.StockName,
@@ -235,10 +239,6 @@ func cvSpr2KafkaMsg(value *pb.StockPriceRealTime, parms ...any) (kafka.Message, 
 	if err != nil {
 		return res, fmt.Errorf("marsh spr 2 kafka msg get err : %w", err)
 	}
-	sprTime, ok := parms[0].(string)
-	if !ok {
-		return res, fmt.Errorf("spr time must be string")
-	}
 
 	key := value.StockCode
 
@@ -247,7 +247,9 @@ func cvSpr2KafkaMsg(value *pb.StockPriceRealTime, parms ...any) (kafka.Message, 
 		return res, fmt.Errorf("marsh spr 2 kafka msg get err : %w", err)
 	}
 
-	topic := sprTime + string([]rune(key)[:2])
+	topic := string([]rune(key)[:2])
+
+	// time := strings.Replace(strings.Split(sprTime, "_")[1], ":", "", -1)
 
 	res.Topic = topic
 	res.Key = keyValue

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -131,10 +132,99 @@ func TestCreateClientRegister(t *testing.T) {
 	}
 }
 
+func TestGetClientRegisterByClientUID(t *testing.T) {
+	cr := randomCR()
+
+	testRes := createSpcitCRList(cr.ClientUid, "0050", "0051", "0052")
+	taseCase := []struct {
+		name         string //子測試名稱
+		clientId     string
+		buildStub    func(dbDao *mock_repository.MockDistributorDao, res []repository.ClientRegister)
+		checkReponse func(t *testing.T, recoder *httptest.ResponseRecorder, exceped []repository.ClientRegister)
+	}{
+		{
+			name:     "ok",
+			clientId: "/" + cr.ClientUid.String(),
+			buildStub: func(dbDao *mock_repository.MockDistributorDao, res []repository.ClientRegister) {
+				//這裡手動模擬API處理參數
+				dbDao.EXPECT().
+					GetClientRegisterByClientUID(gomock.Any(), gomock.Any()).
+					Times(1).Return(res, nil)
+			},
+			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder, exceped []repository.ClientRegister) {
+				require.Equal(t, http.StatusAccepted, recoder.Code)
+				var res GetClientRegisterByClientUIDResponse
+				err := json.Unmarshal(recoder.Body.Bytes(), &res)
+				require.NoError(t, err)
+
+				require.Len(t, exceped, len(res.Result))
+				for i := range exceped {
+					require.Equal(t, exceped[i].ClientUid, res.Result[i].ClientUid)
+				}
+			},
+		},
+		{
+			name:     "with invalid client id",
+			clientId: "/12345889",
+			buildStub: func(dbDao *mock_repository.MockDistributorDao, res []repository.ClientRegister) {
+				//這裡手動模擬API處理參數
+				dbDao.EXPECT().
+					GetClientRegisterByClientUID(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkReponse: func(t *testing.T, recoder *httptest.ResponseRecorder, exceped []repository.ClientRegister) {
+				require.Equal(t, http.StatusBadRequest, recoder.Code)
+			},
+		},
+	}
+
+	for _, tc := range taseCase {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDao := mock_repository.NewMockDistributorDao(ctrl)
+			tc.buildStub(mockDao, testRes)
+
+			server := NewServer(mockDao, nil)
+
+			recoder := httptest.NewRecorder()
+
+			url := "/client_register" + fmt.Sprintf("%s", tc.clientId)
+
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(recoder, req)
+			tc.checkReponse(t, recoder, testRes)
+		})
+	}
+}
+
 func randomCR() repository.ClientRegister {
 	return repository.ClientRegister{
 		ClientUid: uuid.New(),
 		StockCode: random.RandomString(5),
 		CreatedAt: time.Now().UTC(),
 	}
+}
+
+func createSpcitCR(uid uuid.UUID, stockCode string) repository.ClientRegister {
+	return repository.ClientRegister{
+		ClientUid: uid,
+		StockCode: stockCode,
+		CreatedAt: time.Now().UTC(),
+	}
+}
+
+func createSpcitCRList(uid uuid.UUID, stockCode ...string) []repository.ClientRegister {
+	var res []repository.ClientRegister
+	for _, code := range stockCode {
+		res = append(res, repository.ClientRegister{
+			ClientUid: uid,
+			StockCode: code,
+			CreatedAt: time.Now().UTC(),
+		})
+	}
+	return res
 }

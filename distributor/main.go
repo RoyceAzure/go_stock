@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-distributor/api"
+	"github.com/RoyceAzure/go-stockinfo-distributor/cronworker"
+	"github.com/RoyceAzure/go-stockinfo-distributor/jkafka"
 	sqlc "github.com/RoyceAzure/go-stockinfo-distributor/repository/db/sqlc"
 	remote_repo "github.com/RoyceAzure/go-stockinfo-distributor/repository/remote_repo"
+	"github.com/RoyceAzure/go-stockinfo-distributor/service"
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4"
@@ -40,17 +43,33 @@ func main() {
 	runDBMigration(config.MigrateFilePath, config.DBSource)
 
 	dbDao := sqlc.NewSQLDistributorDao(pgxPool)
+
 	remoteDao, err := remote_repo.NewJSchdulerInfoDao(config.GrpcSchedulerAddress)
 	if err != nil {
 		log.Fatal().Err(err).Msg("err create schduler conn")
 	}
 
+	jwriter := jkafka.NewJKafkaWriter(config.KafkaDistributorAddress)
+
+	service := service.NewDistributorService(remoteDao, dbDao, jwriter)
+
+	cronWorker := cronworker.NewSchdulerWorker(service, time.Local)
+	cronWorker.SetUpSchdulerWorker(context.Background())
+	defer cronWorker.StopAsync()
+
+	go runGoCron(context.Background(), cronWorker)
 	runGinServer(config, dbDao, remoteDao)
+}
+
+func runGoCron(ctx context.Context, cronWorker cronworker.CornWorker) {
+	log.Info().Msg("start cron worker")
+	cronWorker.Start()
 }
 
 func runGinServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao) {
 	server := api.NewServer(dbDao, schdulerDao)
 
+	log.Info().Str("server start at", configs.HttpServerAddress).Msg("server start")
 	err := server.Start(configs.HttpServerAddress)
 	if err != nil {
 		log.Fatal().

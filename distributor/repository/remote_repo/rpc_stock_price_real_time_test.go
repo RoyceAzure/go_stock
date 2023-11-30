@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetStockPriceRealTime(t *testing.T) {
-	config, err := config.LoadConfig("../")
+	config, err := config.LoadConfig("../../")
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 

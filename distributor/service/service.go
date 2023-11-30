@@ -12,8 +12,9 @@ import (
 
 type IDistributorService interface {
 	GetFilterSPRByIP(ctx context.Context, ip string) ([]dto.StockPriceRealTimeDTO, error)
-	GetPreSprtime(ctx context.Context) string
-	SetPreSprtime(ctx context.Context, preSprtime string)
+	GetAllRegisStockAndSendToKa(ctx context.Context) error
+	GetPreSuccessedSprtime(ctx context.Context) string
+	SetPreSuccessedSprtime(ctx context.Context, preSprtime string)
 }
 
 type DistributorService struct {

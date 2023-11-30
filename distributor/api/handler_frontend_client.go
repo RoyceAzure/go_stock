@@ -50,6 +50,7 @@ func (server *Server) CreateFrontendClient(ctx *gin.Context) {
 		errCode := repository.ErrorCode(err)
 		if errCode == repository.UniqueViolation || errCode == repository.ForeginKeyViolation {
 			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -86,7 +87,7 @@ func (server *Server) DeleteFrontendClient(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusAccepted, nil)
+	ctx.JSON(http.StatusAccepted, gin.H{"result": fmt.Sprintf("success deleted client with id : %s", clientId)})
 }
 
 func (server *Server) GetFrontendClientByIP(ctx *gin.Context) {

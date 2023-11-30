@@ -25,6 +25,7 @@ func (server *Server) setUpRouter() {
 	router := gin.Default()
 
 	router.POST("/client_register", server.CreateClientRegister)
+	router.GET("/client_register/:client_uid", server.GetClientRegisterByClientUID)
 	router.DELETE("/client_register", server.DeleteClientRegister)
 	router.GET("/frontend_client", server.GetFrontendClientByIP)
 	router.POST("/frontend_client", server.CreateFrontendClient)

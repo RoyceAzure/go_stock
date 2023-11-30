@@ -11,32 +11,38 @@ import (
 )
 
 type SchdulerInfoDao interface {
-	GetSprCache(ctx context.Context) *SprCache
-	SetSprCache(ctx context.Context, value []*pb.StockPriceRealTime, resultTimeStr string)
-	GetPreSprTime(ctx context.Context) (string, error)
-	SetPreSprTime(ctx context.Context, resultTimeStr string)
-	GetStockPriceRealTime(ctx context.Context) (*pb.StockPriceRealTimeResponse, error)
+	GetSprData(ctx context.Context) SprData
+	SetSprData(ctx context.Context, value SprData)
+	GetStockPriceRealTime(ctx context.Context) (SprData, error)
 }
 
 /*
+外不需要使用這格結構  所以expose
+使用複製上給呼叫者使用，所以成員都是大寫
+
 parms:
 
-	resultTimeStr :
-		最新資料時間，是用5分鐘為區間的文字表示時間
+	DataTime :
+		最新資料與時間，時間是由scheduler設定
 */
-type SprCache struct {
-	ResultTimeStr string
-	Result        []*pb.StockPriceRealTime
+type SprData struct {
+	DataTime string
+	Data     []*pb.StockPriceRealTime
 }
 
 /*
 有狀態  跟spr_service為一對一關係  紀錄service取過那些資料
+
+取得sprData 需要透過鎖，不能直接取得，所以sprData 沒有expose
+parms:
+
+	preSprTime: 上一次成功去schduler取得spr時間
 */
 type JSchdulerInfoDao struct {
 	client     pb.StockInfoSchdulerClient
-	sprCache   SprCache
+	sprData    SprData
 	mutex      sync.RWMutex
-	preSprTime string
+	preSprTime time.Time
 }
 
 func NewJSchdulerInfoDao(address string) (SchdulerInfoDao, error) {
@@ -54,35 +60,21 @@ func NewJSchdulerInfoDao(address string) (SchdulerInfoDao, error) {
 	}, nil
 }
 
-func (dao *JSchdulerInfoDao) GetSprCache(ctx context.Context) *SprCache {
+func (dao *JSchdulerInfoDao) GetSprData(ctx context.Context) SprData {
 	dao.mutex.RLock()
 	defer dao.mutex.RUnlock()
-	result := &dao.sprCache
+	result := dao.sprData
 	return result
 }
 
-func (dao *JSchdulerInfoDao) SetSprCache(ctx context.Context, value []*pb.StockPriceRealTime, resultTimeStr string) {
+/*
+set sprCache.ResultTimeStr and sprCache.Result with mutex.Lock
+*/
+func (dao *JSchdulerInfoDao) SetSprData(ctx context.Context, value SprData) {
 	dao.mutex.Lock()
 	defer dao.mutex.Unlock()
-	if dao.sprCache.ResultTimeStr == resultTimeStr {
+	if dao.sprData.DataTime == value.DataTime {
 		return
 	}
-	dao.sprCache.ResultTimeStr = resultTimeStr
-	dao.sprCache.Result = value
-}
-
-func (dao *JSchdulerInfoDao) GetPreSprTime(ctx context.Context) (string, error) {
-	dao.mutex.RLock()
-	defer dao.mutex.RUnlock()
-	sprTimedao := dao.preSprTime
-	if sprTimedao == "" {
-		return "", fmt.Errorf("spr pre time is empty")
-	}
-	return dao.preSprTime, nil
-}
-
-func (dao *JSchdulerInfoDao) SetPreSprTime(ctx context.Context, preSprTime string) {
-	dao.mutex.Lock()
-	defer dao.mutex.Unlock()
-	dao.preSprTime = preSprTime
+	dao.sprData = value
 }

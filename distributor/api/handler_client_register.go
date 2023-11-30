@@ -15,7 +15,7 @@ type CreateClientRegisterRequestDTO struct {
 	StockCode string     `json:"stock_code" binding:"required`
 }
 
-type CreateClientRegisterResponseDTO struct {
+type ClientRegisterResponseDTO struct {
 	ClientUid uuid.UUID  `json:"client_uid,omitempty"`
 	StockCode string     `json:"stock_code"`
 	CreatedAt time.Time  `json:"created_at"`
@@ -54,6 +54,7 @@ func (server *Server) CreateClientRegister(ctx *gin.Context) {
 		errCode := repository.ErrorCode(err)
 		if errCode == repository.UniqueViolation || errCode == repository.ForeginKeyViolation {
 			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -86,10 +87,50 @@ func (server *Server) DeleteClientRegister(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusAccepted, nil)
+	ctx.JSON(http.StatusAccepted, gin.H{"result": fmt.Sprintf("success deleted client with id : %s", req.ClientUid)})
 }
 
-func cvCrEntity2CrResDTO(value repository.ClientRegister) CreateClientRegisterResponseDTO {
+type GetClientRegisterByClientUIDRequest struct {
+	ClientUID string `uri:"client_uid" binding:"required"`
+}
+
+type GetClientRegisterByClientUIDResponse struct {
+	Result []ClientRegisterResponseDTO `json:"result"`
+}
+
+func (server *Server) GetClientRegisterByClientUID(ctx *gin.Context) {
+	var req GetClientRegisterByClientUIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	var clientId uuid.UUID
+	var err error
+	if clientId, err = uuid.Parse(req.ClientUID); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	entity, err := server.dbDao.GetClientRegisterByClientUID(ctx, clientId)
+	if err != nil {
+		if err == repository.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	res := GetClientRegisterByClientUIDResponse{}
+
+	for _, item := range entity {
+		res.Result = append(res.Result, cvCrEntity2CrResDTO(item))
+	}
+
+	ctx.JSON(http.StatusAccepted, res)
+}
+
+func cvCrEntity2CrResDTO(value repository.ClientRegister) ClientRegisterResponseDTO {
 	var updated_at *time.Time
 	if value.UpdatedAt.Valid {
 		updated_at = &value.UpdatedAt.Time
@@ -97,7 +138,7 @@ func cvCrEntity2CrResDTO(value repository.ClientRegister) CreateClientRegisterRe
 		updated_at = nil
 	}
 
-	return CreateClientRegisterResponseDTO{
+	return ClientRegisterResponseDTO{
 		ClientUid: value.ClientUid,
 		StockCode: value.StockCode,
 		CreatedAt: value.CreatedAt,
