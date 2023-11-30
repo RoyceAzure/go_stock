@@ -1,0 +1,50 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Project stockinfo_distributor{
+    database_type: 'PostgresSQL'
+    Note: '''
+        # Stock info Distributor
+    '''
+}
+
+// CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+Table client_register as cr{
+  client_uid uuid [not null]
+  stock_code varchar [not null]
+  created_at timestamptz  [not null, default: `now()`]
+  updated_at timestamptz
+
+  Indexes{
+    (client_uid, stock_code) [unique]
+    client_uid
+  }
+}
+
+Table user_register{
+  user_id bigint [not null]
+  stock_code varchar [not null]
+  created_at timestamptz  [not null, default: `now()`]
+  updated_at timestamptz
+
+  Indexes{
+    (user_id, stock_code) [unique]
+    user_id
+  }
+}
+
+Table frontend_client as fc{
+  client_uid uuid [pk ,default: `uuid_generate_v4()`]
+  ip varchar [not null, unique]
+  region varchar [not null]
+  created_at timestamptz  [not null, default: `now()`]
+  updated_at timestamptz
+
+  Indexes{
+    client_uid
+    ip [unique]
+  }
+}
+
+Ref : cr.client_uid > fc.client_uid

@@ -8,7 +8,8 @@ import (
 )
 
 func TestGetLatestSPR(t *testing.T) {
-	sprs, err := testRedisService.GetLatestSPR(context.Background())
+	sprs, keyTime, err := testRedisService.GetLatestSPR(context.Background())
 	require.NoError(t, err)
+	require.NotEmpty(t, keyTime)
 	require.NotEmpty(t, sprs)
 }
