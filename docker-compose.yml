@@ -12,7 +12,18 @@ services:
     volumes:
       - ps_data-volume:/var/lib/postgresql/data
 
-  redis:
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-volume:/data/db
+
+  redis-asynq:
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -40,7 +51,7 @@ services:
       - REDIS_ADDRESS=redis:6379
     depends_on:
       - postgres
-      - redis
+      - redis-asynq
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
 
@@ -72,6 +83,18 @@ services:
     depends_on:
       - scheduler
       - kafka
+    command: ["/app/main"]
+
+  logger:
+    build:
+      context: ./logger
+      dockerfile: Dockerfile.logger
+    environment:
+      - MONGODB_ADDRESS=mongodb://mongo:27017
+      - REDIS_Q_ADDRESS=redis-asynq:6379
+    depends_on:
+      - mongo
+      - redis-asynq
     command: ["/app/main"]
 
   kafka:
@@ -106,3 +129,4 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 volumes:
   ps_data-volume:
+  mongo-volume:
