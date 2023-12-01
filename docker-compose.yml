@@ -65,9 +65,11 @@ services:
     environment:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_scheduler?sslmode=disable
       - REDIS_SCHDULER_ADDRESS=redis-scheduler:6379
+      - REDIS_Q_ADDRESS=redis-asynq:6379
     depends_on:
       - postgres
       - redis-scheduler
+      - logger
     command: ["/app/main"]
 
   distributor:

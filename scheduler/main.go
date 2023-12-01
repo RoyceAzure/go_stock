@@ -11,6 +11,7 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/gapi"
 	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
 	"github.com/RoyceAzure/go-stockinfo-schduler/cronwoeker"
+	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
 	"github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	service "github.com/RoyceAzure/go-stockinfo-schduler/service"
@@ -51,10 +52,15 @@ func main() {
 	}
 	dao := repository.NewSQLDao(pgxPool)
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr: config.RedisQueueAddress,
 	}
-
-	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	redisClient := asynq.NewClient(redisOpt)
+	taskDistributor := worker.NewRedisTaskDistributor(redisClient)
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
 
 	redisDao := jredis.NewJredis(config)
 
@@ -78,25 +84,25 @@ func main() {
 
 	select {
 	case err = <-chGrpcServer:
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("failed to run grpc server")
 	case err = <-chGinServer:
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("failed to run gin server")
 	case <-ctx.Done():
-		log.Warn().Msg("Received stop signal, app will shut down after 10 second")
+		logger.Logger.Warn().Msg("Received stop signal, app will shut down after 10 second")
 		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		// 等待超时或者其他中断信号
 		select {
 		case <-timeout.Done():
 			// 超时发生，程序结束
-			log.Warn().Msg("Timeout reached, shutting down.")
+			logger.Logger.Warn().Msg("Timeout reached, shutting down.")
 		case <-ctx.Done():
 			// 如果在超时期间收到另一个中断信号，立即结束程序
-			log.Warn().Msg("Received another stop signal, shutting down immediately.")
+			logger.Logger.Warn().Msg("Received another stop signal, shutting down immediately.")
 		}
 	}
 }

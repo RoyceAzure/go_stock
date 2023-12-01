@@ -23,7 +23,7 @@ func setUp() {
 	conn, _ := sql.Open(config.DBDriver, config.DBSource)
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr: config.RedisQueueAddress,
 	}
 	testWorker = NewTestRedisTaskProcessor(redisOpt, store, nil)
 }
