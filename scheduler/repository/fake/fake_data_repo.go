@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
+	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	dto "github.com/RoyceAzure/go-stockinfo-schduler/shared/model/DTO"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/rs/zerolog/log"
 )
 
 var BATCH_SIZE = 2000
@@ -70,13 +70,13 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 	wg.Add(4)
 	go util.TaskDistributor(unprocessed, BATCH_SIZE, fakeService.GetPrototype(), &wg)
 	go util.TaskWorker("worker 1", unprocessed, processed, createSCRFromPrototype, func(err error) {
-		log.Warn().Err(err).Msg("err to process data")
+		logger.Logger.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 	go util.TaskWorker("worker 2", unprocessed, processed, createSCRFromPrototype, func(err error) {
-		log.Warn().Err(err).Msg("err to process data")
+		logger.Logger.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 	go util.TaskWorker("worker 3", unprocessed, processed, createSCRFromPrototype, func(err error) {
-		log.Warn().Err(err).Msg("err to process data")
+		logger.Logger.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 
 	go func() {
@@ -91,7 +91,7 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 }
 
 func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]repository.StockPriceRealtime, error) {
-	log.Info().
+	logger.Logger.Info().
 		Msg("start of generate prototype")
 	var result []repository.StockPriceRealtime
 	var stock_day_alls []dto.StockDayAvgAllDTO
@@ -151,7 +151,7 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 	fakeService.SetPrototype(result)
 
 	elapsed := time.Since(startTime)
-	log.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
+	logger.Logger.Info().Int64("elpase_time_(ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
 	return result, nil
 }
 
@@ -164,7 +164,7 @@ func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository
 	var open_priceOri float64
 	open_priceOri, err := util.NumericToFloat64(prototype.OpeningPrice)
 	if err != nil {
-		log.Warn().Err(err).Msg("stock open price can't convert to float64")
+		logger.Logger.Warn().Err(err).Msg("stock open price can't convert to float64")
 		return result, err
 	}
 

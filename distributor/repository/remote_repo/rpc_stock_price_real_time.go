@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	logger "github.com/RoyceAzure/go-stockinfo-distributor/repository/logger_distributor"
 	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb/stock_info_scheduler"
-	"github.com/rs/zerolog/log"
 )
 
 const SPR_SAVED_DUR = time.Second * 5
@@ -20,7 +20,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 		return SprData{}, ctx.Err() // ctx.Err() 将是 context.DeadlineExceeded 如果超时
 	default:
 		// 正常处理请求
-		log.Info().Msg("start get stock price realtime")
+		logger.Logger.Info().Msg("start get stock price realtime")
 		now := time.Now().UTC()
 		if now.Sub(dao.preSprTime) >= SPR_SAVED_DUR {
 			res, err := dao.client.GetStockPriceRealTime(ctx, &pb.StockPriceRealTimeRequest{})
@@ -28,7 +28,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 				sprData := cvSprRes2SprData(res)
 				dao.SetSprData(ctx, sprData)
 				dao.preSprTime = now
-				log.Info().Msg("end get stock price realtime")
+				logger.Logger.Info().Msg("end get stock price realtime")
 				return sprData, nil
 			}
 		}
@@ -36,7 +36,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 		if sprData.DataTime == "" {
 			return SprData{}, fmt.Errorf("get stock price real time get err")
 		}
-		log.Info().Msg("end get stock price realtime")
+		logger.Logger.Info().Msg("end get stock price realtime")
 		return sprData, nil
 	}
 }

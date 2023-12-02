@@ -12,7 +12,18 @@ services:
     volumes:
       - ps_data-volume:/var/lib/postgresql/data
 
-  redis:
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-volume:/data/db
+
+  redis-asynq:
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -26,7 +37,9 @@ services:
     image: hibiken/asynqmon
     ports:
       - "8081:8080"
-    command: ["--redis-addr=redis:6379"]
+    command: ["--redis-addr=redis-asynq:6379"]
+    depends_on:
+      - redis-asynq
 
   api:
     build:
@@ -40,7 +53,7 @@ services:
       - REDIS_ADDRESS=redis:6379
     depends_on:
       - postgres
-      - redis
+      - redis-asynq
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
 
@@ -54,9 +67,12 @@ services:
     environment:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_scheduler?sslmode=disable
       - REDIS_SCHDULER_ADDRESS=redis-scheduler:6379
+      - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=schduler01
     depends_on:
       - postgres
       - redis-scheduler
+      - logger
     command: ["/app/main"]
 
   distributor:
@@ -69,9 +85,25 @@ services:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_distributor?sslmode=disable
       - GRPC_SCHEDULER_ADDRESS=scheduler:9091
       - KAFKA_DISTRIBUTOR_ADDRESS=kafka:9092
+      - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=distributor01
     depends_on:
       - scheduler
       - kafka
+      - logger
+    command: ["/app/main"]
+
+  logger:
+    build:
+      context: ./logger
+      dockerfile: Dockerfile.logger
+    environment:
+      - MONGODB_ADDRESS=mongodb://mongo:27017
+      - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=logger01
+    depends_on:
+      - mongo
+      - redis-asynq
     command: ["/app/main"]
 
   kafka:
@@ -106,3 +138,4 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 volumes:
   ps_data-volume:
+  mongo-volume:

@@ -9,6 +9,7 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-distributor/cronworker"
 	"github.com/RoyceAzure/go-stockinfo-distributor/jkafka"
 	sqlc "github.com/RoyceAzure/go-stockinfo-distributor/repository/db/sqlc"
+	logger "github.com/RoyceAzure/go-stockinfo-distributor/repository/logger_distributor"
 	remote_repo "github.com/RoyceAzure/go-stockinfo-distributor/repository/remote_repo"
 	"github.com/RoyceAzure/go-stockinfo-distributor/service"
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/config"
@@ -16,6 +17,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -30,6 +32,17 @@ func main() {
 	}
 	if config.Enviornmant == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	//set up mongo logger
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisQueueAddress,
+	}
+	redisClient := asynq.NewClient(redisOpt)
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)

@@ -8,4 +8,5 @@ use(
     ./worker
     ./scheduler
     ./distributor
+    ./logger
 )

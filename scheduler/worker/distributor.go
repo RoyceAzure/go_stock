@@ -21,8 +21,7 @@ type RedisTaskDistributor struct {
 /*
 asynq.NewClient 產生的client可以共用  支持異步
 */
-func NewRedisTaskDistributor(redisOpt asynq.RedisClientOpt) TaskDistributor {
-	client := asynq.NewClient(redisOpt)
+func NewRedisTaskDistributor(client *asynq.Client) TaskDistributor {
 	return &RedisTaskDistributor{
 		client: client,
 	}

@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-schduler/repository/fake"
+	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
 	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util"
 	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
 	worker "github.com/RoyceAzure/go-stockinfo-schduler/worker"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -43,7 +43,7 @@ type STOCK_DAY_AVG_ALL_DTO struct {
 }
 
 func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (int64, error) {
-	log.Info().Msg("start download and insert data SVAA")
+	logger.Logger.Info().Msg("start download and insert data SVAA")
 	var dtos []STOCK_DAY_AVG_ALL_DTO
 	var entities []repository.BulkInsertDAVGALLParams
 	byteData, err := util.SendRequest(constants.METHOD_GET,
@@ -65,10 +65,10 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 	wg.Add(3)
 	go util.TaskDistributor(unprocessed, BATCH_SIZE, dtos, &wg)
 	go util.TaskWorker("worker 1", unprocessed, processed, convertSDAVGALLDTO2BulkEntity, func(err error) {
-		log.Warn().Err(err).Msg("err to process data")
+		logger.Logger.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 	go util.TaskWorker("worker 2", unprocessed, processed, convertSDAVGALLDTO2BulkEntity, func(err error) {
-		log.Warn().Err(err).Msg("err to process data")
+		logger.Logger.Warn().Err(err).Msg("err to process data")
 	}, &wg)
 
 	go func() {
@@ -82,7 +82,7 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 		if len(entities)%BATCH_SIZE == 0 {
 			res, err := service.dao.BulkInsertDAVGALL(ctx, entities)
 			if err != nil {
-				log.Warn().Err(err).Msg("bulk insert DAVGALL get some error")
+				logger.Logger.Warn().Err(err).Msg("bulk insert DAVGALL get some error")
 				entities = make([]repository.BulkInsertDAVGALLParams, 0)
 				continue
 			}
@@ -93,12 +93,12 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 	if len(entities) > 0 {
 		res, err := service.dao.BulkInsertDAVGALL(ctx, entities)
 		if err != nil {
-			log.Warn().Err(err).Msg("bulk insert DAVGALL get some error")
+			logger.Logger.Warn().Err(err).Msg("bulk insert DAVGALL get some error")
 		} else {
 			insertDatas += res
 		}
 	}
-	log.Info().Msg("end download and insert data SVAA")
+	logger.Logger.Info().Msg("end download and insert data SVAA")
 	return insertDatas, nil
 }
 
@@ -107,7 +107,7 @@ batchSize 1000，撈取SDAA資料，丟入asynq redis, 再由消費者處理
 TODO : 若當日沒有資料，要有警示
 */
 func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) {
-	log.Info().Msg("start sync stock")
+	logger.Logger.Info().Msg("start sync stock")
 	startTime := time.Now().UTC()
 	var errs []error
 	cr_date_start := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
@@ -173,12 +173,12 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 			task_count += batchSize
 		}
 	}
-	log.Info().Msg("end sync stock")
+	logger.Logger.Info().Msg("end sync stock")
 	return int64(task_count), errs
 }
 
 func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int64, []error) {
-	log.Info().Msg("start sync stock price realtime")
+	logger.Logger.Info().Msg("start sync stock price realtime")
 	startTime := time.Now().UTC()
 	var errs []error
 
@@ -235,25 +235,25 @@ func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int
 		}
 	}
 	if int64(len(fakesprs)) != task_count {
-		log.Warn().Msg("sync stock_pricerealtime result count doens't mathc source")
+		logger.Logger.Warn().Msg("sync stock_pricerealtime result count doens't mathc source")
 	}
 	elapsed := time.Since(startTime)
 	if len(errs) != 0 {
-		log.Warn().Errs("errs", errs).Msg("sync stock price realtime get err")
+		logger.Logger.Warn().Errs("errs", errs).Msg("sync stock price realtime get err")
 	}
-	log.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("sync stock price realtime")
+	logger.Logger.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("sync stock price realtime")
 	return int64(task_count), errs
 }
 
 /*
  */
 func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context) []error {
-	log.Info().Msg("start sync spr redis")
+	logger.Logger.Info().Msg("start sync spr redis")
 	startTime := time.Now().UTC()
 	var errs []error
 	defer func() {
 		if len(errs) > 0 {
-			log.Warn().Errs("errs", errs).Msg("sync spr redis get err")
+			logger.Logger.Warn().Errs("errs", errs).Msg("sync spr redis get err")
 		}
 	}()
 
@@ -291,7 +291,7 @@ func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context)
 	service.redisDao.SetSPRLatestKey(key)
 
 	elapsed := time.Since(startTime)
-	log.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
+	logger.Logger.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
 
 	return nil
 }

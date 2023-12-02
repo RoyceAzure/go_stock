@@ -13,7 +13,6 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
-
 )
 
 var testService SyncDataService
@@ -31,9 +30,10 @@ func NewTestSevice() {
 	}
 	testDao = repository.NewSQLDao(pgxPool)
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr: config.RedisQueueAddress,
 	}
-	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	redisClient := asynq.NewClient(redisOpt)
+	taskDistributor := worker.NewRedisTaskDistributor(redisClient)
 	redisDao := jredis.NewJredis(config)
 	testService = NewService(testDao, taskDistributor, redisDao)
 }
