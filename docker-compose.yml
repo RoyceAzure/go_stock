@@ -43,8 +43,8 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./stockinfo
+      dockerfile: Dockerfile.stockinfo
     ports:
       - "8080:8080"
       - "9090:9090"

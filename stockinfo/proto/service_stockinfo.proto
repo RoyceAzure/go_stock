@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+import "rpc_create_user.proto";
+import "rpc_update_user.proto";
+import "rpc_login_user.proto";
+import "rpc_verify_email.proto";
+import "rpc_stock.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+package pb;
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+      title: "stcok Info API";
+      version: "1.2";
+      contact: {
+        name: "stcok_info project";
+        url: "https://github.com/RoyceAzure/go_stock";
+        email: "roycewnag@gmail.com";
+      };
+    };
+};
+    
+service StockInfo{
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse){
+        option (google.api.http) = {
+            post: "/v1/create_user"
+            body: "*"
+            };
+            option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+              description: "Use this API to create new user";
+              summary: "Create new user";
+            };
+    }
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse){
+      option (google.api.http) = {
+          patch: "/v1/update_user"
+          body: "*"
+          };
+          option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to update new user";
+            summary: "Update new user";
+          };
+  }
+    rpc LoginUser (loginUserRequest) returns (loginUserResponse){
+        option (google.api.http) = {
+            post: "/v1/login_user"
+            body: "*"
+            };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to login user to get access token and refresh token";
+          summary: "login a user";
+        };
+    }
+
+    rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse){
+      option (google.api.http) = {
+          get: "/v1/verify_email"
+          };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to verify email address";
+        summary: "Verify email";
+      };
+  }
+
+  rpc InitStock (InitStockRequest) returns (InitStockResponse){
+    option (google.api.http) = {
+        get: "/v1/stock/init"
+        };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      description: "Use this API to Init stock data";
+      summary: "Init stock data";
+    };
+}
+}
