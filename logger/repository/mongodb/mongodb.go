@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,13 +10,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const LOG_DATABASE = "logs"
-const LOG_COLLECTION = "logs"
+const (
+	LOG_DATABASE         = "logs"
+	LOG_INFO_COLLECTION  = "infos"
+	LOG_WARN_COLLECTION  = "warns"
+	LOG_TRACE_COLLECTION = "traces"
+	LOG_ERR_COLLECTION   = "errors"
+	LevelTraceValue      = "trace"
+	LevelDebugValue      = "debug"
+	LevelInfoValue       = "info"
+	LevelWarnValue       = "warn"
+	LevelErrorValue      = "error"
+	LevelFatalValue      = "fatal"
+	LevelPanicValue      = "panic"
+)
 
 type IMongoDao interface {
 	Insert(ctx context.Context, entry LogEntry) error
 	GetAll(ctx context.Context) ([]*LogEntry, error)
-	InsertString(ctx context.Context, log string) error
 }
 
 type MongoDao struct {
@@ -31,6 +43,39 @@ type LogEntry struct {
 	CreatedAt   time.Time `bson:"time" json:"time"`
 }
 
+func InitCollection(client *mongo.Client) error {
+	if client == nil {
+		return fmt.Errorf("mongo client is empty")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+
+	err := client.Ping(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	database := client.Database(LOG_DATABASE)
+
+	collections := []string{LOG_INFO_COLLECTION, LOG_WARN_COLLECTION, LOG_ERR_COLLECTION, LOG_TRACE_COLLECTION}
+
+	for _, collection := range collections {
+		// options := options.CreateCollectionOptions{}
+		err := database.CreateCollection(ctx, collection, nil)
+		if err != nil {
+			if commandErr, ok := err.(mongo.CommandError); ok {
+				if commandErr.Code == 48 {
+					continue
+				}
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func NewMongoDao(client *mongo.Client) IMongoDao {
 	return &MongoDao{
 		client: client,
@@ -38,27 +83,31 @@ func NewMongoDao(client *mongo.Client) IMongoDao {
 }
 
 func (dao *MongoDao) Insert(ctx context.Context, entry LogEntry) error {
-	collection := dao.client.Database(LOG_DATABASE).Collection(LOG_COLLECTION)
+
+	var collection *mongo.Collection
+
+	database := dao.client.Database(LOG_DATABASE)
+
+	switch entry.Level {
+	case LevelInfoValue:
+		collection = database.Collection(LOG_INFO_COLLECTION)
+	case LevelWarnValue:
+		collection = database.Collection(LOG_WARN_COLLECTION)
+	case LevelTraceValue:
+		collection = database.Collection(LOG_TRACE_COLLECTION)
+	case LevelErrorValue:
+		collection = database.Collection(LOG_ERR_COLLECTION)
+	default:
+		collection = database.Collection(LOG_INFO_COLLECTION)
+	}
 
 	_, err := collection.InsertOne(ctx, entry)
 
 	return err
 }
 
-func (dao *MongoDao) InsertString(ctx context.Context, log string) error {
-	collection := dao.client.Database(LOG_DATABASE).Collection(LOG_COLLECTION)
-
-	record := bson.M{
-		"Message": log,
-	}
-
-	_, err := collection.InsertOne(ctx, record)
-
-	return err
-}
-
 func (dao *MongoDao) GetAll(ctx context.Context) ([]*LogEntry, error) {
-	collection := dao.client.Database(LOG_DATABASE).Collection(LOG_COLLECTION)
+	collection := dao.client.Database(LOG_DATABASE).Collection(LOG_INFO_COLLECTION)
 	opts := options.Find()
 	opts.SetSort(bson.D{{Key: "created_at", Value: -1}})
 

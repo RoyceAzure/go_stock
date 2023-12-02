@@ -7,8 +7,8 @@ import (
 	"os"
 
 	repository "github.com/RoyceAzure/go-stockinfo-logger/repository/mongodb"
+	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/rs/zerolog"
-
 )
 
 var Logger zerolog.Logger
@@ -45,6 +45,9 @@ func (mw *MongoLogger) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
+
+	logentry.ServiceName = config.AppConfig.ServiceID
+
 	err = mw.mongoDao.Insert(context.Background(), logentry)
 	if err != nil {
 		return 0, err

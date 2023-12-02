@@ -26,14 +26,21 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	mongodb, err := repository.ConnectToMongo(ctx, config.MongodbAddress)
+	client, err := repository.ConnectToMongo(ctx, config.MongodbAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("cannot connect to mongo db")
 	}
 
-	mongoDao := repository.NewMongoDao(mongodb)
+	err = repository.InitCollection(client)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("init mongo db failed")
+	}
+
+	mongoDao := repository.NewMongoDao(client)
 
 	mongoLogger := logservice.NewMongoLogger(mongoDao)
 	err = logservice.SetUpMutiMongoLogger(mongoLogger)

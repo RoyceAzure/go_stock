@@ -37,7 +37,9 @@ services:
     image: hibiken/asynqmon
     ports:
       - "8081:8080"
-    command: ["--redis-addr=redis:6379"]
+    command: ["--redis-addr=redis-asynq:6379"]
+    depends_on:
+      - redis-asynq
 
   api:
     build:
@@ -66,6 +68,7 @@ services:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_scheduler?sslmode=disable
       - REDIS_SCHDULER_ADDRESS=redis-scheduler:6379
       - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=schduler01
     depends_on:
       - postgres
       - redis-scheduler
@@ -82,9 +85,12 @@ services:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_distributor?sslmode=disable
       - GRPC_SCHEDULER_ADDRESS=scheduler:9091
       - KAFKA_DISTRIBUTOR_ADDRESS=kafka:9092
+      - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=distributor01
     depends_on:
       - scheduler
       - kafka
+      - logger
     command: ["/app/main"]
 
   logger:
@@ -94,6 +100,7 @@ services:
     environment:
       - MONGODB_ADDRESS=mongodb://mongo:27017
       - REDIS_Q_ADDRESS=redis-asynq:6379
+      - SERVICEID=logger01
     depends_on:
       - mongo
       - redis-asynq

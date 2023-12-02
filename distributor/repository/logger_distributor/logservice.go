@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/config"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 )
@@ -28,7 +28,6 @@ type LoggerDistributor struct {
 }
 
 func NewLoggerDistributor(client *asynq.Client) TaskDistributor {
-	//asynq.NewClient() 這裡就有提for redis
 	return &LoggerDistributor{
 		client: client,
 	}
@@ -44,8 +43,6 @@ func SetUpLoggerDistributor(logger TaskDistributor) error {
 }
 
 func (LoggerDistributor LoggerDistributor) Write(p []byte) (n int, err error) {
-	// Insert the record into the collection.
-
 	if LoggerDistributor.client == nil {
 		return 0, fmt.Errorf("logger distributor is not init")
 	}

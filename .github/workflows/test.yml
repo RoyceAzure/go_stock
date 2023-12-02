@@ -37,7 +37,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432 
+          - 5432:5432
+          
+      mongo:
+        image: mongo:4.2.16-bionic
+        env:
+          MONGO_INITDB_DATABASE: logs
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -48,8 +58,22 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.19
+          go-version: ^1.21.3
         id: go
+
+      - name: Wait for Postgres is ready
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            sleep 1;
+          done
+      
+      - name: Create addional DB
+        run: |
+          psql -h localhost -U royce -c "CREATE DATABASE stock_info_distributor";
+          psql -h localhost -U royce -c "CREATE DATABASE stock_info_scheduler";
+          psql -h localhost -U royce -c "CREATE DATABASE stock_info_distributor";
+        env:
+          PGPASSWORD: royce
 
       - name: Install golang migrate
         run: |

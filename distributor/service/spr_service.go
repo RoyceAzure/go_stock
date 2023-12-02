@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	logger "github.com/RoyceAzure/go-stockinfo-distributor/repository/logger_distributor"
 	dto "github.com/RoyceAzure/go-stockinfo-distributor/shared/model/dto"
 	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb/stock_info_scheduler"
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util"
@@ -33,7 +34,7 @@ Returns:
 	spr的dto slice
 */
 func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([]dto.StockPriceRealTimeDTO, error) {
-	log.Info().Msg("start get filter spr by ip")
+	logger.Logger.Info().Msg("start get filter spr by ip")
 
 	//get frontend register stock
 	client, err := s.dbDao.GetFrontendClientByIP(ctx, ip)
@@ -80,7 +81,7 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 	}, &wg)
 
 	errfunc := func(err error) {
-		log.Warn().Err(err)
+		logger.Logger.Warn().Err(err)
 	}
 
 	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2DTO, errfunc, &wg)
@@ -95,7 +96,7 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 		res = append(res, item)
 	}
 
-	log.Info().Msg("end get filter spr by ip")
+	logger.Logger.Info().Msg("end get filter spr by ip")
 	return res, nil
 }
 
@@ -119,7 +120,7 @@ func (s *DistributorService) SetPreSuccessedSprtime(ctx context.Context, preSprt
 會對應多個client  取出所有註冊的distinct stock code，撈取對應資料  放入kafka
 */
 func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) error {
-	log.Info().Msg("start get filter spr by ip and send to ka")
+	logger.Logger.Info().Msg("start get filter spr by ip and send to ka")
 	var sprDatas []*pb.StockPriceRealTime
 	var sprTime string
 
@@ -173,7 +174,7 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 	}, &wg)
 
 	errfunc := func(err error) {
-		log.Warn().Err(err)
+		logger.Logger.Warn().Err(err)
 	}
 
 	go util.TaskWorker("worker1", upprodessed, processed, cvSpr2KafkaMsg, errfunc, &wg, sprTime)
@@ -197,7 +198,7 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 		s.SetPreSuccessedSprtime(ctx, sprTime)
 	}
 
-	log.Info().Msg("end get filter spr by ip and send to ka")
+	logger.Logger.Info().Msg("end get filter spr by ip and send to ka")
 	return nil
 }
 

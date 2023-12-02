@@ -12,5 +12,7 @@ COPY app.env .
 COPY repository/db/migrations ./repository/db/migrations
 ENV GRPC_SCHEDULER_ADDRESS=stockinfo-shceduler:9091
 ENV DB_SOURCE=postgres://royce:royce@project7-postgres-1:5432/stock_info_distributor?sslmode=disable
+ENV REDIS_Q_ADDRESS=redis-asynq:6379
+ENV SERVICEID=distributor
 EXPOSE 8083
 CMD ["/app/main"]
