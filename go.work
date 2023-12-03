@@ -1,11 +1,7 @@
 go 1.21.3
 
 use(
-    ./project
-    ./shared
-    ./api
-    ./doc
-    ./worker
+    ./stockinfo
     ./scheduler
     ./distributor
     ./logger

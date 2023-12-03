@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+
+message User{
+    string user_name = 1;
+    string email = 2;
+    string sso_identifer = 3;
+    google.protobuf.Timestamp  password_changed_at= 4;
+    google.protobuf.Timestamp  cr_date= 5;
+}
