@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-api/token"
+	"github.com/RoyceAzure/go-stockinfo/api/token"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
