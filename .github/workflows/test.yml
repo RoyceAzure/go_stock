@@ -69,9 +69,8 @@ jobs:
       
       - name: Create addional DB
         run: |
-          psql -h localhost -U royce -c "CREATE DATABASE stock_info_distributor";
-          psql -h localhost -U royce -c "CREATE DATABASE stock_info_scheduler";
-          psql -h localhost -U royce -c "CREATE DATABASE stock_info_distributor";
+          psql -h localhost -U royce -d stock_info -c "CREATE DATABASE stock_info_distributor";
+          psql -h localhost -U royce -c -d stock_info "CREATE DATABASE stock_info_scheduler";
         env:
           PGPASSWORD: royce
 
