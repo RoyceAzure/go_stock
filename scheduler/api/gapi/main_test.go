@@ -3,12 +3,11 @@ package gapi
 import (
 	"testing"
 
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service"
-	redisService "github.com/RoyceAzure/go-stockinfo-schduler/service/redisService"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service"
+	redisService "github.com/RoyceAzure/go-stockinfo-scheduler/service/redisService"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 	"github.com/stretchr/testify/require"
-
 )
 
 /*

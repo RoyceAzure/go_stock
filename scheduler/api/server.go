@@ -1,9 +1,9 @@
 package api
 
 import (
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 	"github.com/gin-gonic/gin"
 )
 

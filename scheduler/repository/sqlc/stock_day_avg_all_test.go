@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
@@ -136,6 +136,9 @@ func TestGetSDAVGALLsByStockName(t *testing.T) {
 }
 
 func TestGetSDAVGALLsByCPInterval(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	startTime := time.Now()
 	limit := 10
 	page := 1
@@ -219,6 +222,9 @@ func TestGetSDAVGALLsByCrDateInterval(t *testing.T) {
 }
 
 func TestGetSDAVGALLsBySpecialCrDate(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	startTime := time.Now()
 	//2023-11-07 13:34:06.506946+00
 	timetemp := time.Date(2023, time.November, 7, 13, 34, 6, 506946000, time.UTC)
@@ -247,6 +253,9 @@ func TestGetSDAVGALLsBySpecialCrDate(t *testing.T) {
 }
 
 func TestGetSDAVGALLsBySpecialCrDatetTz(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	startTime := time.Now()
 	//2023-11-07 13:34:06.506946+00
 	timetemp := time.Date(2023, time.November, 7, 21, 34, 6, 506946000, time.Local)

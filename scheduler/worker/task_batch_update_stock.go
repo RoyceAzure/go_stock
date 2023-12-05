@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
+	logger "github.com/RoyceAzure/go-stockinfo-scheduler/repository/logger_distributor"
 	"github.com/hibiken/asynq"
 )
 

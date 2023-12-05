@@ -1,6 +1,6 @@
 package redisService
 
-import jredis "github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
+import jredis "github.com/RoyceAzure/go-stockinfo-scheduler/repository/redis"
 
 type RedisService interface {
 	RedisServiceSPR

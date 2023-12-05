@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	dto "github.com/RoyceAzure/go-stockinfo-schduler/shared/model/DTO"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/constants"
+	logger "github.com/RoyceAzure/go-stockinfo-scheduler/repository/logger_distributor"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	dto "github.com/RoyceAzure/go-stockinfo-scheduler/shared/model/DTO"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/constants"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 

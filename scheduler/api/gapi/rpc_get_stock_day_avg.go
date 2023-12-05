@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/api/pb"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

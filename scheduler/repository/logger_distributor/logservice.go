@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 )
@@ -33,12 +32,12 @@ func NewLoggerDistributor(client *asynq.Client) TaskDistributor {
 	}
 }
 
-func SetUpLoggerDistributor(logger TaskDistributor) error {
+func SetUpLoggerDistributor(logger TaskDistributor, serviceId string) error {
 	if logger == nil {
 		return fmt.Errorf("logger distributor is not init")
 	}
 	multiLogger := zerolog.MultiLevelWriter(zerolog.ConsoleWriter{Out: os.Stdout}, logger)
-	Logger = zerolog.New(multiLogger).With().Str("service_name", config.AppConfig.ServiceID).Timestamp().Logger()
+	Logger = zerolog.New(multiLogger).With().Str("service_name", serviceId).Timestamp().Logger()
 	return nil
 }
 

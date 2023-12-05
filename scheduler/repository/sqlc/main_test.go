@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )

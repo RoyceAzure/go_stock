@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/service"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service"
 	"github.com/go-co-op/gocron"
 )
 

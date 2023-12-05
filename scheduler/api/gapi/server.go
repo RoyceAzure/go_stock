@@ -1,11 +1,11 @@
 package gapi
 
 import (
-	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service/redisService"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/api/pb"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service/redisService"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 )
 
 type Server struct {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )

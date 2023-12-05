@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 	"github.com/redis/go-redis/v9"
 )
 

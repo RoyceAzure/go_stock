@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
 	decimal "github.com/jackc/pgx-shopspring-decimal"
 )
 

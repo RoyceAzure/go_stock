@@ -7,17 +7,17 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-schduler/api"
-	"github.com/RoyceAzure/go-stockinfo-schduler/api/gapi"
-	"github.com/RoyceAzure/go-stockinfo-schduler/api/pb"
-	"github.com/RoyceAzure/go-stockinfo-schduler/cronwoeker"
-	logger "github.com/RoyceAzure/go-stockinfo-schduler/repository/logger_distributor"
-	"github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	service "github.com/RoyceAzure/go-stockinfo-schduler/service"
-	"github.com/RoyceAzure/go-stockinfo-schduler/service/redisService"
-	"github.com/RoyceAzure/go-stockinfo-schduler/util/config"
-	"github.com/RoyceAzure/go-stockinfo-schduler/worker"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/api"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/api/gapi"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/api/pb"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/cronwoeker"
+	logger "github.com/RoyceAzure/go-stockinfo-scheduler/repository/logger_distributor"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/repository/redis"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	service "github.com/RoyceAzure/go-stockinfo-scheduler/service"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/service/redisService"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
+	"github.com/RoyceAzure/go-stockinfo-scheduler/worker"
 	"github.com/hibiken/asynq"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
@@ -57,7 +57,7 @@ func main() {
 	redisClient := asynq.NewClient(redisOpt)
 	taskDistributor := worker.NewRedisTaskDistributor(redisClient)
 	loggerDis := logger.NewLoggerDistributor(redisClient)
-	err = logger.SetUpLoggerDistributor(loggerDis)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
 	if err != nil {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}

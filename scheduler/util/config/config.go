@@ -1,22 +1,10 @@
 package config
 
 import (
-	"log"
 	"time"
 
 	"github.com/spf13/viper"
 )
-
-var AppConfig *Config
-
-func init() {
-	config, err := LoadConfig(".")
-	if err != nil {
-		// 处理错误，可能是记录日志，也可能是退出程序
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
-	AppConfig = &config
-}
 
 type Config struct {
 	ServiceID                    string        `mapstructure:"SERVICEID"`
@@ -34,9 +22,7 @@ type Config struct {
 }
 
 func LoadConfig(path string) (config Config, err error) {
-	if AppConfig != nil {
-		return *AppConfig, nil
-	}
+
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env") //JSON XML  這是指extension
@@ -48,8 +34,5 @@ func LoadConfig(path string) (config Config, err error) {
 		return
 	}
 	err = viper.Unmarshal(&config)
-	if err == nil {
-		AppConfig = &config
-	}
 	return
 }

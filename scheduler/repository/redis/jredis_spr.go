@@ -6,8 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
 	"github.com/go-redis/redis"
+
 )
 
 func (jredis *Jredis) BulkInsertSPR(ctx context.Context, key string, sprs []repository.StockPriceRealtime) error {

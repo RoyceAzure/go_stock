@@ -1,9 +1,10 @@
 package service
 
 import (
-	jredis "github.com/RoyceAzure/go-stockinfo-schduler/repository/redis"
-	repository "github.com/RoyceAzure/go-stockinfo-schduler/repository/sqlc"
-	worker "github.com/RoyceAzure/go-stockinfo-schduler/worker"
+	jredis "github.com/RoyceAzure/go-stockinfo-scheduler/repository/redis"
+	repository "github.com/RoyceAzure/go-stockinfo-scheduler/repository/sqlc"
+	worker "github.com/RoyceAzure/go-stockinfo-scheduler/worker"
+
 )
 
 type Service interface {

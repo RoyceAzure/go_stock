@@ -1,4 +1,4 @@
-module github.com/RoyceAzure/go-stockinfo-schduler
+module github.com/RoyceAzure/go-stockinfo-scheduler
 
 go 1.21.3
 
@@ -68,6 +68,7 @@ require (
 
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
