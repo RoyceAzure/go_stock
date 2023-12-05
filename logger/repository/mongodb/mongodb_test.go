@@ -8,7 +8,6 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/random"
 	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/stretchr/testify/require"
-
 )
 
 func TestInsert(t *testing.T) {
@@ -28,8 +27,8 @@ func TestInsert(t *testing.T) {
 	mongoDao := NewMongoDao(mongodb)
 	err = mongoDao.Insert(context.Background(), LogEntry{
 		ID:          random.RandomString(10),
-		ServiceName: "testName",
-		Message:     "testjsondata",
+		ServiceName: random.RandomString(10),
+		Message:     random.RandomString(20),
 		CreatedAt:   time.Now().UTC(),
 	})
 	require.NoError(t, err)
@@ -46,6 +45,11 @@ func TestGetAll(t *testing.T) {
 	require.NoError(t, err)
 
 	mongoDao := NewMongoDao(mongodb)
+
+	for i := 0; i < 6; i++ {
+		TestInsert(t)
+	}
+
 	res, err := mongoDao.GetAll(context.Background())
 	require.Greater(t, len(res), 5)
 	require.NoError(t, err)
