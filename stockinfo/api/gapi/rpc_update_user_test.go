@@ -193,7 +193,7 @@ func TestUpdateUserApi(t *testing.T) {
 
 			tc.buildStub(store)
 			//grpc server可以直接call func
-			server := newTestServer(t, store, nil)
+			server := newTestServer(t, store, nil, nil)
 
 			ctx := tc.buildContext(t, server.tokenMaker)
 

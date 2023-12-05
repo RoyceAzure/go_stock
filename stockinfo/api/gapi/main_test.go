@@ -16,14 +16,14 @@ import (
 )
 
 // NewServer(config utility.Config, store db.Store, taskDistributor worker.TaskDistributor)
-func newTestServer(t *testing.T, store db.Store, taskDistributor worker.TaskDistributor) *Server {
+func newTestServer(t *testing.T, store db.Store, taskDistributor worker.TaskDistributor, clientFactory SchedulerClientFactory) *Server {
 	config := config.Config{
 		TokenSymmetricKey:    utility.RandomString(32),
 		AccessTokenDuration:  time.Minute,
 		RefreshTokenDuration: time.Hour,
 	}
 
-	server, err := NewServer(config, store, taskDistributor)
+	server, err := NewServer(config, store, taskDistributor, clientFactory)
 	require.NoError(t, err)
 	return server
 }

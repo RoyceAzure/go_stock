@@ -7,23 +7,21 @@ import (
 	"github.com/RoyceAzure/go-stockinfo/api/pb"
 	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
+/*
+創建grpc client跟操做分開
+*/
 func (server *Server) InitStock(ctx context.Context, req *pb.InitStockRequest) (*pb.InitStockResponse, error) {
 	startTime := time.Now().UTC()
 	log.Info().Msg("initSyncStock start")
-	schduler_host_url := "localhost:9091"
-	conn, err := grpc.Dial(schduler_host_url, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	client, closeConn, err := server.clientFactory.NewClient()
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "can't connect grpc server")
 	}
-	defer conn.Close()
-
-	client := pb.NewStockInfoSchdulerClient(conn)
+	defer closeConn()
 
 	res, err := client.GetStockDayAvg(ctx, &pb.StockDayAvgRequest{})
 	if err != nil {

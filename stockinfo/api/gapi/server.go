@@ -5,7 +5,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo/api/pb"
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	"github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
 	"github.com/RoyceAzure/go-stockinfo/worker"
 )
@@ -16,6 +16,7 @@ type Server struct {
 	store           db.Store
 	tokenMaker      token.Maker
 	taskDistributor worker.TaskDistributor
+	clientFactory   SchedulerClientFactory
 }
 
 const (
@@ -23,7 +24,7 @@ const (
 	DEFAULT_PAGE_SIZE = 10
 )
 
-func NewServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
+func NewServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor, clientFactory SchedulerClientFactory) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create tokenMaker %w", err)
@@ -33,6 +34,7 @@ func NewServer(config config.Config, store db.Store, taskDistributor worker.Task
 		store:           store,
 		tokenMaker:      tokenMaker,
 		taskDistributor: taskDistributor,
+		clientFactory:   clientFactory,
 	}
 
 	return server, nil

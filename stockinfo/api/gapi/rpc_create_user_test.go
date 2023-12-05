@@ -178,7 +178,7 @@ func TestCreateUserApi(t *testing.T) {
 			tc.buildStub(store, taskDistributor)
 
 			//grpc server可以直接call func
-			server := newTestServer(t, store, taskDistributor)
+			server := newTestServer(t, store, taskDistributor, nil)
 			res, err := server.CreateUser(context.Background(), tc.body)
 			tc.checkReponse(t, res, err)
 		})

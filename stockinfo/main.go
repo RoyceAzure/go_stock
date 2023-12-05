@@ -58,8 +58,9 @@ func main() {
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 	go runTaskProcessor(config, redisOpt, store)
 	// runGinServer(config, store)
-	go runGRPCGatewayServer(config, store, taskDistributor)
-	runGRPCServer(config, store, taskDistributor)
+	clientFactory := gapi.NewGRPCSchedulerClientFactory(&config)
+	go runGRPCGatewayServer(config, store, taskDistributor, clientFactory)
+	runGRPCServer(config, store, taskDistributor, clientFactory)
 }
 
 func runGinServer(configs config.Config, store db.Store) {
@@ -78,8 +79,8 @@ func runGinServer(configs config.Config, store db.Store) {
 	}
 }
 
-func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
-	server, err := gapi.NewServer(configs, store, taskDistributor)
+func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor, clientFactory gapi.SchedulerClientFactory) {
+	server, err := gapi.NewServer(configs, store, taskDistributor, clientFactory)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -118,9 +119,9 @@ func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker
 }
 
 // runGRPCGatewayServer 啟動gRPC Gateway伺服器。此伺服器提供了一個HTTP接口，允許通過HTTP與gRPC服務進行交互。
-func runGRPCGatewayServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+func runGRPCGatewayServer(configs config.Config, store db.Store, taskDistributor worker.TaskDistributor, clientFactory gapi.SchedulerClientFactory) {
 	// 創建新的gRPC伺服器
-	server, err := gapi.NewServer(configs, store, taskDistributor)
+	server, err := gapi.NewServer(configs, store, taskDistributor, clientFactory)
 	if err != nil {
 		log.Fatal().
 			Err(err).

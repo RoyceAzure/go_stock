@@ -14,15 +14,11 @@ import (
 )
 
 /*
-config
-需要trans
-trunctable??
-*/
+ */
 func (server *Server) initSyncStock(ctx *gin.Context) {
 	startTime := time.Now().UTC()
 	log.Info().Msg("initSyncStock start")
-	schduler_host_url := "localhost:9091"
-	conn, err := grpc.Dial(schduler_host_url, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.Dial(server.config.GRPCSchedulerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("connect grpc server get error : %w", err))
 		return
