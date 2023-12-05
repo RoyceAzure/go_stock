@@ -5,13 +5,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/random"
 	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/stretchr/testify/require"
+
 )
 
 func TestInsert(t *testing.T) {
-	config, err := config.LoadConfig("../../") //表示讀取當前資料夾
-	require.NoError(t, err)
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+	config := config.Config{
+		MongodbAddress: "mongodb://localhost:27017",
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
@@ -21,7 +27,7 @@ func TestInsert(t *testing.T) {
 
 	mongoDao := NewMongoDao(mongodb)
 	err = mongoDao.Insert(context.Background(), LogEntry{
-		ID:          "test",
+		ID:          random.RandomString(10),
 		ServiceName: "testName",
 		Message:     "testjsondata",
 		CreatedAt:   time.Now().UTC(),
@@ -30,9 +36,9 @@ func TestInsert(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	config, err := config.LoadConfig("../../") //表示讀取當前資料夾
-	require.NoError(t, err)
-
+	config := config.Config{
+		MongodbAddress: "mongodb://localhost:27017",
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 

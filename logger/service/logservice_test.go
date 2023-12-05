@@ -10,10 +10,12 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
-
 )
 
 func TestWrite(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	config, err := config.LoadConfig("../") //表示讀取當前資料夾
 	require.NoError(t, err)
 
