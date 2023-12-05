@@ -9,9 +9,11 @@ import (
 )
 
 func TestEmmitEvent(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	if err != nil {
-		log.Fatalf("failed to load config")
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+	config := config.Config{
+		RabbitMQAddress: "amqp://guest:guest@localhost:5672/",
 	}
 	conn, err := amqp.Dial(config.RabbitMQAddress)
 	if err != nil {
