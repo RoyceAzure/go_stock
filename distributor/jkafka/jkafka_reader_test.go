@@ -13,6 +13,9 @@ import (
 )
 
 func TestCreateNewReader(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	CreateNewReader(t)
 }
 
@@ -39,6 +42,9 @@ func CreateNewReader(t *testing.T) KafkaReader {
 }
 
 func TestReadMessage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	jr := CreateNewReader(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()

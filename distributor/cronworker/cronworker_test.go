@@ -15,6 +15,9 @@ import (
 )
 
 func TestWorker(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	config, err := config.LoadConfig("../") //表示讀取當前資料夾
 	require.NoError(t, err)
 	schedulerDao, err := remote_repo.NewJSchdulerInfoDao(config.GrpcSchedulerAddress)

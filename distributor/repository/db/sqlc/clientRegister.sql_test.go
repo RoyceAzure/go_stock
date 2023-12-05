@@ -30,7 +30,7 @@ func CreateClientRegister(t *testing.T) ClientRegister {
 	dao := NewSQLDistributorDao(conn)
 	require.NotEmpty(t, dao)
 
-	stockCode := random.RandomStrInt(5)
+	stockCode := random.RandomString(5)
 	res, err := dao.CreateClientRegister(ctx, CreateClientRegisterParams{
 		ClientUid: testClient.ClientUid,
 		StockCode: stockCode,

@@ -11,9 +11,12 @@ import (
 )
 
 func TestNewJKafka(t *testing.T) {
-	config, err := config.LoadConfig("../")
-	require.NoError(t, err)
-	require.NotEmpty(t, config)
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+	config := config.Config{
+		KafkaDistributorAddress: "127.0.0.1:29092",
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()

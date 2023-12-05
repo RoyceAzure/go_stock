@@ -10,6 +10,9 @@ import (
 )
 
 func TestGetStockPriceRealTime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	config, err := config.LoadConfig("../../")
 	require.NoError(t, err)
 	require.NotEmpty(t, config)

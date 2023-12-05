@@ -9,10 +9,12 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util/random"
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/require"
-
 )
 
 func TestNewJKafkaWriter(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	CreateNewWriter(t)
 }
 
@@ -30,6 +32,9 @@ func CreateNewWriter(t *testing.T) KafkaWriter {
 }
 
 func TestWriteMessage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	jw := CreateNewWriter(t)
 	topic := "test"
 	messages := []kafka.Message{
