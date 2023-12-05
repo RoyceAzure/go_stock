@@ -15,5 +15,5 @@ COPY repository/migrations ./repository/migrations
 ENV REDIS_SCHDULER_ADDRESS=scheduler-redis:6379
 ENV REDIS_Q_ADDRESS=redis-asynq:6379
 EXPOSE 8082
-EXPOSE 9091
+EXPOSE 9092
 CMD ["/app/main"]

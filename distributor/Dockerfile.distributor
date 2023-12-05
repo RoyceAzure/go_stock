@@ -10,7 +10,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY app.env .
 COPY repository/db/migrations ./repository/db/migrations
-ENV GRPC_SCHEDULER_ADDRESS=stockinfo-shceduler:9091
+ENV GRPC_SCHEDULER_ADDRESS=shceduler:9092
 ENV DB_SOURCE=postgres://royce:royce@project7-postgres-1:5432/stock_info_distributor?sslmode=disable
 ENV REDIS_Q_ADDRESS=redis-asynq:6379
 ENV SERVICEID=distributor

@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	QueueCritical = "critical"
-	QueueDefault  = "default"
+	LogQueue = "logQueue"
 )
 
 /*
@@ -35,8 +34,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, mongoDao repository.IM
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
-				QueueCritical: 10,
-				QueueDefault:  5,
+				LogQueue: 10,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				log.Error().
