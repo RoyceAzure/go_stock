@@ -1,18 +1,30 @@
 package config
 
 import (
+	"log"
 	"time"
 
 	"github.com/spf13/viper"
 )
+
+var AppConfig *Config
+
+func init() {
+	config, err := LoadConfig(".")
+	if err != nil {
+		// 处理错误，可能是记录日志，也可能是退出程序
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+	AppConfig = &config
+}
 
 type Config struct {
 	Enviornmant          string        `mapstructure:"ENVIRONMENT"`
 	DBDriver             string        `mapstructure:"DB_DRIVER"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	MigrateURL           string        `mapstructure:"MIGRATE_URL"`
-	HttpServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS"`
+	HttpStockinfoAddress string        `mapstructure:"HTTP_STOCKINFO_ADDRESS"`
+	GRPCStockinfoAddress string        `mapstructure:"GRPC_STOCKINFO_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
@@ -26,6 +38,9 @@ type Config struct {
 path: app.env所在的資料夾
 */
 func LoadConfig(path string) (config Config, err error) {
+	if AppConfig != nil {
+		return *AppConfig, nil
+	}
 	viper.AddConfigPath(path)
 	viper.SetConfigName("app")
 	viper.SetConfigType("env") //JSON XML  這是指extension
@@ -37,5 +52,8 @@ func LoadConfig(path string) (config Config, err error) {
 		return
 	}
 	err = viper.Unmarshal(&config)
+	if err == nil {
+		AppConfig = &config
+	}
 	return
 }

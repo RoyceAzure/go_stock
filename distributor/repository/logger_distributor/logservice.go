@@ -14,9 +14,8 @@ import (
 var Logger zerolog.Logger
 
 const (
-	TaskWriteLog  = "task:write_log"
-	QueueCritical = "critical"
-	QueueDefault  = "default"
+	TaskWriteLog = "task:write_log"
+	LogQueue     = "logQueue"
 )
 
 type TaskDistributor interface {
@@ -49,7 +48,7 @@ func (LoggerDistributor LoggerDistributor) Write(p []byte) (n int, err error) {
 	opts := []asynq.Option{
 		asynq.MaxRetry(10),
 		asynq.ProcessIn(10 * time.Second),
-		asynq.Queue(QueueDefault),
+		asynq.Queue(LogQueue),
 	}
 	task := asynq.NewTask(TaskWriteLog, p, opts...)
 

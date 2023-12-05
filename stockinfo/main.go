@@ -70,7 +70,7 @@ func runGinServer(configs config.Config, store db.Store) {
 			Msg("cannot start server")
 	}
 
-	err = server.Start(configs.HttpServerAddress)
+	err = server.Start(configs.HttpStockinfoAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -102,7 +102,7 @@ func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker
 	//reflection.Register 允許客戶端使用反射來獲知伺服器上的服務和方法。
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", configs.GRPCServerAddress)
+	listener, err := net.Listen("tcp", configs.GRPCStockinfoAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -197,7 +197,7 @@ func runGRPCGatewayServer(configs config.Config, store db.Store, taskDistributor
 	mux.Handle("/swagger/", swaggerHandler)
 
 	// 在指定地址上建立監聽
-	listener, err := net.Listen("tcp", configs.HttpServerAddress)
+	listener, err := net.Listen("tcp", configs.HttpStockinfoAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).

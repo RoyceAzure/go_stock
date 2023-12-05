@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	QueueCritical = "critical"
-	QueueDefault  = "default"
+	MailQueue = "mailQueue"
 )
 
 /*
@@ -38,8 +37,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
-				QueueCritical: 10,
-				QueueDefault:  5,
+				MailQueue: 10,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				log.Error().

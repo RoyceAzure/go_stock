@@ -44,5 +44,8 @@ func LoadConfig(path string) (config Config, err error) {
 		return
 	}
 	err = viper.Unmarshal(&config)
+	if err == nil {
+		AppConfig = &config
+	}
 	return
 }

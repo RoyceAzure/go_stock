@@ -33,8 +33,7 @@ func NewTestRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, ma
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
-				QueueCritical: 10,
-				QueueDefault:  5,
+				MailQueue: 10,
 			},
 			Logger: NewLoggerAdapter(),
 		},
