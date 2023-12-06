@@ -136,6 +136,28 @@
       }
     },
     "/v1/user": {
+      "get": {
+        "summary": "Create new user",
+        "description": "Use this API to create new user",
+        "operationId": "StockInfo_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      },
       "post": {
         "summary": "Create new user",
         "description": "Use this API to create new user",
@@ -255,6 +277,14 @@
       }
     },
     "pbCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbGetUserResponse": {
       "type": "object",
       "properties": {
         "user": {
@@ -391,6 +421,10 @@
     "pbUser": {
       "type": "object",
       "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
         "userName": {
           "type": "string"
         },

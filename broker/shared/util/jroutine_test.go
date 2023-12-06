@@ -45,21 +45,17 @@ func TestSliceIterAndBroker(t *testing.T) {
 	for data := range processed {
 		resultList = append(resultList, data)
 		if len(resultList)%batchSize == 0 {
-			fmt.Printf("----------Insert to DB every %d data\n", len(resultList))
 			insertCount += len(resultList)
 			resultList = make([]float32, 0)
 		}
 	}
 	if len(resultList) > 0 {
-		fmt.Printf("----------Insert lasted %d data\n", len(resultList))
 		insertCount += len(resultList)
 	}
-	fmt.Printf("!!!!!!!!!!!!!!!!!!!End of Insert DB!! \n")
 	require.Equal(t, length, insertCount)
 }
 
 func processfun(data int, parms ...any) (res float32, err error) {
-	fmt.Printf("handle data %d\n", data)
 	res = float32(data) + 0.01
 	return res, nil
 }

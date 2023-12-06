@@ -16,8 +16,9 @@ func (s *StockInfoServer) CreateUser(ctx context.Context, req *pb.CreateUserRequ
 	}
 	return s.stockinfoDao.CreateUser(ctx, req)
 }
+
 func (s *StockInfoServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	_, err := s.authorizer.AuthorizUser(ctx)
+	_, token, err := s.authorizer.AuthorizUser(ctx)
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}
@@ -25,7 +26,7 @@ func (s *StockInfoServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequ
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
 	}
-	return s.stockinfoDao.UpdateUser(ctx, req)
+	return s.stockinfoDao.UpdateUser(ctx, req, token)
 }
 
 func (s *StockInfoServer) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
@@ -33,7 +34,24 @@ func (s *StockInfoServer) LoginUser(ctx context.Context, req *pb.LoginUserReques
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
 	}
-	return s.stockinfoDao.LoginUser(ctx, req)
+	res, err := s.stockinfoDao.LoginUser(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetUser(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (s *StockInfoServer) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.VerifyEmailResponse, error) {
@@ -45,7 +63,7 @@ func (s *StockInfoServer) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRe
 }
 
 func (s *StockInfoServer) InitStock(ctx context.Context, req *pb.InitStockRequest) (*pb.InitStockResponse, error) {
-	_, err := s.authorizer.AuthorizUser(ctx)
+	_, _, err := s.authorizer.AuthorizUser(ctx)
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}

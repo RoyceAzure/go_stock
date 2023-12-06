@@ -8,7 +8,7 @@ import (
 )
 
 func (s *SchedulerServer) GetStockPriceRealTime(ctx context.Context, req *pb.StockPriceRealTimeRequest) (*pb.StockPriceRealTimeResponse, error) {
-	_, err := s.authorizer.AuthorizUser(ctx)
+	_, _, err := s.authorizer.AuthorizUser(ctx)
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}
@@ -16,7 +16,7 @@ func (s *SchedulerServer) GetStockPriceRealTime(ctx context.Context, req *pb.Sto
 }
 
 func (s *SchedulerServer) GetStockDayAvg(ctx context.Context, req *pb.StockDayAvgRequest) (*pb.StockDayAvgResponse, error) {
-	_, err := s.authorizer.AuthorizUser(ctx)
+	_, _, err := s.authorizer.AuthorizUser(ctx)
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}

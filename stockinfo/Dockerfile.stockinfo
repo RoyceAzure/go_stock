@@ -16,7 +16,7 @@ COPY app.env .
 # RUN chmod +x /app/start.sh
 # COPY wait-for.sh .
 # RUN chmod +x /app/wait-for.sh
-COPY ./project/db/migrations ./project/db/migration
+COPY ./project/db/migrations ./project/db/migrations
 
 EXPOSE 8081
 EXPOSE 9091

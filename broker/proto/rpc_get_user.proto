@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "user.proto";
+
+package pb;
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/api/pb";
+
+message GetUserRequest{
+}
+
+message GetUserResponse{
+    User user=1;
+}

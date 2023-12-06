@@ -8,12 +8,12 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
 )
 
 type IStockInfoDao interface {
 	CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
-	UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error)
+	GetUser(ctx context.Context, in *pb.GetUserRequest, accessToken string) (*pb.GetUserResponse, error)
+	UpdateUser(ctx context.Context, in *pb.UpdateUserRequest, accessToken string) (*pb.UpdateUserResponse, error)
 	LoginUser(ctx context.Context, in *pb.LoginUserRequest) (*pb.LoginUserResponse, error)
 	VerifyEmail(ctx context.Context, in *pb.VerifyEmailRequest) (*pb.VerifyEmailResponse, error)
 	InitStock(ctx context.Context, in *pb.InitStockRequest) (*pb.InitStockResponse, error)

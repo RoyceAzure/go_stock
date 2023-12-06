@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "rpc_create_user.proto";
+import "rpc_get_user.proto";
 import "rpc_update_user.proto";
 import "rpc_login_user.proto";
 import "rpc_verify_email.proto";
@@ -33,6 +34,15 @@ service StockInfo{
               summary: "Create new user";
             };
     }
+    rpc GetUser (GetUserRequest) returns (GetUserResponse){
+      option (google.api.http) = {
+          get: "/v1/user"
+          };
+          option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to create new user";
+            summary: "Create new user";
+          };
+  }
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse){
       option (google.api.http) = {
           patch: "/v1/user"

@@ -11,9 +11,6 @@ import (
 )
 
 func TestInsert(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
 	config := config.Config{
 		MongodbAddress: "mongodb://localhost:27017",
 	}
