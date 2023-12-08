@@ -1,0 +1,26 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+
+message Fund{
+    int64 user_id=1;
+    string balance = 2;
+    string currency_type = 3;
+    string sso_identifer = 4;
+    google.protobuf.Timestamp  up_date= 5;
+    google.protobuf.Timestamp  cr_date= 6;
+}
+
+message RealizedGain{
+    string product_name=1;
+    int64 quantity=2;
+    string avg_cost=3;
+    string cost=4;
+    string current_price=5;
+    string current_value=6;
+    string gain=7;
+    string gain_pt=8;
+}

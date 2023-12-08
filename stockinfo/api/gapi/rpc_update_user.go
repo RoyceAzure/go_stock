@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,11 +18,11 @@ import (
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	payload, err := server.authorizUser(ctx)
 	if err != nil {
-		return nil, utility.UnauthticatedError(err)
+		return nil, util.UnauthticatedError(err)
 	}
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
-		return nil, utility.InvalidArgumentError(violations)
+		return nil, util.InvalidArgumentError(violations)
 	}
 
 	if payload.UserId != req.GetUserId() {
@@ -31,16 +31,16 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 	arg := db.UpdateUserParams{
 		UserID:       req.UserId,
-		UserName:     utility.StringToSqlNiStr(req.GetUserName()),
-		SsoIdentifer: utility.StringToSqlNiStr(req.GetSsoIdentifer()),
+		UserName:     util.StringToSqlNiStr(req.GetUserName()),
+		SsoIdentifer: util.StringToSqlNiStr(req.GetSsoIdentifer()),
 	}
 	if req.Password != nil {
-		hashed_password, err := utility.HashPassword(req.GetPassword())
+		hashed_password, err := util.HashPassword(req.GetPassword())
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to to hash password : %s", err)
 		}
-		arg.HashedPassword = utility.StringToSqlNiStr(hashed_password)
-		arg.PasswordChangedAt = utility.TimeToSqlNiTime(time.Now().UTC())
+		arg.HashedPassword = util.StringToSqlNiStr(hashed_password)
+		arg.PasswordChangedAt = util.TimeToSqlNiTime(time.Now().UTC())
 	}
 
 	//注意  這裡的ctx是由gin.Context提供，這就表示要不要中止process是由gin框架控制
@@ -66,22 +66,22 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 // allowed user_name password sso_identifer to be nil
 func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := utility.ValidateMustNotZeroInt64(req.UserId); err != nil {
-		violations = append(violations, utility.FieldViolation("userID", err))
+	if err := util.ValidateMustNotZeroInt64(req.UserId); err != nil {
+		violations = append(violations, util.FieldViolation("userID", err))
 	}
 	if req.UserName != nil {
-		if err := utility.ValidateUsername(req.GetUserName()); err != nil {
-			violations = append(violations, utility.FieldViolation("username", err))
+		if err := util.ValidateUsername(req.GetUserName()); err != nil {
+			violations = append(violations, util.FieldViolation("username", err))
 		}
 	}
 	if req.Password != nil {
-		if err := utility.ValidPassword(req.GetPassword()); err != nil {
-			violations = append(violations, utility.FieldViolation("password", err))
+		if err := util.ValidPassword(req.GetPassword()); err != nil {
+			violations = append(violations, util.FieldViolation("password", err))
 		}
 	}
 	if req.SsoIdentifer != nil {
-		if err := utility.ValidSSO(req.GetSsoIdentifer()); err != nil {
-			violations = append(violations, utility.FieldViolation("sso_identifer", err))
+		if err := util.ValidSSO(req.GetSsoIdentifer()); err != nil {
+			violations = append(violations, util.FieldViolation("sso_identifer", err))
 		}
 	}
 	return violations

@@ -3,8 +3,8 @@ package worker
 import (
 	"context"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/mail"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/mail"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )

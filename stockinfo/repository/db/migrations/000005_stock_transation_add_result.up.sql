@@ -1,0 +1,1 @@
+ALTER TABLE "stock_transaction" ADD COLUMN  result bool NOT NULL DEFAULT true;

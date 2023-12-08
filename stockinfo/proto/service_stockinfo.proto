@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 import "rpc_create_user.proto";
+import "rpc_stock_transation.proto";
+import "rpc_user_stock.proto";
 import "rpc_get_user.proto";
 import "rpc_update_user.proto";
 import "rpc_login_user.proto";
@@ -8,13 +10,14 @@ import "rpc_verify_email.proto";
 import "rpc_stock.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "rpc_fund.proto";
 package pb;
 
 option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     info: {
       title: "stcok Info API";
-      version: "1.2";
+      version: "1.3";
       contact: {
         name: "stcok_info project";
         url: "https://github.com/RoyceAzure/go_stock";
@@ -83,4 +86,107 @@ service StockInfo{
       summary: "Init stock data";
     };
 }
+
+rpc GetUnRealizedGain (GetUnRealizedGainRequest) returns (GetUnRealizedGainResponse){
+  option (google.api.http) = {
+      get: "/v1/fund/unrealized"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get unrealized fund";
+    summary: "Get unrealized fund";
+  };
+}
+
+rpc GetRealizedGain (GetRealizedGainRequest) returns (GetRealizedGainResponse){
+  option (google.api.http) = {
+      get: "/v1/fund/realized"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get realized fund";
+    summary: "Get realized fund";
+  };
+}
+
+rpc GetFund (GetFundRequest) returns (GetFundResponse){
+  option (google.api.http) = {
+      get: "/v1/fund"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get fund";
+    summary: "Get fund";
+  };
+}
+
+rpc AddFund (AddFundRequest) returns (AddFundResponse){
+  option (google.api.http) = {
+      post: "/v1/fund"
+      body:"*"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to charge ";
+    summary: "Charge fund";
+  };
+}
+
+rpc GetStock (GetStockRequest) returns (GetStockResponse){
+  option (google.api.http) = {
+      get: "/v1/stock/{stock_code}"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get stock by code";
+    summary: "Get stock by code";
+  };
+}
+
+rpc GetStocks (GetStocksRequest) returns (GetStocksResponse){
+  option (google.api.http) = {
+      get: "/v1/stock"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get stocks";
+    summary: "Get stocks";
+  };
+}
+
+rpc TransationStock (TransationRequest) returns (TransationResponse){
+  option (google.api.http) = {
+      post: "/v1/stockTransation"
+      body:"*"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to perform transation";
+    summary: "Perform transation";
+  };
+}
+
+rpc GetAllTransations (GetAllStockTransationRequest) returns (StockTransatsionResponse){
+  option (google.api.http) = {
+      get: "/v1/stockTransation"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get filter transations";
+    summary: "Get filter transations";
+  };
+}
+
+rpc GetUserStock (GetUserStockRequest) returns (GetUserStockResponse){
+  option (google.api.http) = {
+      get: "/v1/userStock"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to stock inventory ";
+    summary: "Get stock inventory";
+  };
+}
+
+rpc GetUserStockById (GetUserStockByIdRequest) returns (GetUserStockBuIdResponse){
+  option (google.api.http) = {
+      get: "/v1/userStock/{user_id}"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to stock inventory by user id";
+    summary: "Get stock inventory by user id";
+  };
+}
+
 }

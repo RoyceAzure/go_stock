@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/constants"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lib/pq"

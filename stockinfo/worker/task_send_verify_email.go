@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )

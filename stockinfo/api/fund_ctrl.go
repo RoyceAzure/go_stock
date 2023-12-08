@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/constants"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
@@ -124,7 +124,7 @@ func (server *Server) getFunds(ctx *gin.Context) {
 	}
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	funds, err := server.store.GetfundByUserId(ctx, db.GetfundByUserIdParams{
+	funds, err := server.store.GetFundByUserId(ctx, db.GetFundByUserIdParams{
 		UserID: authPayload.UserId,
 		Limit:  request.Limit,
 		Offset: request.Offset,

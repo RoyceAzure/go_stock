@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"

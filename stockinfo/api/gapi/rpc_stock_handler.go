@@ -2,10 +2,11 @@ package gapi
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,4 +59,53 @@ func cvStockDayAvg2CreateParm(value *pb.StockDayAvg) db.CreateStockParams {
 		MarketCap:    int64(100000),
 		CrUser:       "SYSTEM",
 	}
+}
+
+/*
+取得單一stock ???
+*/
+func (server *Server) GetStock(ctx context.Context, req *pb.GetStockRequest) (*pb.GetStockResponse, error) {
+	return nil, nil
+}
+
+/*
+TODO : 資料應該要從redis 來  而不是DB
+*/
+func (server *Server) GetStocks(ctx context.Context, req *pb.GetStocksRequest) (*pb.GetStocksResponse, error) {
+	var pageSize, page int32
+
+	if req.PageSize != 0 {
+		pageSize = req.PageSize
+	} else {
+		pageSize = DEFAULT_PAGE_SIZE
+	}
+
+	if req.Page != 0 {
+		page = req.Page
+	} else {
+		page = DEFAULT_PAGE
+	}
+
+	stocks, err := server.store.GetStocks(ctx, db.GetStocksParams{
+		Limit:  pageSize,
+		Offset: (page - 1) * pageSize,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Errorf(codes.NotFound, "stock not found : %s", err)
+		}
+		return nil, status.Errorf(codes.Internal, "%s", err)
+	}
+
+	var res pb.GetStocksResponse
+
+	for _, stock := range stocks {
+		res.Data = append(res.Data, &pb.Stock{
+			StockCode:    stock.StockCode,
+			StockName:    stock.StockName,
+			CurrentPrice: stock.CurrentPrice,
+		})
+	}
+
+	return &res, nil
 }

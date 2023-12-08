@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-11-16T09:04:48.284Z
+-- Generated at: 2023-12-08T08:31:22.970Z
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
@@ -77,10 +77,12 @@ CREATE TABLE "stock_transaction" (
   "TransationId" BIGSERIAL PRIMARY KEY,
   "user_id" bigint NOT NULL,
   "stock_id" bigint NOT NULL,
+  "fund_id" bigint NOT NULL,
   "transaction_type" varchar NOT NULL,
   "transaction_date" timestamp NOT NULL DEFAULT (now()),
   "transation_amt" int NOT NULL,
   "transation_price_per_share" decimal NOT NULL,
+  "result" bool NOT NULL DEFAULT true,
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,
@@ -120,3 +122,5 @@ ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("
 ALTER TABLE "user_stock" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
 
 ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
+
+ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("fund_id") REFERENCES "fund" ("fund_id");

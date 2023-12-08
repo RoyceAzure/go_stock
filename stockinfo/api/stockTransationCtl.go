@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 

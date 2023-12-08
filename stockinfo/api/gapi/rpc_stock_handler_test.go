@@ -5,14 +5,15 @@ import (
 	"errors"
 	"testing"
 
-	mock_gapi "github.com/RoyceAzure/go-stockinfo/api/gapi/mock"
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	mock_scheduler_client "github.com/RoyceAzure/go-stockinfo/api/pb/mock"
 	"github.com/RoyceAzure/go-stockinfo/api/token"
+	mock_gapi "github.com/RoyceAzure/go-stockinfo/api/gapi/mock"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	mock_scheduler_client "github.com/RoyceAzure/go-stockinfo/shared/pb/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
 )
 
 func TestInitStock(t *testing.T) {

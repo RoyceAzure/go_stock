@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+
+message StockTransation{
+    int64 user_id=1;
+    int64 stock_id = 2;
+    string transation_type = 3;
+    int64 trans_amt = 4;
+    string trans_prices_per_share=5;
+}
+

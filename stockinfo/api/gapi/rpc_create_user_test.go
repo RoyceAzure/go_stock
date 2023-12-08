@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	mockdb "github.com/RoyceAzure/go-stockinfo/project/db/mock"
-	"github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	mockdb "github.com/RoyceAzure/go-stockinfo/repository/db/mock"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/RoyceAzure/go-stockinfo/worker"
 	mockwk "github.com/RoyceAzure/go-stockinfo/worker/mock"
 	"github.com/golang/mock/gomock"
@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
 )
 
 // password為明碼

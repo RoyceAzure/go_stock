@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "stcok Info API",
-    "version": "1.2",
+    "version": "1.3",
     "contact": {
       "name": "stcok_info project",
       "url": "https://github.com/RoyceAzure/go_stock",
@@ -58,6 +58,110 @@
         ]
       }
     },
+    "/v1/fund": {
+      "get": {
+        "summary": "Get fund",
+        "description": "Use this API to get fund",
+        "operationId": "StockInfo_GetFund",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetFundResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      },
+      "post": {
+        "summary": "Charge fund",
+        "description": "Use this API to charge ",
+        "operationId": "StockInfo_AddFund",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbAddFundResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbAddFundRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/fund/realized": {
+      "get": {
+        "summary": "Get realized fund",
+        "description": "Use this API to get realized fund",
+        "operationId": "StockInfo_GetRealizedGain",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetRealizedGainResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/fund/unrealized": {
+      "get": {
+        "summary": "Get unrealized fund",
+        "description": "Use this API to get unrealized fund",
+        "operationId": "StockInfo_GetUnRealizedGain",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUnRealizedGainResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/login_user": {
       "post": {
         "summary": "login a user",
@@ -92,6 +196,46 @@
         ]
       }
     },
+    "/v1/stock": {
+      "get": {
+        "summary": "Get stocks",
+        "description": "Use this API to get stocks",
+        "operationId": "StockInfo_GetStocks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetStocksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/stock/init": {
       "get": {
         "summary": "Init stock data",
@@ -116,6 +260,130 @@
         ]
       }
     },
+    "/v1/stock/{stockCode}": {
+      "get": {
+        "summary": "Get stock by code",
+        "description": "Use this API to get stock by code",
+        "operationId": "StockInfo_GetStock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetStockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "stockCode",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/stockTransation": {
+      "get": {
+        "summary": "Get filter transations",
+        "description": "Use this API to get filter transations",
+        "operationId": "StockInfo_GetAllTransations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbStockTransatsionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "stockId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "transationType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      },
+      "post": {
+        "summary": "Perform transation",
+        "description": "Use this API to perform transation",
+        "operationId": "StockInfo_TransationStock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbTransationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbTransationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/stock_day_avg": {
       "get": {
         "summary": "Get stock_day_avg",
@@ -126,6 +394,30 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbStockDayAvgResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfoSchduler"
+        ]
+      }
+    },
+    "/v1/stock_day_real_price/latest": {
+      "get": {
+        "summary": "Get latest stock_day_real_price",
+        "description": "Use this API to get latest stock_day_real_price",
+        "operationId": "StockInfoSchduler_GetStockPriceRealTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbStockPriceRealTimeResponse"
             }
           },
           "default": {
@@ -198,6 +490,79 @@
         ]
       }
     },
+    "/v1/userStock": {
+      "get": {
+        "summary": "Get stock inventory",
+        "description": "Use this API to stock inventory ",
+        "operationId": "StockInfo_GetUserStock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUserStockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/userStock/{userId}": {
+      "get": {
+        "summary": "Get stock inventory by user id",
+        "description": "Use this API to stock inventory by user id",
+        "operationId": "StockInfo_GetUserStockById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUserStockBuIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/verify_email": {
       "get": {
         "summary": "Verify email",
@@ -239,6 +604,28 @@
     }
   },
   "definitions": {
+    "pbAddFundRequest": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string"
+        },
+        "currencyType": {
+          "type": "string"
+        }
+      }
+    },
+    "pbAddFundResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbFund"
+        },
+        "result": {
+          "type": "string"
+        }
+      }
+    },
     "pbCreateUserRequest": {
       "type": "object",
       "properties": {
@@ -264,11 +651,117 @@
         }
       }
     },
+    "pbFund": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "balance": {
+          "type": "string"
+        },
+        "currencyType": {
+          "type": "string"
+        },
+        "ssoIdentifer": {
+          "type": "string"
+        },
+        "upDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbGetFundResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbFund"
+          }
+        }
+      }
+    },
+    "pbGetRealizedGainResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbRealizedGain"
+          }
+        }
+      }
+    },
+    "pbGetStockResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbStock"
+        }
+      }
+    },
+    "pbGetStocksResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbStock"
+          }
+        }
+      }
+    },
+    "pbGetUnRealizedGainResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbRealizedGain"
+          }
+        }
+      }
+    },
     "pbGetUserResponse": {
       "type": "object",
       "properties": {
         "user": {
           "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbGetUserStockBuIdResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbUserStock"
+          }
+        }
+      }
+    },
+    "pbGetUserStockResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbUserStock"
+          }
         }
       }
     },
@@ -282,6 +775,50 @@
         "failedCount": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "pbRealizedGain": {
+      "type": "object",
+      "properties": {
+        "productName": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "format": "int64"
+        },
+        "avgCost": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "string"
+        },
+        "currentPrice": {
+          "type": "string"
+        },
+        "currentValue": {
+          "type": "string"
+        },
+        "gain": {
+          "type": "string"
+        },
+        "gainPt": {
+          "type": "string"
+        }
+      }
+    },
+    "pbStock": {
+      "type": "object",
+      "properties": {
+        "stockCode": {
+          "type": "string"
+        },
+        "stockName": {
+          "type": "string"
+        },
+        "currentPrice": {
+          "type": "string"
         }
       }
     },
@@ -315,6 +852,119 @@
             "type": "object",
             "$ref": "#/definitions/pbStockDayAvg"
           }
+        }
+      }
+    },
+    "pbStockPriceRealTime": {
+      "type": "object",
+      "properties": {
+        "stockCode": {
+          "type": "string"
+        },
+        "stockName": {
+          "type": "string"
+        },
+        "tradeVolume": {
+          "type": "string"
+        },
+        "tradeValue": {
+          "type": "string"
+        },
+        "openPrice": {
+          "type": "string"
+        },
+        "highestPrice": {
+          "type": "string"
+        },
+        "lowestPrice": {
+          "type": "string"
+        },
+        "closePrice": {
+          "type": "string"
+        },
+        "change": {
+          "type": "string"
+        },
+        "transaction": {
+          "type": "string"
+        },
+        "transTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbStockPriceRealTimeResponse": {
+      "type": "object",
+      "properties": {
+        "keyTime": {
+          "type": "string"
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbStockPriceRealTime"
+          }
+        }
+      }
+    },
+    "pbStockTransation": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transationType": {
+          "type": "string"
+        },
+        "transAmt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transPricesPerShare": {
+          "type": "string"
+        }
+      }
+    },
+    "pbStockTransatsionResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbStockTransation"
+          }
+        }
+      }
+    },
+    "pbTransationRequest": {
+      "type": "object",
+      "properties": {
+        "stockCode": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transationType": {
+          "type": "string"
+        },
+        "transAmt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbTransationResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
         }
       }
     },
@@ -367,6 +1017,26 @@
         "crDate": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbUserStock": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "purchasePricePerShare": {
+          "type": "string"
         }
       }
     },

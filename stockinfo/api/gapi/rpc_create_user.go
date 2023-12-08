@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/constants"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	worker "github.com/RoyceAzure/go-stockinfo/worker"
 	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
@@ -19,9 +19,9 @@ import (
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	violations := validateCreteUserRequest(req)
 	if violations != nil {
-		return nil, utility.InvalidArgumentError(violations)
+		return nil, util.InvalidArgumentError(violations)
 	}
-	hashed_password, err := utility.HashPassword(req.GetPassword())
+	hashed_password, err := util.HashPassword(req.GetPassword())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to to hash password : %s", err)
 	}
@@ -31,7 +31,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 			UserName:       req.GetUserName(),
 			Email:          req.GetEmail(),
 			HashedPassword: hashed_password,
-			SsoIdentifer:   utility.StringToSqlNiStr(req.GetSsoIdentifer()),
+			SsoIdentifer:   util.StringToSqlNiStr(req.GetSsoIdentifer()),
 			CrUser:         "SYSTEM",
 		},
 		AfterCreate: func(user db.User) error {
@@ -68,17 +68,17 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 
 func validateCreteUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := utility.ValidateUsername(req.GetUserName()); err != nil {
-		violations = append(violations, utility.FieldViolation("username", err))
+	if err := util.ValidateUsername(req.GetUserName()); err != nil {
+		violations = append(violations, util.FieldViolation("username", err))
 	}
-	if err := utility.ValidEmail(req.GetEmail()); err != nil {
-		violations = append(violations, utility.FieldViolation("email", err))
+	if err := util.ValidEmail(req.GetEmail()); err != nil {
+		violations = append(violations, util.FieldViolation("email", err))
 	}
-	if err := utility.ValidPassword(req.GetPassword()); err != nil {
-		violations = append(violations, utility.FieldViolation("password", err))
+	if err := util.ValidPassword(req.GetPassword()); err != nil {
+		violations = append(violations, util.FieldViolation("password", err))
 	}
-	if err := utility.ValidSSO(req.GetSsoIdentifer()); err != nil {
-		violations = append(violations, utility.FieldViolation("sso_identifer", err))
+	if err := util.ValidSSO(req.GetSsoIdentifer()); err != nil {
+		violations = append(violations, util.FieldViolation("sso_identifer", err))
 	}
 	return violations
 }

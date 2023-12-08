@@ -4,10 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
-
 )
 
 func TestJWTMaker(t *testing.T) {
