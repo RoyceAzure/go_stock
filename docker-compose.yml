@@ -52,9 +52,11 @@ services:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info?sslmode=disable
       - REDIS_ADDRESS=redis-asynq:6379
       - SERVICEID=stockinfo01
+      - GRPC_SCHEDULER_ADDRESS=scheduler:9092
     depends_on:
       - postgres
       - redis-asynq
+      - scheduler
     # entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
     command: ["/app/main"]
 

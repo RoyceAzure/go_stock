@@ -10,12 +10,11 @@ import (
 	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
-
 )
 
 func newTestServer(t *testing.T, store db.Store) *Server {
 	config := config.Config{
-		TokenSymmetricKey:    utility.RandomString(32),
+		TokenSymmetricKey:    util.RandomString(32),
 		AccessTokenDuration:  time.Minute,
 		RefreshTokenDuration: time.Hour,
 	}

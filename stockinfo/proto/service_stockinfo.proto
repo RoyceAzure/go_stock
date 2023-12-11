@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import "rpc_create_user.proto";
 import "rpc_stock_transation.proto";
+import "rpc_realized_profit_loss.proto";
 import "rpc_user_stock.proto";
 import "rpc_get_user.proto";
 import "rpc_update_user.proto";
@@ -13,7 +14,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 import "rpc_fund.proto";
 package pb;
 
-option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     info: {
       title: "stcok Info API";
@@ -79,7 +80,7 @@ service StockInfo{
 
   rpc InitStock (InitStockRequest) returns (InitStockResponse){
     option (google.api.http) = {
-        get: "/v1/stock/init"
+        get: "/v1/stock/action/init"
         };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       description: "Use this API to Init stock data";
@@ -186,6 +187,26 @@ rpc GetUserStockById (GetUserStockByIdRequest) returns (GetUserStockBuIdResponse
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to stock inventory by user id";
     summary: "Get stock inventory by user id";
+  };
+}
+
+rpc GetRealizedProfitLoss (GetRealizedProfitLossRequest) returns (GetRealizedProfitLossResponse){
+  option (google.api.http) = {
+      get: "/v1/realozedProfit"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get realozedProfit";
+    summary: "Get realozedProfit";
+  };
+}
+
+rpc GetUnRealizedProfitLoss (GetUnRealizedProfitLossRequest) returns (GetUnRealizedProfitLossResponse){
+  option (google.api.http) = {
+      get: "/v1/unRealozedProfit"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to get UnRealozedProfit";
+    summary: "Get UnRealozedProfit";
   };
 }
 

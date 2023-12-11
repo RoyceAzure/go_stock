@@ -8,6 +8,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
+	"github.com/shopspring/decimal"
 )
 
 /*
@@ -39,14 +40,24 @@ func (store *SQLStore) UpdateFundTx(ctx context.Context, arg UpdateFundTxParams)
 		})
 		if err != nil {
 			if err == sql.ErrNoRows {
-				return fmt.Errorf("use has no fund in tw")
+				return fmt.Errorf("user has no fund in tw")
 			}
 			return fmt.Errorf("get fund return err")
 		}
+		oriBalance, err := decimal.NewFromString(fund.Balance)
+		if err != nil {
+			return fmt.Errorf("%w : convert balance failed", constants.ErrInternal)
+		}
+
+		amt, err := decimal.NewFromString(arg.Amount)
+		if err != nil {
+			return fmt.Errorf("%w : convert balance failed", constants.ErrInternal)
+		}
+		newBalance := oriBalance.Add(amt)
 
 		updateFund, err := q.UpdateFund(ctx, UpdateFundParams{
 			FundID:  fund.FundID,
-			Balance: arg.Amount,
+			Balance: newBalance.String(),
 			UpDate:  util.TimeToSqlNiTime(time.Now().UTC()),
 			UpUser:  util.StringToSqlNiStr(arg.UPN),
 		})

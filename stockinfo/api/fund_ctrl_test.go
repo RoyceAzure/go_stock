@@ -27,10 +27,10 @@ func randomFund() (db.User, db.Fund) {
 
 func CreateRandomFund(user db.User) db.Fund {
 	return db.Fund{
-		FundID:       utility.RandomInt(1, 100),
+		FundID:       util.RandomInt(1, 100),
 		UserID:       user.UserID,
-		Balance:      strconv.FormatInt(utility.RandomInt(10000, 1000000), 10),
-		CurrencyType: utility.RandomCurrencyTypeStr(),
+		Balance:      strconv.FormatInt(util.RandomInt(10000, 1000000), 10),
+		CurrencyType: util.RandomCurrencyTypeStr(),
 		CrDate:       time.Now().UTC(),
 		CrUser:       "SYSTEM",
 	}

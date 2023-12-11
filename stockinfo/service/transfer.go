@@ -17,6 +17,7 @@ type TransferStockServiceParams struct {
 	StockCode string `json:"stock_id"`
 	TransType string `json:"trans_type"`
 	Amt       int32  `json:"amt"`
+	Operator  string `json:"operator"`
 }
 
 /*
@@ -28,15 +29,17 @@ type TransferStockServiceParams struct {
 這段會使用queue方式執行
 
 
+檢查tw fund,  stock  spr，塞選並找到所需spr  建立交易紀錄
+
 這個有可能會在queue裡面重複執行
 */
 
 func (service *TransferService) StockTransfer(ctx context.Context, arg TransferStockServiceParams) error {
 	if !utility.IsSupportedTransationType(arg.TransType) {
-		return fmt.Errorf("unsupported trans type")
+		return fmt.Errorf("%w : unsupported trans type", constants.ErrInvalidArgument)
 	}
 
-	fund, err := service.store.GetFundByUidandCurForUpdateNoK(ctx, db.GetFundByUidandCurForUpdateNoKParams{
+	_, err := service.store.GetFundByUidandCurForUpdateNoK(ctx, db.GetFundByUidandCurForUpdateNoKParams{
 		UserID:       arg.UserID,
 		CurrencyType: string(constants.TW),
 	})
@@ -64,7 +67,7 @@ func (service *TransferService) StockTransfer(ctx context.Context, arg TransferS
 	}
 
 	if targetSPR == nil {
-		return fmt.Errorf("can't fetch %s current price")
+		return fmt.Errorf("%w : can't fetch %s current price", constants.ErrInternal, stock.StockName)
 	}
 
 	//不需要查看是否失敗，重試情況下再建立一個新的
@@ -79,28 +82,31 @@ func (service *TransferService) StockTransfer(ctx context.Context, arg TransferS
 		TransationPricePerShare: targetSPR.OpenPrice,
 	})
 	if err != nil {
-		return fmt.Errorf("create transation failed")
+		return fmt.Errorf("%w : create transation failed", constants.ErrInternal)
 	}
 
-	perPrice, err := decimal.NewFromString(targetSPR.OpenPrice)
+	_, err = decimal.NewFromString(targetSPR.OpenPrice)
 	if err != nil {
-		return fmt.Errorf("error  convert price")
+		return fmt.Errorf("%w : error convert price", constants.ErrInternal)
 	}
 
 	//交易開始時先寫入交易紀錄  最後在更新成功與失敗  要有crdate  update
 	_, err = service.store.TransferStockTx(ctx, db.TransferStockTxParams{
-		UserID:   arg.UserID,
-		StockID:  stock.StockID,
-		FundID:   fund.FundID,
-		Amt:      arg.Amt,
-		PerPrice: perPrice,
+		TransationID: stockTrans.TransationID,
+		CreateUser:   arg.Operator,
 	})
+
 	if err != nil {
 		service.store.UpdateStockTransationResult(ctx, db.UpdateStockTransationResultParams{
-			Result:       false,
+			Result:       db.TransationResultFailed,
 			TransationID: stockTrans.TransationID,
 		})
 		return err
+	} else {
+		service.store.UpdateStockTransationResult(ctx, db.UpdateStockTransationResultParams{
+			Result:       db.TransationResultSuccessed,
+			TransationID: stockTrans.TransationID,
+		})
 	}
 
 	return nil

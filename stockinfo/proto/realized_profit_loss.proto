@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
+
+message RealizedProfitLoss{
+    int64 user_id=1;
+    string product_name = 2;
+    string cost_per_price = 3;
+    string cost_total_price = 4;
+    string amt = 5;
+    string deal_per_price = 6;
+    string deal_total_price = 7;
+    string realized = 8;
+    string realized_precent = 9;
+    google.protobuf.Timestamp  trans_at= 10;
+}

@@ -1,4 +1,4 @@
-package repoisitory
+package logger_distributor
 
 import (
 	"context"

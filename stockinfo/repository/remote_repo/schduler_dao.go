@@ -1,4 +1,4 @@
-package repository
+package remote_repo
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	pb "github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type SchdulerInfoDao interface {
@@ -49,7 +50,7 @@ func NewJSchdulerInfoDao(address string) (SchdulerInfoDao, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.DialContext(ctx, address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		return nil, fmt.Errorf("can't connect grpc server")
 	}

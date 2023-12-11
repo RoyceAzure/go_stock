@@ -1,4 +1,4 @@
-package repository
+package remote_repo
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	"github.com/stretchr/testify/require"
+
 )
 
 func TestGetStockPriceRealTime(t *testing.T) {

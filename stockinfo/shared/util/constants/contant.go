@@ -24,4 +24,10 @@ const (
 var (
 	ErrInValidatePreConditionOp = errors.New("invalid precondition of operation")
 	ErrInternal                 = errors.New("internal error")
+	ErrInvalidArgument          = errors.New("invaled argument")
+)
+
+var (
+	ErrUserNotEsixts   = errors.New("user not exists or invalid password")
+	ErrInvalidPassword = errors.New("wrong password")
 )

@@ -58,6 +58,7 @@ server:
 # mock:
 # 	mockgen -source="./distributor.go" -package=mockwk -destination="mock/distributor_mock.go"
 # 	mockgen  . Store
+# mockgen --destination github.com/RoyceAzure/go-stockinfo/repository/mock --package mock_sqlc  github.com/RoyceAzure/go-stockinfo/repository/db/sqlc Store
 
 db_docs:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbdocs build ./db.dbml

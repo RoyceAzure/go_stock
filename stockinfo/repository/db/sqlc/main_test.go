@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	_ "github.com/lib/pq"
+
 )
 
 // database/sql  只是個介面  所以測試時需要額外使用github.com/lib/pq
@@ -43,11 +43,11 @@ func setup() {
 
 func teardown() {
 	// 你的清理代碼
-	ctx := context.Background()
-	testQueries.DeleteUserStock(ctx, testUserStock.UserStockID)
-	testQueries.DeleteStock(ctx, testStock.StockID)
-	testQueries.DeleteFund(ctx, testFund.FundID)
-	testQueries.DeleteUser(ctx, testUser.UserID)
+	// ctx := context.Background()
+	// testQueries.DeleteUserStock(ctx, testUserStock.UserStockID)
+	// testQueries.DeleteStock(ctx, testStock.StockID)
+	// testQueries.DeleteFund(ctx, testFund.FundID)
+	// testQueries.DeleteUser(ctx, testUser.UserID)
 }
 
 func TestYourFunction(t *testing.T) {

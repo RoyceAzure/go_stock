@@ -62,7 +62,7 @@ func (server *Server) AddFund(ctx context.Context, req *pb.AddFundRequest) (*pb.
 		return nil, utility.UnauthticatedError(err)
 	}
 
-	violations := validateAddFundRequest(req)
+	violations := validateAddTWFundRequest(req)
 	if violations != nil {
 		return nil, utility.InvalidArgumentError(violations)
 	}
@@ -86,14 +86,26 @@ func (server *Server) AddFund(ctx context.Context, req *pb.AddFundRequest) (*pb.
 	}, nil
 }
 
-func validateAddFundRequest(req *pb.AddFundRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := utility.ValidateStringToint64(req.GetAmount()); err != nil {
+/*
+validate fund for type is TW
+default use tw type this version, so no need to check CurrencyType
+*/
+func validateAddTWFundRequest(req *pb.AddFundRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+
+	value, err := utility.ValidateStringToDecimal(req.GetAmount())
+	if err != nil {
 		violations = append(violations, utility.FieldViolation("amount", err))
+	} else if value.IsZero() {
+		violations = append(violations, utility.FieldViolation("amount", fmt.Errorf("amount must not be zero")))
+	} else if value.IsNegative() {
+		violations = append(violations, utility.FieldViolation("amount", fmt.Errorf("amount must be positive")))
+	} else if !value.IsInteger() {
+		violations = append(violations, utility.FieldViolation("amount", fmt.Errorf("amount must be integer")))
 	}
 
-	if ok := utility.IsSupportedCurrencyType(req.GetCurrencyType()); !ok {
-		violations = append(violations, utility.FieldViolation("currrency_type", fmt.Errorf("%s currency type not supported", req.GetCurrencyType())))
-	}
+	// if ok := utility.IsSupportedCurrencyType(req.GetCurrencyType()); !ok {
+	// 	violations = append(violations, utility.FieldViolation("currrency_type", fmt.Errorf("%s currency type not supported", req.GetCurrencyType())))
+	// }
 
 	return violations
 }

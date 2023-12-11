@@ -2,7 +2,7 @@ syntax = "proto3";
 import "user_stock.proto";
 package pb;
 
-option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
 
 message GetUserStockRequest{
     int32 page_size=1;

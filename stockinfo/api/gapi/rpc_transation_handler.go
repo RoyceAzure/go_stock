@@ -4,17 +4,38 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
+	worker "github.com/RoyceAzure/go-stockinfo/worker"
+	"github.com/hibiken/asynq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
 func (server *Server) TransationStock(ctx context.Context, req *pb.TransationRequest) (*pb.TransationResponse, error) {
-	// server.store.CreateStockTransaction(ctx)
+	violations := validateTransationStockRequest(req)
+	if violations != nil {
+		return nil, utility.InvalidArgumentError(violations)
+	}
+	payload, err := server.authorizUser(ctx)
+	if err != nil {
+		return nil, util.UnauthticatedError(err)
+	}
 
+	err = server.taskDistributor.DistributeTaskStockTransation(ctx, &worker.PayloadTransation{
+		UserID:    payload.UserId,
+		StockCode: req.StockCode,
+		TransType: req.TransationType,
+		Amt:       int32(req.TransAmt),
+		Operator:  payload.UPN,
+	}, asynq.ProcessIn(time.Millisecond), asynq.MaxRetry(3))
+	if err != nil {
+		return nil, util.InternalError(err)
+	}
 	return nil, nil
 }
 
@@ -89,6 +110,21 @@ func validateGetAllTransationsRequest(req *pb.GetAllStockTransationRequest) (vio
 		if !utility.IsSupportedTransationType(req.TransationType) {
 			violations = append(violations, utility.FieldViolation("transation_type", errors.New("transation_type not supported")))
 		}
+	}
+	return violations
+}
+
+func validateTransationStockRequest(req *pb.TransationRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if req.TransationType != "" {
+		if !utility.IsSupportedTransationType(req.TransationType) {
+			violations = append(violations, utility.FieldViolation("transation_type", errors.New("transation_type not supported")))
+		}
+	}
+	if req.StockCode == "" {
+		violations = append(violations, utility.FieldViolation("stock_code", errors.New("stock_code must not empty")))
+	}
+	if req.TransAmt == 0 {
+		violations = append(violations, utility.FieldViolation("trans_amt", errors.New("trans_amt must not empty")))
 	}
 	return violations
 }

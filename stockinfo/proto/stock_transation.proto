@@ -2,7 +2,7 @@ syntax = "proto3";
 package pb;
 
 
-option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
 
 message StockTransation{
     int64 user_id=1;

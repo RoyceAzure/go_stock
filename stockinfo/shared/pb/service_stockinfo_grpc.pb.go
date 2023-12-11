@@ -19,22 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	StockInfo_CreateUser_FullMethodName        = "/pb.StockInfo/CreateUser"
-	StockInfo_GetUser_FullMethodName           = "/pb.StockInfo/GetUser"
-	StockInfo_UpdateUser_FullMethodName        = "/pb.StockInfo/UpdateUser"
-	StockInfo_LoginUser_FullMethodName         = "/pb.StockInfo/LoginUser"
-	StockInfo_VerifyEmail_FullMethodName       = "/pb.StockInfo/VerifyEmail"
-	StockInfo_InitStock_FullMethodName         = "/pb.StockInfo/InitStock"
-	StockInfo_GetUnRealizedGain_FullMethodName = "/pb.StockInfo/GetUnRealizedGain"
-	StockInfo_GetRealizedGain_FullMethodName   = "/pb.StockInfo/GetRealizedGain"
-	StockInfo_GetFund_FullMethodName           = "/pb.StockInfo/GetFund"
-	StockInfo_AddFund_FullMethodName           = "/pb.StockInfo/AddFund"
-	StockInfo_GetStock_FullMethodName          = "/pb.StockInfo/GetStock"
-	StockInfo_GetStocks_FullMethodName         = "/pb.StockInfo/GetStocks"
-	StockInfo_TransationStock_FullMethodName   = "/pb.StockInfo/TransationStock"
-	StockInfo_GetAllTransations_FullMethodName = "/pb.StockInfo/GetAllTransations"
-	StockInfo_GetUserStock_FullMethodName      = "/pb.StockInfo/GetUserStock"
-	StockInfo_GetUserStockById_FullMethodName  = "/pb.StockInfo/GetUserStockById"
+	StockInfo_CreateUser_FullMethodName              = "/pb.StockInfo/CreateUser"
+	StockInfo_GetUser_FullMethodName                 = "/pb.StockInfo/GetUser"
+	StockInfo_UpdateUser_FullMethodName              = "/pb.StockInfo/UpdateUser"
+	StockInfo_LoginUser_FullMethodName               = "/pb.StockInfo/LoginUser"
+	StockInfo_VerifyEmail_FullMethodName             = "/pb.StockInfo/VerifyEmail"
+	StockInfo_InitStock_FullMethodName               = "/pb.StockInfo/InitStock"
+	StockInfo_GetUnRealizedGain_FullMethodName       = "/pb.StockInfo/GetUnRealizedGain"
+	StockInfo_GetRealizedGain_FullMethodName         = "/pb.StockInfo/GetRealizedGain"
+	StockInfo_GetFund_FullMethodName                 = "/pb.StockInfo/GetFund"
+	StockInfo_AddFund_FullMethodName                 = "/pb.StockInfo/AddFund"
+	StockInfo_GetStock_FullMethodName                = "/pb.StockInfo/GetStock"
+	StockInfo_GetStocks_FullMethodName               = "/pb.StockInfo/GetStocks"
+	StockInfo_TransationStock_FullMethodName         = "/pb.StockInfo/TransationStock"
+	StockInfo_GetAllTransations_FullMethodName       = "/pb.StockInfo/GetAllTransations"
+	StockInfo_GetUserStock_FullMethodName            = "/pb.StockInfo/GetUserStock"
+	StockInfo_GetUserStockById_FullMethodName        = "/pb.StockInfo/GetUserStockById"
+	StockInfo_GetRealizedProfitLoss_FullMethodName   = "/pb.StockInfo/GetRealizedProfitLoss"
+	StockInfo_GetUnRealizedProfitLoss_FullMethodName = "/pb.StockInfo/GetUnRealizedProfitLoss"
 )
 
 // StockInfoClient is the client API for StockInfo service.
@@ -57,6 +59,8 @@ type StockInfoClient interface {
 	GetAllTransations(ctx context.Context, in *GetAllStockTransationRequest, opts ...grpc.CallOption) (*StockTransatsionResponse, error)
 	GetUserStock(ctx context.Context, in *GetUserStockRequest, opts ...grpc.CallOption) (*GetUserStockResponse, error)
 	GetUserStockById(ctx context.Context, in *GetUserStockByIdRequest, opts ...grpc.CallOption) (*GetUserStockBuIdResponse, error)
+	GetRealizedProfitLoss(ctx context.Context, in *GetRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetRealizedProfitLossResponse, error)
+	GetUnRealizedProfitLoss(ctx context.Context, in *GetUnRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetUnRealizedProfitLossResponse, error)
 }
 
 type stockInfoClient struct {
@@ -211,6 +215,24 @@ func (c *stockInfoClient) GetUserStockById(ctx context.Context, in *GetUserStock
 	return out, nil
 }
 
+func (c *stockInfoClient) GetRealizedProfitLoss(ctx context.Context, in *GetRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetRealizedProfitLossResponse, error) {
+	out := new(GetRealizedProfitLossResponse)
+	err := c.cc.Invoke(ctx, StockInfo_GetRealizedProfitLoss_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockInfoClient) GetUnRealizedProfitLoss(ctx context.Context, in *GetUnRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetUnRealizedProfitLossResponse, error) {
+	out := new(GetUnRealizedProfitLossResponse)
+	err := c.cc.Invoke(ctx, StockInfo_GetUnRealizedProfitLoss_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockInfoServer is the server API for StockInfo service.
 // All implementations must embed UnimplementedStockInfoServer
 // for forward compatibility
@@ -231,6 +253,8 @@ type StockInfoServer interface {
 	GetAllTransations(context.Context, *GetAllStockTransationRequest) (*StockTransatsionResponse, error)
 	GetUserStock(context.Context, *GetUserStockRequest) (*GetUserStockResponse, error)
 	GetUserStockById(context.Context, *GetUserStockByIdRequest) (*GetUserStockBuIdResponse, error)
+	GetRealizedProfitLoss(context.Context, *GetRealizedProfitLossRequest) (*GetRealizedProfitLossResponse, error)
+	GetUnRealizedProfitLoss(context.Context, *GetUnRealizedProfitLossRequest) (*GetUnRealizedProfitLossResponse, error)
 	mustEmbedUnimplementedStockInfoServer()
 }
 
@@ -285,6 +309,12 @@ func (UnimplementedStockInfoServer) GetUserStock(context.Context, *GetUserStockR
 }
 func (UnimplementedStockInfoServer) GetUserStockById(context.Context, *GetUserStockByIdRequest) (*GetUserStockBuIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStockById not implemented")
+}
+func (UnimplementedStockInfoServer) GetRealizedProfitLoss(context.Context, *GetRealizedProfitLossRequest) (*GetRealizedProfitLossResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRealizedProfitLoss not implemented")
+}
+func (UnimplementedStockInfoServer) GetUnRealizedProfitLoss(context.Context, *GetUnRealizedProfitLossRequest) (*GetUnRealizedProfitLossResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUnRealizedProfitLoss not implemented")
 }
 func (UnimplementedStockInfoServer) mustEmbedUnimplementedStockInfoServer() {}
 
@@ -587,6 +617,42 @@ func _StockInfo_GetUserStockById_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockInfo_GetRealizedProfitLoss_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRealizedProfitLossRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockInfoServer).GetRealizedProfitLoss(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockInfo_GetRealizedProfitLoss_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockInfoServer).GetRealizedProfitLoss(ctx, req.(*GetRealizedProfitLossRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StockInfo_GetUnRealizedProfitLoss_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUnRealizedProfitLossRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockInfoServer).GetUnRealizedProfitLoss(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockInfo_GetUnRealizedProfitLoss_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockInfoServer).GetUnRealizedProfitLoss(ctx, req.(*GetUnRealizedProfitLossRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockInfo_ServiceDesc is the grpc.ServiceDesc for StockInfo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -657,6 +723,14 @@ var StockInfo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserStockById",
 			Handler:    _StockInfo_GetUserStockById_Handler,
+		},
+		{
+			MethodName: "GetRealizedProfitLoss",
+			Handler:    _StockInfo_GetRealizedProfitLoss_Handler,
+		},
+		{
+			MethodName: "GetUnRealizedProfitLoss",
+			Handler:    _StockInfo_GetUnRealizedProfitLoss_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -26,10 +26,11 @@ func (server *Server) InitStock(ctx context.Context, req *pb.InitStockRequest) (
 
 	res, err := client.GetStockDayAvg(ctx, &pb.StockDayAvgRequest{})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "call grpc server get error")
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	successedCount := 0
 	failedCount := 0
+
 	for _, dto := range res.Result {
 		insertEnty := cvStockDayAvg2CreateParm(dto)
 		_, err := server.store.CreateStock(ctx, insertEnty)

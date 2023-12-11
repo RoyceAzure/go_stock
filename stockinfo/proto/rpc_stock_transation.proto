@@ -2,12 +2,12 @@ syntax = "proto3";
 import "stock_transation.proto";
 package pb;
 
-option go_package = "github.com/RoyceAzure/go-stockinfo/api/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
 
 message TransationRequest{
-    int64 stock_code = 2;
-    string transation_type = 3;
-    int64 trans_amt = 4;
+    string stock_code = 1;
+    string transation_type = 2;
+    int32 trans_amt = 3;
 }
 message TransationResponse{
 string result=1;

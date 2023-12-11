@@ -20,7 +20,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
-
 )
 
 // password為明碼
@@ -35,7 +34,7 @@ func (e *eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 		return false
 	}
 
-	err := utility.CheckPassword(e.password, arg.HashedPassword)
+	err := util.CheckPassword(e.password, arg.HashedPassword)
 	if err != nil {
 		return false
 	}
@@ -173,11 +172,11 @@ func TestGetUserApi(t *testing.T) {
 
 func randomUser() db.User {
 	return db.User{
-		UserID:         utility.RandomInt(1, 100),
-		UserName:       utility.RandomString(10),
-		HashedPassword: utility.RandomString(10),
-		Email:          utility.RandomString(10) + "@gmail.com",
-		SsoIdentifer:   utility.StringToSqlNiStr(utility.RandomSSOTypeStr()),
+		UserID:         util.RandomInt(1, 100),
+		UserName:       util.RandomString(10),
+		HashedPassword: util.RandomString(10),
+		Email:          util.RandomString(10) + "@gmail.com",
+		SsoIdentifer:   util.StringToSqlNiStr(util.RandomSSOTypeStr()),
 		CrDate:         time.Now().UTC(),
 		CrUser:         "royce",
 	}
@@ -185,10 +184,10 @@ func randomUser() db.User {
 
 func randomUserDTO() createUserRequest {
 	return createUserRequest{
-		UserName:     utility.RandomString(10),
-		Password:     utility.RandomString(10),
-		Email:        utility.RandomString(10) + "@gmail.com",
-		SsoIdentifer: utility.RandomSSOTypeStr(),
+		UserName:     util.RandomString(10),
+		Password:     util.RandomString(10),
+		Email:        util.RandomString(10) + "@gmail.com",
+		SsoIdentifer: util.RandomSSOTypeStr(),
 	}
 }
 
@@ -326,7 +325,7 @@ func TestCreateUserApi(t *testing.T) {
 func TestUserLoginApi(t *testing.T) {
 	// 或許在測試API時  randomUser就應該產生DTO 而不是model
 	user := randomUser()
-	hashed_password, err := utility.HashPassword(user.HashedPassword)
+	hashed_password, err := util.HashPassword(user.HashedPassword)
 	dbuer := user
 	dbuer.HashedPassword = hashed_password
 	require.NoError(t, err)

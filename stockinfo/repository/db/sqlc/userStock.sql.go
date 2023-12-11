@@ -216,8 +216,10 @@ func (q *Queries) GetUserStocksByPDate(ctx context.Context, arg GetUserStocksByP
 }
 
 const getUserStocksByStockId = `-- name: GetUserStocksByStockId :many
-SELECT user_stock_id, user_id, stock_id, quantity, purchase_price_per_share, purchased_date, cr_date, up_date, cr_user, up_user FROM  user_stock
-WHERE stock_id = $1
+SELECT user_stock.user_stock_id, user_stock.user_id, user_stock.stock_id, user_stock.quantity, user_stock.purchase_price_per_share, user_stock.purchased_date, user_stock.cr_date, user_stock.up_date, user_stock.cr_user, user_stock.up_user, stock.stock_name FROM  user_stock
+LEFT JOIN stock 
+ON  user_stock.stock_id = stock.stock_id
+WHERE user_stock.stock_id = $1
 ORDER BY user_stock_id
 LIMIT $2
 OFFSET $3
@@ -229,15 +231,29 @@ type GetUserStocksByStockIdParams struct {
 	Offset  int32 `json:"offset"`
 }
 
-func (q *Queries) GetUserStocksByStockId(ctx context.Context, arg GetUserStocksByStockIdParams) ([]UserStock, error) {
+type GetUserStocksByStockIdRow struct {
+	UserStockID           int64          `json:"user_stock_id"`
+	UserID                int64          `json:"user_id"`
+	StockID               int64          `json:"stock_id"`
+	Quantity              int32          `json:"quantity"`
+	PurchasePricePerShare string         `json:"purchase_price_per_share"`
+	PurchasedDate         time.Time      `json:"purchased_date"`
+	CrDate                time.Time      `json:"cr_date"`
+	UpDate                sql.NullTime   `json:"up_date"`
+	CrUser                string         `json:"cr_user"`
+	UpUser                sql.NullString `json:"up_user"`
+	StockName             sql.NullString `json:"stock_name"`
+}
+
+func (q *Queries) GetUserStocksByStockId(ctx context.Context, arg GetUserStocksByStockIdParams) ([]GetUserStocksByStockIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserStocksByStockId, arg.StockID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []UserStock{}
+	items := []GetUserStocksByStockIdRow{}
 	for rows.Next() {
-		var i UserStock
+		var i GetUserStocksByStockIdRow
 		if err := rows.Scan(
 			&i.UserStockID,
 			&i.UserID,
@@ -249,6 +265,7 @@ func (q *Queries) GetUserStocksByStockId(ctx context.Context, arg GetUserStocksB
 			&i.UpDate,
 			&i.CrUser,
 			&i.UpUser,
+			&i.StockName,
 		); err != nil {
 			return nil, err
 		}
@@ -319,8 +336,10 @@ func (q *Queries) GetUserStocksByUserAStock(ctx context.Context, arg GetUserStoc
 }
 
 const getUserStocksByUserId = `-- name: GetUserStocksByUserId :many
-SELECT user_stock_id, user_id, stock_id, quantity, purchase_price_per_share, purchased_date, cr_date, up_date, cr_user, up_user FROM  user_stock
-WHERE user_id = $1
+SELECT user_stock.user_stock_id, user_stock.user_id, user_stock.stock_id, user_stock.quantity, user_stock.purchase_price_per_share, user_stock.purchased_date, user_stock.cr_date, user_stock.up_date, user_stock.cr_user, user_stock.up_user, stock.stock_name FROM  user_stock
+LEFT JOIN stock 
+ON  user_stock.stock_id = stock.stock_id
+WHERE user_stock.user_id = $1
 ORDER BY user_stock_id
 LIMIT $2
 OFFSET $3
@@ -332,15 +351,29 @@ type GetUserStocksByUserIdParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) GetUserStocksByUserId(ctx context.Context, arg GetUserStocksByUserIdParams) ([]UserStock, error) {
+type GetUserStocksByUserIdRow struct {
+	UserStockID           int64          `json:"user_stock_id"`
+	UserID                int64          `json:"user_id"`
+	StockID               int64          `json:"stock_id"`
+	Quantity              int32          `json:"quantity"`
+	PurchasePricePerShare string         `json:"purchase_price_per_share"`
+	PurchasedDate         time.Time      `json:"purchased_date"`
+	CrDate                time.Time      `json:"cr_date"`
+	UpDate                sql.NullTime   `json:"up_date"`
+	CrUser                string         `json:"cr_user"`
+	UpUser                sql.NullString `json:"up_user"`
+	StockName             sql.NullString `json:"stock_name"`
+}
+
+func (q *Queries) GetUserStocksByUserId(ctx context.Context, arg GetUserStocksByUserIdParams) ([]GetUserStocksByUserIdRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserStocksByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []UserStock{}
+	items := []GetUserStocksByUserIdRow{}
 	for rows.Next() {
-		var i UserStock
+		var i GetUserStocksByUserIdRow
 		if err := rows.Scan(
 			&i.UserStockID,
 			&i.UserID,
@@ -352,6 +385,7 @@ func (q *Queries) GetUserStocksByUserId(ctx context.Context, arg GetUserStocksBy
 			&i.UpDate,
 			&i.CrUser,
 			&i.UpUser,
+			&i.StockName,
 		); err != nil {
 			return nil, err
 		}

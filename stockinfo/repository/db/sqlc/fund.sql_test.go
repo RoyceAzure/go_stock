@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +43,7 @@ func CreateRandomFundNoTest(user User, min int64, max int64) (User, Fund) {
 	arg := CreateFundParams{
 		UserID:       user.UserID,
 		Balance:      decimal.NewFromInt(util.RandomInt(100000, 5000000)).String(),
-		CurrencyType: util.RandomCurrencyTypeStr(),
+		CurrencyType: string(constants.TW),
 		CrUser:       "royce",
 	}
 

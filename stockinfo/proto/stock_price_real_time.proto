@@ -3,7 +3,7 @@ import "google/protobuf/timestamp.proto";
 package pb;
 
 
-option go_package = "github.com/RoyceAzure/go-stockinfo/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
 
 message StockPriceRealTime{
     string stock_code = 1;

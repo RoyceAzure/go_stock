@@ -6,10 +6,56 @@ package db
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type TransationResult string
+
+const (
+	TransationResultCreateed  TransationResult = "createed"
+	TransationResultProcessed TransationResult = "processed"
+	TransationResultSuccessed TransationResult = "successed"
+	TransationResultFailed    TransationResult = "failed"
+)
+
+func (e *TransationResult) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TransationResult(s)
+	case string:
+		*e = TransationResult(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TransationResult: %T", src)
+	}
+	return nil
+}
+
+type NullTransationResult struct {
+	TransationResult TransationResult `json:"transation_result"`
+	Valid            bool             `json:"valid"` // Valid is true if TransationResult is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTransationResult) Scan(value interface{}) error {
+	if value == nil {
+		ns.TransationResult, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TransationResult.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTransationResult) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TransationResult), nil
+}
 
 type Fund struct {
 	FundID       int64          `json:"fund_id"`
@@ -20,6 +66,17 @@ type Fund struct {
 	UpDate       sql.NullTime   `json:"up_date"`
 	CrUser       string         `json:"cr_user"`
 	UpUser       sql.NullString `json:"up_user"`
+}
+
+type RealizedProfitLoss struct {
+	ID              int64  `json:"id"`
+	TransationID    int64  `json:"transation_id"`
+	UserID          int64  `json:"user_id"`
+	ProductName     string `json:"product_name"`
+	CostPerPrice    string `json:"cost_per_price"`
+	CostTotalPrice  string `json:"cost_total_price"`
+	Realized        string `json:"realized"`
+	RealizedPrecent string `json:"realized_precent"`
 }
 
 type Session struct {
@@ -46,19 +103,19 @@ type Stock struct {
 }
 
 type StockTransaction struct {
-	TransationID            int64          `json:"transation_id"`
-	UserID                  int64          `json:"user_id"`
-	StockID                 int64          `json:"stock_id"`
-	FundID                  int64          `json:"fund_id"`
-	TransactionType         string         `json:"transaction_type"`
-	TransactionDate         time.Time      `json:"transaction_date"`
-	TransationAmt           int32          `json:"transation_amt"`
-	TransationPricePerShare string         `json:"transation_price_per_share"`
-	CrDate                  time.Time      `json:"cr_date"`
-	UpDate                  sql.NullTime   `json:"up_date"`
-	CrUser                  string         `json:"cr_user"`
-	UpUser                  sql.NullString `json:"up_user"`
-	Result                  bool           `json:"result"`
+	TransationID            int64            `json:"transation_id"`
+	UserID                  int64            `json:"user_id"`
+	StockID                 int64            `json:"stock_id"`
+	FundID                  int64            `json:"fund_id"`
+	TransactionType         string           `json:"transaction_type"`
+	TransactionDate         time.Time        `json:"transaction_date"`
+	TransationAmt           int32            `json:"transation_amt"`
+	TransationPricePerShare string           `json:"transation_price_per_share"`
+	CrDate                  time.Time        `json:"cr_date"`
+	UpDate                  sql.NullTime     `json:"up_date"`
+	CrUser                  string           `json:"cr_user"`
+	UpUser                  sql.NullString   `json:"up_user"`
+	Result                  TransationResult `json:"result"`
 }
 
 type User struct {

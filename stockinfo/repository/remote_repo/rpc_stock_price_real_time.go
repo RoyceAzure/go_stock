@@ -1,4 +1,4 @@
-package repository
+package remote_repo
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	pb "github.com/RoyceAzure/go-stockinfo/shared/pb"
+
 )
 
 const SPR_SAVED_DUR = time.Second * 5

@@ -9,11 +9,13 @@ import (
 
 	api "github.com/RoyceAzure/go-stockinfo/api"
 	"github.com/RoyceAzure/go-stockinfo/api/gapi"
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
 	_ "github.com/RoyceAzure/go-stockinfo/doc/statik"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/mail"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	remote_repo "github.com/RoyceAzure/go-stockinfo/repository/remote_repo"
+	"github.com/RoyceAzure/go-stockinfo/service"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/mail"
 	worker "github.com/RoyceAzure/go-stockinfo/worker"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4"
@@ -54,9 +56,18 @@ func main() {
 		Addr: config.RedisQueueAddress,
 	}
 
+	schdulerDao, err := remote_repo.NewJSchdulerInfoDao(config.GRPCSchedulerAddress)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot connect to db:")
+	}
+
+	service := service.NewTransferService(store, schdulerDao)
+
 	//因為qsynq.client 是concurrent
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(config, redisOpt, store)
+	go runTaskProcessor(config, redisOpt, store, service)
 	// runGinServer(config, store)
 	clientFactory := gapi.NewGRPCSchedulerClientFactory(&config)
 	go runGRPCGatewayServer(config, store, taskDistributor, clientFactory)
@@ -234,9 +245,9 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msgf("db migrate successfully")
 }
 
-func runTaskProcessor(configs config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+func runTaskProcessor(configs config.Config, redisOpt asynq.RedisClientOpt, store db.Store, stockTranService service.ITransferService) {
 	mailer := mail.NewGmailSender(configs.EmailSenderName, configs.EmailSenderAddress, configs.EmailSenderPassword)
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer, stockTranService)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {

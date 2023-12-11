@@ -16,8 +16,9 @@ type TransferService struct {
 	schdulerDao remote_repo.SchdulerInfoDao
 }
 
-func NewTransferService(store db.Store) ITransferService {
+func NewTransferService(store db.Store, schdulerDao remote_repo.SchdulerInfoDao) ITransferService {
 	return &TransferService{
-		store: store,
+		store:       store,
+		schdulerDao: schdulerDao,
 	}
 }

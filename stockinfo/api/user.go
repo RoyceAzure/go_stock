@@ -49,7 +49,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	hashed_password, err := utility.HashPassword(request.Password)
+	hashed_password, err := util.HashPassword(request.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -59,7 +59,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		UserName:       request.UserName,
 		Email:          request.Email,
 		HashedPassword: hashed_password,
-		SsoIdentifer:   utility.StringToSqlNiStr(request.SsoIdentifer),
+		SsoIdentifer:   util.StringToSqlNiStr(request.SsoIdentifer),
 		CrUser:         "SYSTEM",
 	}
 
@@ -177,7 +177,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = utility.CheckPassword(req.Password, user.HashedPassword)
+	err = util.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, err)
 		return

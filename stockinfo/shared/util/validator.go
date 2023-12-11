@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
-
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -54,9 +54,20 @@ func ValidateMustNotZeroInt64(value int64) error {
 	return nil
 }
 
-func ValidateStringToint64(value string) error {
-	_, err := StringToInt64(value)
-	return err
+func ValidateStringToint64(value string) (int64, error) {
+	if value == "" {
+		return 0, fmt.Errorf("%w string is empty", constants.ErrInvalidArgument)
+	}
+	res, err := StringToInt64(value)
+	return res, err
+}
+
+func ValidateStringToDecimal(value string) (decimal.Decimal, error) {
+	if value == "" {
+		return decimal.Zero, fmt.Errorf("%w value is empty", constants.ErrInvalidArgument)
+	}
+	res, err := decimal.NewFromString(value)
+	return res, err
 }
 
 func ValidateMustGreateThenZero(value int64) error {

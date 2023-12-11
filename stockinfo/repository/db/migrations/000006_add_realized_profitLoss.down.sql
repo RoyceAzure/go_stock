@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS "realized_profit_loss" CASCADE;

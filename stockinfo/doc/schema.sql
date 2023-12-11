@@ -1,6 +1,13 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-12-08T08:31:22.970Z
+-- Generated at: 2023-12-10T09:47:17.536Z
+
+CREATE TYPE "transation_result" AS ENUM (
+  'createed',
+  'processed',
+  'successed',
+  'failed'
+);
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
@@ -74,7 +81,7 @@ CREATE TABLE "user_stock" (
 );
 
 CREATE TABLE "stock_transaction" (
-  "TransationId" BIGSERIAL PRIMARY KEY,
+  "transation_id" BIGSERIAL PRIMARY KEY,
   "user_id" bigint NOT NULL,
   "stock_id" bigint NOT NULL,
   "fund_id" bigint NOT NULL,
@@ -82,11 +89,22 @@ CREATE TABLE "stock_transaction" (
   "transaction_date" timestamp NOT NULL DEFAULT (now()),
   "transation_amt" int NOT NULL,
   "transation_price_per_share" decimal NOT NULL,
-  "result" bool NOT NULL DEFAULT true,
+  "result" transation_result NOT NULL DEFAULT 'createed',
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,
   "up_user" varchar
+);
+
+CREATE TABLE "realized_profit_loss" (
+  "id" BIGSERIAL PRIMARY KEY,
+  "transation_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  "product_name" varchar NOT NULL,
+  "cost_per_price" decimal NOT NULL,
+  "cost_total_price" decimal NOT NULL,
+  "realized" decimal NOT NULL,
+  "realized_precent" varchar NOT NULL
 );
 
 CREATE INDEX ON "user" ("user_id");
@@ -105,15 +123,23 @@ CREATE INDEX ON "user_stock" ("user_id");
 
 CREATE INDEX ON "user_stock" ("stock_id");
 
-CREATE INDEX ON "stock_transaction" ("TransationId");
+CREATE INDEX ON "stock_transaction" ("transation_id");
 
 CREATE INDEX ON "stock_transaction" ("user_id", "stock_id");
+
+CREATE INDEX ON "realized_profit_loss" ("transation_id");
+
+CREATE INDEX ON "realized_profit_loss" ("user_id");
 
 ALTER TABLE "verify_email" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "session" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "fund" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
+
+ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("transation_id") REFERENCES "stock_transaction" ("transation_id");
+
+ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "user_stock" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 

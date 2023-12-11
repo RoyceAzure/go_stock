@@ -21,15 +21,19 @@ LIMIT $1
 OFFSET $2;
 
 -- name: GetUserStocksByUserId :many
-SELECT * FROM  user_stock
-WHERE user_id = $1
+SELECT user_stock.*, stock.stock_name FROM  user_stock
+LEFT JOIN stock 
+ON  user_stock.stock_id = stock.stock_id
+WHERE user_stock.user_id = $1
 ORDER BY user_stock_id
 LIMIT $2
 OFFSET $3;
 
 -- name: GetUserStocksByStockId :many
-SELECT * FROM  user_stock
-WHERE stock_id = $1
+SELECT user_stock.*, stock.stock_name FROM  user_stock
+LEFT JOIN stock 
+ON  user_stock.stock_id = stock.stock_id
+WHERE user_stock.stock_id = $1
 ORDER BY user_stock_id
 LIMIT $2
 OFFSET $3;

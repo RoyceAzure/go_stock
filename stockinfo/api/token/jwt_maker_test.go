@@ -10,12 +10,12 @@ import (
 )
 
 func TestJWTMaker(t *testing.T) {
-	maker, err := NewJWTMaker(utility.RandomString(32))
+	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 
-	username := utility.RandomString(10)
-	userID := utility.RandomInt(100, 1000)
+	username := util.RandomString(10)
+	userID := util.RandomInt(100, 1000)
 	duration := time.Minute
 
 	issuedAt := time.Now().UTC()
@@ -36,12 +36,12 @@ func TestJWTMaker(t *testing.T) {
 }
 
 func TestExpiredToken(t *testing.T) {
-	maker, err := NewJWTMaker(utility.RandomString(32))
+	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 
-	username := utility.RandomString(10)
-	userID := utility.RandomInt(100, 1000)
+	username := util.RandomString(10)
+	userID := util.RandomInt(100, 1000)
 	duration := time.Minute
 
 	//createToken沒有禁止使用負數的duration
@@ -58,8 +58,8 @@ func TestExpiredToken(t *testing.T) {
 func TestInvalidJWTTokenAlgNone(t *testing.T) {
 	//自己產生jwt token
 	//payload
-	username := utility.RandomString(10)
-	userID := utility.RandomInt(100, 1000)
+	username := util.RandomString(10)
+	userID := util.RandomInt(100, 1000)
 	payload, err := NewPayload(username, userID, time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
@@ -70,7 +70,7 @@ func TestInvalidJWTTokenAlgNone(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	maker, err := NewJWTMaker(utility.RandomString(32))
+	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 

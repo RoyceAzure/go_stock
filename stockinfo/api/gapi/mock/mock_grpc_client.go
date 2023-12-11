@@ -7,7 +7,7 @@ package mock_grpc_client
 import (
 	reflect "reflect"
 
-	pb "github.com/RoyceAzure/go-stockinfo/api/pb"
+	pb "github.com/RoyceAzure/go-stockinfo/shared/pb"
 	gomock "github.com/golang/mock/gomock"
 )
 

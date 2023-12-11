@@ -7,6 +7,7 @@ import (
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +22,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	user, err := server.store.GetUserByEmail(ctx, req.GetEmail())
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, status.Errorf(codes.NotFound, "user not found : %s", err)
+			return nil, status.Errorf(codes.NotFound, constants.ErrUserNotEsixts.Error())
 		}
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}

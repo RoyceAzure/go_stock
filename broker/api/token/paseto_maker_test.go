@@ -4,18 +4,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo-broker/shared/util"
+	"github.com/RoyceAzure/go-stockinfo-broker/shared/util/random"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPasetoMaker(t *testing.T) {
-	maker, err := NewPasetoMaker(utility.RandomString(32))
+	maker, err := NewPasetoMaker(random.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 
-	username := utility.RandomString(10)
-	userID := utility.RandomInt(100, 1000)
+	username := random.RandomString(10)
+	userID := random.RandomInt(100, 1000)
 	duration := time.Minute
 
 	issuedAt := time.Now().UTC()
@@ -36,12 +36,12 @@ func TestPasetoMaker(t *testing.T) {
 }
 
 func TestExpiredPasetoToken(t *testing.T) {
-	maker, err := NewPasetoMaker(utility.RandomString(32))
+	maker, err := NewPasetoMaker(random.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 
-	username := utility.RandomString(10)
-	userID := utility.RandomInt(100, 1000)
+	username := random.RandomString(10)
+	userID := random.RandomInt(100, 1000)
 	duration := time.Minute
 
 	//createToken沒有禁止使用負數的duration
@@ -58,7 +58,7 @@ func TestExpiredPasetoToken(t *testing.T) {
 func TestInvalidPasetoTokenAlgNone(t *testing.T) {
 	//自己產生jwt token
 	//payload
-	payload, err := NewPayload(utility.RandomString(10), 1, time.Minute)
+	payload, err := NewPayload(random.RandomString(10), 1, time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 	//選擇加密演算法製作claim
@@ -68,7 +68,7 @@ func TestInvalidPasetoTokenAlgNone(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	maker, err := NewPasetoMaker(utility.RandomString(32))
+	maker, err := NewPasetoMaker(random.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, maker)
 

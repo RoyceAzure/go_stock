@@ -326,8 +326,8 @@ RETURNING transation_id, user_id, stock_id, fund_id, transaction_type, transacti
 `
 
 type UpdateStockTransationResultParams struct {
-	Result       bool  `json:"result"`
-	TransationID int64 `json:"transation_id"`
+	Result       TransationResult `json:"result"`
+	TransationID int64            `json:"transation_id"`
 }
 
 func (q *Queries) UpdateStockTransationResult(ctx context.Context, arg UpdateStockTransationResultParams) (StockTransaction, error) {
