@@ -11,6 +11,7 @@ import (
 	"github.com/RoyceAzure/go-stockinfo/api/gapi"
 	_ "github.com/RoyceAzure/go-stockinfo/doc/statik"
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	remote_repo "github.com/RoyceAzure/go-stockinfo/repository/remote_repo"
 	"github.com/RoyceAzure/go-stockinfo/service"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
@@ -56,6 +57,14 @@ func main() {
 		Addr: config.RedisQueueAddress,
 	}
 
+	//set up mongo logger
+	redisClient := asynq.NewClient(redisOpt)
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
+
 	schdulerDao, err := remote_repo.NewJSchdulerInfoDao(config.GRPCSchedulerAddress)
 	if err != nil {
 		log.Fatal().
@@ -97,6 +106,8 @@ func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker
 			Err(err).
 			Msg("cannot start server")
 	}
+
+	go server.InitStock(context.Background(), &pb.InitStockRequest{})
 	/*
 		使用 pb.RegisterStockInfoServer 函數註冊了先前創建的伺服器實例，使其能夠處理 StockInfoServer 接口的 RPC 請求。
 	*/

@@ -180,6 +180,195 @@ func TestStockTransTxEach(t *testing.T) {
 	require.Equal(t, finalUserStockAmt, oriUserStockAmt+userStockChange)
 }
 
+func TestTransation(t *testing.T) {
+
+	ctx := context.Background()
+	testStore := NewStore(testDB)
+	//測試用原始數據
+	testCase := []struct {
+		name                  string //子測試名稱
+		setUserStock          func(*CreateUserStockParams)
+		setFund               func(*CreateFundParams)
+		setStock              func(*CreateStockParams)
+		setStockTransation    func(*CreateStockTransactionParams)
+		checkFund             func(t *testing.T, res *Fund)
+		checkUserStock        func(t *testing.T, res *UserStock)
+		checkRealized         func(t *testing.T, res *RealizedProfitLoss)
+		checkUnRealized       func(t *testing.T, res *GetRealizedProfitLosssByUserIdDetialRow)
+		checkCreateTransation func(t *testing.T, res *StockTransaction)
+		checkTransferTx       func(t *testing.T, res *TransferStockTxResults, err error)
+	}{
+		{
+			name: "buy, not enough money",
+			setFund: func(arg *CreateFundParams) {
+				arg.Balance = "1000.00"
+				arg.CurrencyType = string(constants.TW)
+			},
+			setStock: func(arg *CreateStockParams) {
+				arg.StockCode = util.RandomString(5)
+				arg.StockName = util.RandomString(5)
+				arg.CurrentPrice = "1000"
+			},
+			setUserStock: func(arg *CreateUserStockParams) {
+				arg.Quantity = 1
+				arg.PurchasePricePerShare = "1.1111"
+			},
+			setStockTransation: func(arg *CreateStockTransactionParams) {
+				arg.TransactionType = string(constants.BUY)
+				arg.TransationAmt = 1
+				arg.TransationPricePerShare = "1000.00"
+			},
+			checkCreateTransation: func(t *testing.T, res *StockTransaction) {
+				require.NotEmpty(t, res)
+			},
+			checkTransferTx: func(t *testing.T, res *TransferStockTxResults, err error) {
+				require.Empty(t, res)
+				require.Error(t, err)
+				require.True(t, errors.Is(err, constants.ErrInValidatePreConditionOp))
+			},
+		},
+		{
+			name: "sell, not enough user stock",
+			setFund: func(arg *CreateFundParams) {
+				arg.Balance = "1000.00"
+				arg.CurrencyType = string(constants.TW)
+			},
+			setStock: func(arg *CreateStockParams) {
+				arg.StockCode = util.RandomString(5)
+				arg.StockName = util.RandomString(5)
+				arg.CurrentPrice = "1000"
+			},
+			setUserStock: func(arg *CreateUserStockParams) {
+				arg.Quantity = 5
+				arg.PurchasePricePerShare = "1.1111"
+			},
+			setStockTransation: func(arg *CreateStockTransactionParams) {
+				arg.TransactionType = string(constants.SELL)
+				arg.TransationAmt = 10
+				arg.TransationPricePerShare = "1000.00"
+			},
+			checkCreateTransation: func(t *testing.T, res *StockTransaction) {
+				require.NotEmpty(t, res)
+			},
+			checkTransferTx: func(t *testing.T, res *TransferStockTxResults, err error) {
+				require.Empty(t, res)
+				require.Error(t, err)
+				require.True(t, errors.Is(err, constants.ErrInValidatePreConditionOp))
+			},
+		},
+		{
+			name: "buy, success buy new stock",
+			setFund: func(arg *CreateFundParams) {
+				arg.Balance = "10000001.00"
+				arg.CurrencyType = string(constants.TW)
+			},
+			setStock: func(arg *CreateStockParams) {
+				arg.StockCode = util.RandomString(5)
+				arg.StockName = util.RandomString(5)
+				arg.CurrentPrice = "1000"
+				arg.MarketCap = 10000
+			},
+			setUserStock: func(arg *CreateUserStockParams) {
+				arg.Quantity = 5
+				arg.PurchasePricePerShare = "1.1111"
+			},
+			setStockTransation: func(arg *CreateStockTransactionParams) {
+				arg.TransactionType = string(constants.BUY)
+				arg.TransationAmt = 10
+				arg.TransationPricePerShare = "1000.00"
+			},
+			checkCreateTransation: func(t *testing.T, res *StockTransaction) {
+				require.NotEmpty(t, res)
+			},
+			checkTransferTx: func(t *testing.T, res *TransferStockTxResults, err error) {
+				require.NotEmpty(t, res)
+				require.NoError(t, err)
+			},
+			checkFund: func(t *testing.T, res *Fund) {
+				require.NotNil(t, res)
+				balance, err := decimal.NewFromString(res.Balance)
+				require.NoError(t, err)
+				require.Equal(t, balance, decimal.NewFromInt(1))
+			},
+			checkUserStock: func(t *testing.T, res *UserStock) {
+				require.NotNil(t, res)
+				require.Equal(t, int32(15), res.Quantity)
+			},
+		},
+	}
+
+	for i := range testCase {
+		tc := testCase[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+
+			user := CreateRandomUserNoTest()
+
+			fundArg := CreateFundParams{}
+			fundArg.UserID = user.UserID
+			if tc.setFund != nil {
+				tc.setFund(&fundArg)
+			}
+			fund := CreateFundSpecify(t, fundArg.UserID, fundArg.Balance, fundArg.CurrencyType)
+
+			stockArg := CreateStockParams{}
+			if tc.setStock != nil {
+				tc.setStock(&stockArg)
+			}
+
+			stock := CreateStockSpecific(t, stockArg.StockCode, stockArg.StockName, stockArg.CurrentPrice, stockArg.MarketCap)
+
+			userStockArg := CreateUserStockParams{}
+			userStockArg.UserID = user.UserID
+			userStockArg.StockID = stock.StockID
+			if tc.setUserStock != nil {
+				tc.setUserStock(&userStockArg)
+			}
+
+			userStock := CreateUserStockSpecific(t, userStockArg.UserID, userStockArg.StockID, userStockArg.Quantity, userStockArg.PurchasePricePerShare)
+
+			transationArg := CreateStockTransactionParams{
+				UserID:  user.UserID,
+				StockID: stock.StockID,
+				FundID:  fund.FundID,
+			}
+			if tc.setStockTransation != nil {
+				tc.setStockTransation(&transationArg)
+			}
+
+			stockTransation := CreateStockTransactionsSepcific(t, transationArg.UserID,
+				transationArg.StockID,
+				transationArg.FundID,
+				transationArg.TransactionType,
+				transationArg.TransactionDate,
+				transationArg.TransationAmt,
+				transationArg.TransationPricePerShare)
+
+			//grpc server可以直接call func
+			tc.checkCreateTransation(t, &stockTransation)
+			res, err := testStore.TransferStockTx(ctx, TransferStockTxParams{
+				TransationID: stockTransation.TransationID,
+				CreateUser:   stockTransation.CrUser,
+			})
+			tc.checkTransferTx(t, &res, err)
+			if tc.checkFund != nil {
+				f, err := testQueries.GetFund(ctx, fund.FundID)
+				require.NoError(t, err)
+				require.NotEmpty(t, f)
+				tc.checkFund(t, &f)
+			}
+
+			if tc.checkUserStock != nil {
+				us, err := testQueries.GetUserStock(ctx, userStock.UserStockID)
+				require.NoError(t, err)
+				require.NotEmpty(t, us)
+				tc.checkUserStock(t, &us)
+			}
+		})
+	}
+
+}
+
 func createRandomTransation(t *testing.T) StockTransaction {
 	trans, err := testQueries.CreateStockTransaction(context.Background(), CreateStockTransactionParams{
 		UserID:                  testUser.UserID,

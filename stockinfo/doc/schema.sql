@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-12-10T09:47:17.536Z
+-- Generated at: 2023-12-12T06:36:44.916Z
 
 CREATE TYPE "transation_result" AS ENUM (
   'createed',
@@ -142,11 +142,3 @@ ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("transation_id") REFERENCES 
 ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "user_stock" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
-
-ALTER TABLE "user_stock" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("fund_id") REFERENCES "fund" ("fund_id");

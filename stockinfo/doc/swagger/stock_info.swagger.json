@@ -114,54 +114,6 @@
         ]
       }
     },
-    "/v1/fund/realized": {
-      "get": {
-        "summary": "Get realized fund",
-        "description": "Use this API to get realized fund",
-        "operationId": "StockInfo_GetRealizedGain",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbGetRealizedGainResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "StockInfo"
-        ]
-      }
-    },
-    "/v1/fund/unrealized": {
-      "get": {
-        "summary": "Get unrealized fund",
-        "description": "Use this API to get unrealized fund",
-        "operationId": "StockInfo_GetUnRealizedGain",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbGetUnRealizedGainResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "StockInfo"
-        ]
-      }
-    },
     "/v1/login_user": {
       "post": {
         "summary": "login a user",
@@ -196,7 +148,31 @@
         ]
       }
     },
-    "/v1/realozedProfit": {
+    "/v1/realized": {
+      "get": {
+        "summary": "Get realized fund",
+        "description": "Use this API to get realized fund",
+        "operationId": "StockInfo_GetRealizedGain",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetRealizedGainResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/realizedProfit": {
       "get": {
         "summary": "Get realozedProfit",
         "description": "Use this API to get realozedProfit",
@@ -456,7 +432,7 @@
         ]
       }
     },
-    "/v1/unRealozedProfit": {
+    "/v1/unRealizedProfit": {
       "get": {
         "summary": "Get UnRealozedProfit",
         "description": "Use this API to get UnRealozedProfit",
@@ -466,6 +442,30 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbGetUnRealizedProfitLossResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/unrealized": {
+      "get": {
+        "summary": "Get unrealized fund",
+        "description": "Use this API to get unrealized fund",
+        "operationId": "StockInfo_GetUnRealizedGain",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUnRealizedGainResponse"
             }
           },
           "default": {
@@ -837,6 +837,42 @@
         }
       }
     },
+    "pbGetransationsResponse": {
+      "type": "object",
+      "properties": {
+        "transationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockCode": {
+          "type": "string"
+        },
+        "stockName": {
+          "type": "string"
+        },
+        "transationType": {
+          "type": "string"
+        },
+        "transAmt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transPricesPerShare": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
+      }
+    },
     "pbInitStockResponse": {
       "type": "object",
       "properties": {
@@ -897,6 +933,9 @@
           "type": "string"
         },
         "amt": {
+          "type": "string"
+        },
+        "currentPrice": {
           "type": "string"
         },
         "dealPerPrice": {
@@ -1018,29 +1057,6 @@
         }
       }
     },
-    "pbStockTransation": {
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "stockId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "transationType": {
-          "type": "string"
-        },
-        "transAmt": {
-          "type": "string",
-          "format": "int64"
-        },
-        "transPricesPerShare": {
-          "type": "string"
-        }
-      }
-    },
     "pbStockTransatsionResponse": {
       "type": "object",
       "properties": {
@@ -1048,7 +1064,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pbStockTransation"
+            "$ref": "#/definitions/pbGetransationsResponse"
           }
         }
       }

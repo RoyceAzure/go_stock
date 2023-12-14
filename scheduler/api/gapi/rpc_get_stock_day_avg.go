@@ -14,7 +14,7 @@ import (
 )
 
 /*
-TODO : 驗證
+取得今天的SDA
 */
 func (server *Server) GetStockDayAvg(ctx context.Context, req *pb.StockDayAvgRequest) (*pb.StockDayAvgResponse, error) {
 	startTime := time.Now().UTC()

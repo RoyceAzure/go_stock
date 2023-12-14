@@ -244,6 +244,15 @@ func (q *Queries) GetstockByTS(ctx context.Context, arg GetstockByTSParams) ([]S
 	return items, nil
 }
 
+const truncateStocks = `-- name: TruncateStocks :exec
+TRUNCATE TABLE stock RESTART IDENTITY
+`
+
+func (q *Queries) TruncateStocks(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, truncateStocks)
+	return err
+}
+
 const updateStock = `-- name: UpdateStock :one
 UPDATE stock
 SET 

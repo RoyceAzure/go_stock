@@ -90,7 +90,7 @@ service StockInfo{
 
 rpc GetUnRealizedGain (GetUnRealizedGainRequest) returns (GetUnRealizedGainResponse){
   option (google.api.http) = {
-      get: "/v1/fund/unrealized"
+      get: "/v1/unrealized"
       };
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to get unrealized fund";
@@ -100,7 +100,7 @@ rpc GetUnRealizedGain (GetUnRealizedGainRequest) returns (GetUnRealizedGainRespo
 
 rpc GetRealizedGain (GetRealizedGainRequest) returns (GetRealizedGainResponse){
   option (google.api.http) = {
-      get: "/v1/fund/realized"
+      get: "/v1/realized"
       };
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to get realized fund";
@@ -192,7 +192,7 @@ rpc GetUserStockById (GetUserStockByIdRequest) returns (GetUserStockBuIdResponse
 
 rpc GetRealizedProfitLoss (GetRealizedProfitLossRequest) returns (GetRealizedProfitLossResponse){
   option (google.api.http) = {
-      get: "/v1/realozedProfit"
+      get: "/v1/realizedProfit"
       };
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to get realozedProfit";
@@ -202,7 +202,7 @@ rpc GetRealizedProfitLoss (GetRealizedProfitLossRequest) returns (GetRealizedPro
 
 rpc GetUnRealizedProfitLoss (GetUnRealizedProfitLossRequest) returns (GetUnRealizedProfitLossResponse){
   option (google.api.http) = {
-      get: "/v1/unRealozedProfit"
+      get: "/v1/unRealizedProfit"
       };
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to get UnRealozedProfit";

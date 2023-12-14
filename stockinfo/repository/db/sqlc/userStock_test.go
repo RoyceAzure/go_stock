@@ -37,6 +37,21 @@ func CreateRandomUserStock(t *testing.T) (User, Fund, Stock, UserStock) {
 	return user, fund, stock, userStock
 }
 
+func CreateUserStockSpecific(t *testing.T, userId int64, stockId int64, quantity int32, perPrice string) UserStock {
+	userStock, err := testQueries.CreateUserStock(context.Background(), CreateUserStockParams{
+		UserID:                userId,
+		StockID:               stockId,
+		Quantity:              quantity,
+		PurchasePricePerShare: perPrice,
+		CrUser:                "test",
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, userStock)
+
+	return userStock
+}
+
 func CreateRandomUserStockNoTest(min_fund int64, max_fund int64, min_quanty int64, max_quanty int64) (user User, fund Fund, stock Stock, userStock *UserStock) {
 	user = CreateRandomUserNoTest()
 	_, fund = CreateRandomFundNoTest(user, min_fund, max_fund)

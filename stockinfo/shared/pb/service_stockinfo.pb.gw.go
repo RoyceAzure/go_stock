@@ -739,7 +739,7 @@ func RegisterStockInfoHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedGain", runtime.WithHTTPPathPattern("/v1/fund/unrealized"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedGain", runtime.WithHTTPPathPattern("/v1/unrealized"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -764,7 +764,7 @@ func RegisterStockInfoHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetRealizedGain", runtime.WithHTTPPathPattern("/v1/fund/realized"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetRealizedGain", runtime.WithHTTPPathPattern("/v1/realized"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -989,7 +989,7 @@ func RegisterStockInfoHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/realozedProfit"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/realizedProfit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1014,7 +1014,7 @@ func RegisterStockInfoHandlerServer(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/unRealozedProfit"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/unRealizedProfit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1210,7 +1210,7 @@ func RegisterStockInfoHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedGain", runtime.WithHTTPPathPattern("/v1/fund/unrealized"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedGain", runtime.WithHTTPPathPattern("/v1/unrealized"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1232,7 +1232,7 @@ func RegisterStockInfoHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetRealizedGain", runtime.WithHTTPPathPattern("/v1/fund/realized"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetRealizedGain", runtime.WithHTTPPathPattern("/v1/realized"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1430,7 +1430,7 @@ func RegisterStockInfoHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/realozedProfit"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/realizedProfit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1452,7 +1452,7 @@ func RegisterStockInfoHandlerClient(ctx context.Context, mux *runtime.ServeMux, 
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/unRealozedProfit"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/pb.StockInfo/GetUnRealizedProfitLoss", runtime.WithHTTPPathPattern("/v1/unRealizedProfit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1484,9 +1484,9 @@ var (
 
 	pattern_StockInfo_InitStock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "stock", "action", "init"}, ""))
 
-	pattern_StockInfo_GetUnRealizedGain_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "fund", "unrealized"}, ""))
+	pattern_StockInfo_GetUnRealizedGain_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "unrealized"}, ""))
 
-	pattern_StockInfo_GetRealizedGain_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "fund", "realized"}, ""))
+	pattern_StockInfo_GetRealizedGain_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "realized"}, ""))
 
 	pattern_StockInfo_GetFund_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "fund"}, ""))
 
@@ -1504,9 +1504,9 @@ var (
 
 	pattern_StockInfo_GetUserStockById_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "userStock", "user_id"}, ""))
 
-	pattern_StockInfo_GetRealizedProfitLoss_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "realozedProfit"}, ""))
+	pattern_StockInfo_GetRealizedProfitLoss_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "realizedProfit"}, ""))
 
-	pattern_StockInfo_GetUnRealizedProfitLoss_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "unRealozedProfit"}, ""))
+	pattern_StockInfo_GetUnRealizedProfitLoss_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "unRealizedProfit"}, ""))
 )
 
 var (

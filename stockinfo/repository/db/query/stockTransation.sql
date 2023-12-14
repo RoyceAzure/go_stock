@@ -39,11 +39,13 @@ OFFSET $3;
 
 
 -- name: GetStockTransactionsFilter :many
-SELECT * FROM  stock_transaction
+SELECT *, stock.stock_code, stock.stock_name FROM  stock_transaction
+LEFT JOIN stock
+ON stock_transaction.stock_id = stock.stock_id
 WHERE 
-    user_id =  COALESCE(NULLIF(sqlc.arg(user_id),0), user_id)
-    AND stock_id = COALESCE(NULLIF(sqlc.arg(stock_id),0), stock_id)
-    AND transaction_type = COALESCE(sqlc.narg(transaction_type), transaction_type)
+    stock_transaction.user_id =  COALESCE(sqlc.narg(user_id), stock_transaction.user_id)
+    AND stock_transaction.stock_id = COALESCE(sqlc.narg(stock_id), stock_transaction.stock_id)
+    AND stock_transaction.transaction_type = COALESCE(sqlc.narg(transaction_type), stock_transaction.transaction_type)
 ORDER BY "transation_id"
 LIMIT sqlc.arg(limits)
 OFFSET sqlc.arg(offsets);

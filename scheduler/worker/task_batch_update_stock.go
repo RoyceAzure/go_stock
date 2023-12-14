@@ -13,6 +13,7 @@ const (
 	QueueCritical        = "critical"
 	QueueDefault         = "default"
 	TaskBatchUpdateStock = "task:batch_update_stock"
+	SyncStockQueue       = "syncStockQueue"
 )
 
 type BatchUpdateStockPayload struct {

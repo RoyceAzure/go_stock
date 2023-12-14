@@ -89,12 +89,3 @@ CREATE INDEX ON "stock_transaction" ("user_id", "stock_id");
 ALTER TABLE "fund" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
 
 ALTER TABLE "user_stock" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");
-
-ALTER TABLE "user_stock" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("stock_id") REFERENCES "stock" ("stock_id");
-
-ALTER TABLE "stock_transaction" ADD FOREIGN KEY ("fund_id") REFERENCES "fund" ("fund_id");
-

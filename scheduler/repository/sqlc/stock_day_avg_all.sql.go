@@ -68,6 +68,22 @@ func (q *Queries) CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) 
 	return i, err
 }
 
+const deleteSDAVGALLCodeByTime = `-- name: DeleteSDAVGALLCodeByTime :exec
+DELETE FROM "stock_day_avg_all"
+WHERE ($1::timestamptz IS NULL OR cr_date >= $1)
+AND ($2::timestamptz IS NULL OR cr_date <= $2)
+`
+
+type DeleteSDAVGALLCodeByTimeParams struct {
+	CrDateStart pgtype.Timestamptz `json:"cr_date_start"`
+	CrDateEnd   pgtype.Timestamptz `json:"cr_date_end"`
+}
+
+func (q *Queries) DeleteSDAVGALLCodeByTime(ctx context.Context, arg DeleteSDAVGALLCodeByTimeParams) error {
+	_, err := q.db.Exec(ctx, deleteSDAVGALLCodeByTime, arg.CrDateStart, arg.CrDateEnd)
+	return err
+}
+
 const deleteSDAVGALLCodePrexForTest = `-- name: DeleteSDAVGALLCodePrexForTest :exec
 DELETE FROM "stock_day_avg_all"
 WHERE id in (

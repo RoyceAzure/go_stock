@@ -43,6 +43,33 @@ func CreateRandomStockTransactions(t *testing.T) StockTransaction {
 	return stockTrans
 }
 
+func CreateStockTransactionsSepcific(t *testing.T, userId int64, stockId int64, fund int64, transType string, date time.Time, amt int32, pricePerShare string) StockTransaction {
+	arg := CreateStockTransactionParams{
+		UserID:                  userId,
+		StockID:                 stockId,
+		FundID:                  fund,
+		TransactionType:         transType,
+		TransactionDate:         date,
+		TransationAmt:           amt,
+		TransationPricePerShare: pricePerShare,
+		CrUser:                  "test",
+	}
+
+	stockTrans, err := testQueries.CreateStockTransaction(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, stockTrans)
+
+	require.Equal(t, arg.UserID, stockTrans.UserID)
+	require.Equal(t, arg.TransactionType, stockTrans.TransactionType)
+	require.Equal(t, arg.TransationAmt, stockTrans.TransationAmt)
+	require.Equal(t, arg.TransationPricePerShare, stockTrans.TransationPricePerShare)
+
+	require.NotZero(t, stockTrans.TransationID)
+	require.NotZero(t, stockTrans.CrDate)
+	return stockTrans
+}
+
 // func TestGetStockTransactions(t *testing.T) {
 // 	fund := CreateRandomStockTransactions(t)
 // 	fund2, err := testQueries.GetFund(context.Background(), fund.FundID)
@@ -77,34 +104,10 @@ func CreateRandomStockTransactions(t *testing.T) StockTransaction {
 // }
 
 // func TestDeleteStockTransactions(t *testing.T) {
-// 	fund := CreateRandomStockTransactions(t)
-
-// 	err := testQueries.DeleteFund(context.Background(), fund.FundID)
-
+// 	res, err := testQueries.GetStockTransactionsFilter(context.Background(), GetStockTransactionsFilterParams{
+// 		Offsets: 0,
+// 		Limits:  10,
+// 	})
 // 	require.NoError(t, err)
-
-// 	fund2, err := testQueries.GetFund(context.Background(), fund.FundID)
-
-// 	require.Error(t, err)
-// 	require.EqualError(t, err, sql.ErrNoRows.Error())
-// 	require.Empty(t, fund2)
-// }
-
-// func TestGetUsers(t *testing.T) {
-// 	for i := 0; i < 5; i++ {
-// 		CreateRandomUser(t)
-// 	}
-
-// 	arg := GetUsersParams{
-// 		Limit:  5,
-// 		Offset: 5,
-// 	}
-// 	users, err := testQueries.GetUsers(context.Background(), arg)
-
-// 	require.NoError(t, err)
-// 	require.Len(t, users, 5)
-
-// 	for _, user := range users {
-// 		require.NotEmpty(t, user)
-// 	}
+// 	require.NotEmpty(t, res)
 // }

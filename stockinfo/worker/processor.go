@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	MailQueue = "mailQueue"
+	MailQueue            = "mailQueue"
+	SyncStockQueue       = "syncStockQueue"
+	StockTransationQueue = "stockTransationQueue"
 )
 
 /*
@@ -43,7 +45,9 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt,
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
-				MailQueue: 10,
+				StockTransationQueue: 10,
+				MailQueue:            8,
+				SyncStockQueue:       6,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				log.Error().
@@ -75,6 +79,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
 	mux.HandleFunc(TaskBatchUpdateStock, processor.ProcessTaskBatchUpdateStock)
+	mux.HandleFunc(TaskStockTransation, processor.ProcessTaskStockTransfer)
 	return processor.server.Start(mux)
 }
 func (processor *RedisTaskProcessor) StartWithHandler(handler *asynq.ServeMux) error {

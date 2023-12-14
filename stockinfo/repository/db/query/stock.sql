@@ -61,3 +61,7 @@ SET
     current_price = COALESCE(sqlc.narg(current_price), current_price)
 WHERE stock.stock_code = sqlc.arg(stock_code)
 RETURNING *;
+
+
+-- name: TruncateStocks :exec
+TRUNCATE TABLE stock RESTART IDENTITY;

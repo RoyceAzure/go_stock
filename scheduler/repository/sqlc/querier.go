@@ -14,6 +14,7 @@ type Querier interface {
 	BulkInsertSPR(ctx context.Context, arg []BulkInsertSPRParams) (int64, error)
 	CreateSDAVGALL(ctx context.Context, arg CreateSDAVGALLParams) (StockDayAvgAll, error)
 	CreateSPR(ctx context.Context, arg CreateSPRParams) (StockPriceRealtime, error)
+	DeleteSDAVGALLCodeByTime(ctx context.Context, arg DeleteSDAVGALLCodeByTimeParams) error
 	DeleteSDAVGALLCodePrexForTest(ctx context.Context, arg DeleteSDAVGALLCodePrexForTestParams) error
 	GetSDAVGALLs(ctx context.Context, arg GetSDAVGALLsParams) ([]StockDayAvgAll, error)
 	GetSPRs(ctx context.Context, arg GetSPRsParams) ([]StockPriceRealtime, error)

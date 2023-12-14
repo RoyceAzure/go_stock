@@ -144,7 +144,3 @@ Table realized_profit_loss{
 }
 
 Ref: user_stock.user_id > user.user_id 
-Ref: stock_transaction.user_id > user.user_id
-Ref: user_stock.stock_id > stock.stock_id 
-Ref: stock_transaction.stock_id > stock.stock_id 
-Ref: stock_transaction.fund_id > fund.fund_id 

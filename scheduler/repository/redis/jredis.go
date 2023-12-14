@@ -19,6 +19,9 @@ type JRedisDao interface {
 	GetSPRLatestKey() string
 }
 
+/*
+manage spr data in redis
+*/
 type Jredis struct {
 	client       *redis.Client
 	sprLatestKey string

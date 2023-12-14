@@ -14,44 +14,19 @@ INSERT INTO user_stock(
 SELECT * FROM user_stock
 WHERE user_stock_id = $1 LIMIT 1;
 
--- name: GetUserStocks :many
-SELECT * FROM  user_stock
-ORDER BY user_stock_id
-LIMIT $1
-OFFSET $2;
-
 -- name: GetUserStocksByUserId :many
-SELECT user_stock.*, stock.stock_name FROM  user_stock
+SELECT user_stock.*, stock.stock_name, stock_code FROM  user_stock
 LEFT JOIN stock 
 ON  user_stock.stock_id = stock.stock_id
-WHERE user_stock.user_id = $1
+WHERE 
+    (sqlc.narg(user_id)::bigint IS NULL OR user_stock.user_id = sqlc.narg(user_id))
+    AND (sqlc.narg(stock_id)::bigint IS NULL OR user_stock.stock_id = sqlc.narg(stock_id))
+    AND (sqlc.narg(stock_id)::bigint IS NULL OR user_stock.stock_id = sqlc.narg(stock_id))
+    AND (sqlc.narg(purchased_date_start)::timestamptz IS NULL OR user_stock.purchased_date > sqlc.narg(purchased_date_start))
+    AND (sqlc.narg(purchased_date_end)::timestamptz IS NULL OR user_stock.purchased_date < sqlc.narg(purchased_date_end))
 ORDER BY user_stock_id
-LIMIT $2
-OFFSET $3;
-
--- name: GetUserStocksByStockId :many
-SELECT user_stock.*, stock.stock_name FROM  user_stock
-LEFT JOIN stock 
-ON  user_stock.stock_id = stock.stock_id
-WHERE user_stock.stock_id = $1
-ORDER BY user_stock_id
-LIMIT $2
-OFFSET $3;
-
--- name: GetUserStocksByPDate :many
-SELECT * FROM  user_stock
-WHERE purchased_date = $1
-ORDER BY user_stock_id
-LIMIT $2
-OFFSET $3;
-
--- name: GetUserStocksByUserAStock :many
-SELECT * FROM  user_stock
-WHERE purchased_date = $1
-AND stock_id = $2
-ORDER BY user_stock_id
-LIMIT $3
-OFFSET $4;
+LIMIT sqlc.arg(limits)
+OFFSET sqlc.arg(offsets);
 
 -- name: UpdateUserStock :one
 UPDATE user_stock

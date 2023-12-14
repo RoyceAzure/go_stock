@@ -12,8 +12,6 @@ import (
 )
 
 type SchdulerInfoDao interface {
-	GetSprData(ctx context.Context) SprData
-	SetSprData(ctx context.Context, value SprData)
 	GetStockPriceRealTime(ctx context.Context) (SprData, error)
 }
 

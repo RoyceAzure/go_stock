@@ -257,25 +257,54 @@ func (q *Queries) GetStockTransactionsByUserId(ctx context.Context, arg GetStock
 }
 
 const getStockTransactionsFilter = `-- name: GetStockTransactionsFilter :many
-SELECT transation_id, user_id, stock_id, fund_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, cr_date, up_date, cr_user, up_user, result FROM  stock_transaction
+SELECT transation_id, user_id, stock_transaction.stock_id, fund_id, transaction_type, transaction_date, transation_amt, transation_price_per_share, stock_transaction.cr_date, stock_transaction.up_date, stock_transaction.cr_user, stock_transaction.up_user, result, stock.stock_id, stock_code, stock_name, current_price, market_cap, stock.cr_date, stock.up_date, stock.cr_user, stock.up_user, stock.stock_code, stock.stock_name FROM  stock_transaction
+LEFT JOIN stock
+ON stock_transaction.stock_id = stock.stock_id
 WHERE 
-    user_id =  COALESCE(NULLIF($1,0), user_id)
-    AND stock_id = COALESCE(NULLIF($2,0), stock_id)
-    AND transaction_type = COALESCE($3, transaction_type)
+    stock_transaction.user_id =  COALESCE($1, stock_transaction.user_id)
+    AND stock_transaction.stock_id = COALESCE($2, stock_transaction.stock_id)
+    AND stock_transaction.transaction_type = COALESCE($3, stock_transaction.transaction_type)
 ORDER BY "transation_id"
 LIMIT $5
 OFFSET $4
 `
 
 type GetStockTransactionsFilterParams struct {
-	UserID          interface{}    `json:"user_id"`
-	StockID         interface{}    `json:"stock_id"`
+	UserID          sql.NullInt64  `json:"user_id"`
+	StockID         sql.NullInt64  `json:"stock_id"`
 	TransactionType sql.NullString `json:"transaction_type"`
 	Offsets         int32          `json:"offsets"`
 	Limits          int32          `json:"limits"`
 }
 
-func (q *Queries) GetStockTransactionsFilter(ctx context.Context, arg GetStockTransactionsFilterParams) ([]StockTransaction, error) {
+type GetStockTransactionsFilterRow struct {
+	TransationID            int64            `json:"transation_id"`
+	UserID                  int64            `json:"user_id"`
+	StockID                 int64            `json:"stock_id"`
+	FundID                  int64            `json:"fund_id"`
+	TransactionType         string           `json:"transaction_type"`
+	TransactionDate         time.Time        `json:"transaction_date"`
+	TransationAmt           int32            `json:"transation_amt"`
+	TransationPricePerShare string           `json:"transation_price_per_share"`
+	CrDate                  time.Time        `json:"cr_date"`
+	UpDate                  sql.NullTime     `json:"up_date"`
+	CrUser                  string           `json:"cr_user"`
+	UpUser                  sql.NullString   `json:"up_user"`
+	Result                  TransationResult `json:"result"`
+	StockID_2               sql.NullInt64    `json:"stock_id_2"`
+	StockCode               sql.NullString   `json:"stock_code"`
+	StockName               sql.NullString   `json:"stock_name"`
+	CurrentPrice            sql.NullString   `json:"current_price"`
+	MarketCap               sql.NullInt64    `json:"market_cap"`
+	CrDate_2                sql.NullTime     `json:"cr_date_2"`
+	UpDate_2                sql.NullTime     `json:"up_date_2"`
+	CrUser_2                sql.NullString   `json:"cr_user_2"`
+	UpUser_2                sql.NullString   `json:"up_user_2"`
+	StockCode_2             sql.NullString   `json:"stock_code_2"`
+	StockName_2             sql.NullString   `json:"stock_name_2"`
+}
+
+func (q *Queries) GetStockTransactionsFilter(ctx context.Context, arg GetStockTransactionsFilterParams) ([]GetStockTransactionsFilterRow, error) {
 	rows, err := q.db.QueryContext(ctx, getStockTransactionsFilter,
 		arg.UserID,
 		arg.StockID,
@@ -287,9 +316,9 @@ func (q *Queries) GetStockTransactionsFilter(ctx context.Context, arg GetStockTr
 		return nil, err
 	}
 	defer rows.Close()
-	items := []StockTransaction{}
+	items := []GetStockTransactionsFilterRow{}
 	for rows.Next() {
-		var i StockTransaction
+		var i GetStockTransactionsFilterRow
 		if err := rows.Scan(
 			&i.TransationID,
 			&i.UserID,
@@ -304,6 +333,17 @@ func (q *Queries) GetStockTransactionsFilter(ctx context.Context, arg GetStockTr
 			&i.CrUser,
 			&i.UpUser,
 			&i.Result,
+			&i.StockID_2,
+			&i.StockCode,
+			&i.StockName,
+			&i.CurrentPrice,
+			&i.MarketCap,
+			&i.CrDate_2,
+			&i.UpDate_2,
+			&i.CrUser_2,
+			&i.UpUser_2,
+			&i.StockCode_2,
+			&i.StockName_2,
 		); err != nil {
 			return nil, err
 		}

@@ -109,6 +109,20 @@ func (mr *MockDaoMockRecorder) CreateSPR(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSPR", reflect.TypeOf((*MockDao)(nil).CreateSPR), arg0, arg1)
 }
 
+// DeleteSDAVGALLCodeByTime mocks base method.
+func (m *MockDao) DeleteSDAVGALLCodeByTime(arg0 context.Context, arg1 repository.DeleteSDAVGALLCodeByTimeParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSDAVGALLCodeByTime", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSDAVGALLCodeByTime indicates an expected call of DeleteSDAVGALLCodeByTime.
+func (mr *MockDaoMockRecorder) DeleteSDAVGALLCodeByTime(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSDAVGALLCodeByTime", reflect.TypeOf((*MockDao)(nil).DeleteSDAVGALLCodeByTime), arg0, arg1)
+}
+
 // DeleteSDAVGALLCodePrexForTest mocks base method.
 func (m *MockDao) DeleteSDAVGALLCodePrexForTest(arg0 context.Context, arg1 repository.DeleteSDAVGALLCodePrexForTestParams) error {
 	m.ctrl.T.Helper()

@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"database/sql"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
@@ -9,7 +10,14 @@ import (
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 )
 
+/*
+目前限定只能取得自己的資料，所以不接受userId參數
+*/
 func (server *Server) GetUserStock(ctx context.Context, req *pb.GetUserStockRequest) (*pb.GetUserStockResponse, error) {
+	tokenPayload, err := server.authorizUser(ctx)
+	if err != nil {
+		return nil, util.UnauthticatedError(err)
+	}
 	var page_size, page int32
 	if req.PageSize == 0 {
 		page_size = constants.DEFAULT_PAGE_SIZE
@@ -23,9 +31,13 @@ func (server *Server) GetUserStock(ctx context.Context, req *pb.GetUserStockRequ
 		page = req.Page
 	}
 
-	userStocks, err := server.store.GetUserStocks(ctx, db.GetUserStocksParams{
-		Limit:  page_size,
-		Offset: (page - 1) * page_size,
+	userStocks, err := server.store.GetUserStocksByUserId(ctx, db.GetUserStocksByUserIdParams{
+		UserID: sql.NullInt64{
+			Int64: tokenPayload.UserId,
+			Valid: true,
+		},
+		Limits:  page_size,
+		Offsets: (page - 1) * page_size,
 	})
 
 	if err != nil {
@@ -60,9 +72,12 @@ func (server *Server) GetUserStockById(ctx context.Context, req *pb.GetUserStock
 	}
 
 	userStocks, err := server.store.GetUserStocksByUserId(ctx, db.GetUserStocksByUserIdParams{
-		UserID: tokenPayload.UserId,
-		Limit:  constants.DEFAULT_PAGE_SIZE,
-		Offset: (constants.DEFAULT_PAGE - 1) * constants.DEFAULT_PAGE_SIZE,
+		UserID: sql.NullInt64{
+			Int64: tokenPayload.UserId,
+			Valid: true,
+		},
+		Limits:  constants.DEFAULT_PAGE_SIZE,
+		Offsets: (constants.DEFAULT_PAGE - 1) * constants.DEFAULT_PAGE_SIZE,
 	})
 
 	if err != nil {

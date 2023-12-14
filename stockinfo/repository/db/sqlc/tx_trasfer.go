@@ -64,7 +64,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 		isHasUserStock := true
 		stockTrans, err := q.GetStockTransaction(ctx, arg.TransationID)
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("get stock transation failed")
 			return util.InternalError(err)
 		}
 
@@ -73,13 +73,13 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			TransationID: arg.TransationID,
 		})
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("update stock transation failed")
 			return util.InternalError(err)
 		}
 
-		perPrice, err := decimal.NewFromString(stockTrans.TransationPricePerShare)
+		currentPerPrice, err := decimal.NewFromString(stockTrans.TransationPricePerShare)
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("convert per price failed")
 			return util.InternalError(err)
 		}
 
@@ -97,7 +97,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			FundID: stockTrans.FundID,
 		})
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("get fund by uid and fid err")
 			return constants.ErrInValidatePreConditionOp
 		}
 		//select for update no key, 受引用關聯的表仍可以做操作
@@ -110,7 +110,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 				isHasUserStock = false
 				oriUserStock.PurchasePricePerShare = "0.00"
 			} else {
-				logger.Logger.Error().Err(err).Msg("transfer stock get err")
+				logger.Logger.Error().Err(err).Msg("get user stock by uid and sid get err")
 				return constants.ErrInternal
 			}
 		}
@@ -126,33 +126,46 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			return fmt.Errorf("not enough stock %w", constants.ErrInValidatePreConditionOp)
 		}
 		//計算操作所需金額
-		D_priceToHandle := perPrice.Mul(decimal.NewFromInt32(stockTrans.TransationAmt))
+		D_priceToHandle := currentPerPrice.Mul(decimal.NewFromInt32(stockTrans.TransationAmt)).Mul(decimal.NewFromInt(1000))
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
-			return constants.ErrInValidatePreConditionOp
+			logger.Logger.Error().Err(err).Msg("failed to compute total price")
+			return constants.ErrInternal
 		}
 
 		D_amt := decimal.NewFromInt32(stockTrans.TransationAmt)
 		D_ori_balance, err := decimal.NewFromString(oriFund.Balance)
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
-			return constants.ErrInValidatePreConditionOp
+			logger.Logger.Error().Err(err).Msg("failed to convert balance")
+			return constants.ErrInternal
 		}
 
 		if strings.EqualFold(stockTrans.TransactionType, "sell") && oriUserStock.Quantity < stockTrans.TransationAmt {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("not enough user stock")
 			return fmt.Errorf("not enough user stock %w", constants.ErrInValidatePreConditionOp)
 		} else if strings.EqualFold(stockTrans.TransactionType, "buy") && D_ori_balance.LessThan(D_priceToHandle) {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("not enough money")
 			return fmt.Errorf("not enough money %w", constants.ErrInValidatePreConditionOp)
 		}
 
 		var newUserStock UserStock
-		var new_balance, oriTotlaStcokCost decimal.Decimal
+		var new_balance decimal.Decimal
 		var new_user_stock_quantity int32
 		var newMarketCap int64
+
+		//已花費成本價錢
+		costPerPrice, err := decimal.NewFromString(oriUserStock.PurchasePricePerShare)
+		if err != nil {
+			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			return constants.ErrInternal
+		}
+		costAmt := decimal.NewFromInt32(oriUserStock.Quantity)
+
+		costTotalPrice := costPerPrice.Mul(costAmt)
+
 		//更新操做
 		if isSelled {
+			//sell
+
 			//fund
 			new_balance = D_ori_balance.Add(D_priceToHandle)
 
@@ -166,7 +179,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 				//刪除操作
 				err := q.DeleteUserStock(ctx, oriUserStock.UserStockID)
 				if err != nil {
-					logger.Logger.Error().Err(err).Msg("transfer stock get err")
+					logger.Logger.Error().Err(err).Msg("failed to delete user stock")
 					return constants.ErrInternal
 				}
 			} else {
@@ -179,22 +192,46 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 					PurchasedDate:         stockTrans.TransactionDate,
 				})
 				if err != nil {
-					logger.Logger.Error().Err(err).Msg("transfer stock get err")
+					logger.Logger.Error().Err(err).Msg("failed to update user stock")
 					return constants.ErrInternal
 				}
 			}
+
+			//inssert RealizedProfitLoss
+
+			var realizedPrecent decimal.Decimal
+			if costTotalPrice.Equal(decimal.NewFromInt32(0)) {
+				realizedPrecent = D_priceToHandle.Div(decimal.NewFromInt32(1))
+			} else {
+				realizedPrecent = D_priceToHandle.Div(costTotalPrice)
+			}
+
+			_, err = q.CreateRealizedProfitLoss(ctx, CreateRealizedProfitLossParams{
+				TransationID:    stockTrans.TransationID,
+				UserID:          stockTrans.UserID,
+				ProductName:     fmt.Sprintf("%s %s", oriStock.StockCode, oriStock.StockName),
+				CostPerPrice:    oriUserStock.PurchasePricePerShare,
+				CostTotalPrice:  costTotalPrice.String(),
+				Realized:        D_priceToHandle.String(),
+				RealizedPrecent: realizedPrecent.String(),
+			})
+			if err != nil {
+				logger.Logger.Error().Err(err).Msg("failed to create realized profit loss")
+				return constants.ErrInternal
+			}
+
 		} else {
+			//buy
+
 			//fund
 			new_balance = D_ori_balance.Sub(D_priceToHandle)
 
 			//total stock 數量更新
 			newMarketCap = oriStock.MarketCap - int64(stockTrans.TransationAmt)
-
-			//userStoc
-			new_user_stock_quantity = stockTrans.TransationAmt + oriUserStock.Quantity
-			oriTotlaStcokCost = D_amt.Mul(perPrice)
-			newPricePerShare := oriTotlaStcokCost.Add(D_amt.Mul(perPrice)).Div(D_amt)
+			new_user_stock_quantity = oriUserStock.Quantity + stockTrans.TransationAmt
+			//userStock
 			if isHasUserStock {
+				newPricePerShare := (costTotalPrice.Add(D_priceToHandle)).Div(D_amt.Add(costAmt))
 				newUserStock, err = q.UpdateUserStock(ctx, UpdateUserStockParams{
 					UserID:                stockTrans.UserID,
 					StockID:               stockTrans.StockID,
@@ -204,21 +241,21 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 					UpUser:                util.StringToSqlNiStr(arg.CreateUser),
 				})
 				if err != nil {
-					logger.Logger.Error().Err(err).Msg("transfer stock get err")
+					logger.Logger.Error().Err(err).Msg("failed to update user stock")
 					return constants.ErrInternal
 				}
 			} else {
-				//Insert
+				//Insert  不需要更新price per share
 				newUserStock, err = q.CreateUserStock(ctx, CreateUserStockParams{
 					UserID:                stockTrans.UserID,
 					StockID:               stockTrans.StockID,
 					Quantity:              new_user_stock_quantity,
-					PurchasePricePerShare: newPricePerShare.String(),
+					PurchasePricePerShare: stockTrans.TransationPricePerShare,
 					PurchasedDate:         stockTrans.TransactionDate,
 					CrUser:                arg.CreateUser,
 				})
 				if err != nil {
-					logger.Logger.Error().Err(err).Msg("transfer stock get err")
+					logger.Logger.Error().Err(err).Msg("failed to create user stock")
 					return constants.ErrInternal
 				}
 			}
@@ -230,7 +267,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			UpUser:  util.StringToSqlNiStr(arg.CreateUser),
 		})
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("failed to update fund")
 			return constants.ErrInternal
 		}
 
@@ -243,38 +280,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			},
 		})
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
-			return constants.ErrInternal
-		}
-
-		//inssert RealizedProfitLoss
-
-		costPerPrice, err := decimal.NewFromString(oriUserStock.PurchasePricePerShare)
-		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
-			return constants.ErrInternal
-		}
-		costAmt := decimal.NewFromInt32(oriUserStock.Quantity)
-
-		costTotalPrice := costPerPrice.Mul(costAmt)
-		var realizedPrecent decimal.Decimal
-		if costTotalPrice.Equal(decimal.NewFromInt32(0)) {
-			realizedPrecent = D_priceToHandle.Div(decimal.NewFromInt32(1))
-		} else {
-			realizedPrecent = D_priceToHandle.Div(costTotalPrice)
-		}
-
-		_, err = q.CreateRealizedProfitLoss(ctx, CreateRealizedProfitLossParams{
-			TransationID:    stockTrans.TransationID,
-			UserID:          stockTrans.UserID,
-			ProductName:     fmt.Sprintf("%s %s", oriStock.StockCode, oriStock.StockName),
-			CostPerPrice:    oriUserStock.PurchasePricePerShare,
-			CostTotalPrice:  costTotalPrice.String(),
-			Realized:        D_priceToHandle.String(),
-			RealizedPrecent: realizedPrecent.String(),
-		})
-		if err != nil {
-			logger.Logger.Error().Err(err).Msg("transfer stock get err")
+			logger.Logger.Error().Err(err).Msg("failed to update stock")
 			return constants.ErrInternal
 		}
 

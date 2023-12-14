@@ -50,3 +50,18 @@ func CreateRandomStockNoTest() Stock {
 	stock, _ := testQueries.CreateStock(context.Background(), arg)
 	return stock
 }
+
+func CreateStockSpecific(t *testing.T, stockCode string, stockName string, currentPrice string, marketCap int64) Stock {
+	arg := CreateStockParams{
+		StockCode:    stockCode,
+		StockName:    stockName,
+		CurrentPrice: currentPrice,
+		MarketCap:    marketCap,
+		CrUser:       "test",
+	}
+
+	stock, err := testQueries.CreateStock(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, stock)
+	return stock
+}

@@ -13,7 +13,7 @@ import (
 )
 
 /*
-創建grpc client跟操做分開
+grpc call scheduler get SDA, tansform to stock data
 */
 func (server *Server) InitStock(ctx context.Context, req *pb.InitStockRequest) (*pb.InitStockResponse, error) {
 	startTime := time.Now().UTC()
@@ -30,6 +30,11 @@ func (server *Server) InitStock(ctx context.Context, req *pb.InitStockRequest) (
 	}
 	successedCount := 0
 	failedCount := 0
+
+	err = server.store.TruncateStocks(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
 
 	for _, dto := range res.Result {
 		insertEnty := cvStockDayAvg2CreateParm(dto)

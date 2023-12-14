@@ -45,3 +45,9 @@ WHERE id in (
     FROM "stock_day_avg_all" as s
     WHERE substring(s.code, 0, sqlc.arg(len)) = sqlc.arg(code_prefix)
 );
+
+
+-- name: DeleteSDAVGALLCodeByTime :exec
+DELETE FROM "stock_day_avg_all"
+WHERE (sqlc.narg(cr_date_start)::timestamptz IS NULL OR cr_date >= sqlc.narg(cr_date_start))
+AND (sqlc.narg(cr_date_end)::timestamptz IS NULL OR cr_date <= sqlc.narg(cr_date_end));

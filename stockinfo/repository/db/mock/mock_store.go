@@ -512,10 +512,10 @@ func (mr *MockStoreMockRecorder) GetStockTransactionsByUserId(arg0, arg1 interfa
 }
 
 // GetStockTransactionsFilter mocks base method.
-func (m *MockStore) GetStockTransactionsFilter(arg0 context.Context, arg1 db.GetStockTransactionsFilterParams) ([]db.StockTransaction, error) {
+func (m *MockStore) GetStockTransactionsFilter(arg0 context.Context, arg1 db.GetStockTransactionsFilterParams) ([]db.GetStockTransactionsFilterRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetStockTransactionsFilter", arg0, arg1)
-	ret0, _ := ret[0].([]db.StockTransaction)
+	ret0, _ := ret[0].([]db.GetStockTransactionsFilterRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -616,66 +616,6 @@ func (mr *MockStoreMockRecorder) GetUserStockByUidandSidForUpdateNoK(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStockByUidandSidForUpdateNoK", reflect.TypeOf((*MockStore)(nil).GetUserStockByUidandSidForUpdateNoK), arg0, arg1)
 }
 
-// GetUserStocks mocks base method.
-func (m *MockStore) GetUserStocks(arg0 context.Context, arg1 db.GetUserStocksParams) ([]db.UserStock, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserStocks", arg0, arg1)
-	ret0, _ := ret[0].([]db.UserStock)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserStocks indicates an expected call of GetUserStocks.
-func (mr *MockStoreMockRecorder) GetUserStocks(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocks", reflect.TypeOf((*MockStore)(nil).GetUserStocks), arg0, arg1)
-}
-
-// GetUserStocksByPDate mocks base method.
-func (m *MockStore) GetUserStocksByPDate(arg0 context.Context, arg1 db.GetUserStocksByPDateParams) ([]db.UserStock, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserStocksByPDate", arg0, arg1)
-	ret0, _ := ret[0].([]db.UserStock)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserStocksByPDate indicates an expected call of GetUserStocksByPDate.
-func (mr *MockStoreMockRecorder) GetUserStocksByPDate(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByPDate", reflect.TypeOf((*MockStore)(nil).GetUserStocksByPDate), arg0, arg1)
-}
-
-// GetUserStocksByStockId mocks base method.
-func (m *MockStore) GetUserStocksByStockId(arg0 context.Context, arg1 db.GetUserStocksByStockIdParams) ([]db.GetUserStocksByStockIdRow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserStocksByStockId", arg0, arg1)
-	ret0, _ := ret[0].([]db.GetUserStocksByStockIdRow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserStocksByStockId indicates an expected call of GetUserStocksByStockId.
-func (mr *MockStoreMockRecorder) GetUserStocksByStockId(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByStockId", reflect.TypeOf((*MockStore)(nil).GetUserStocksByStockId), arg0, arg1)
-}
-
-// GetUserStocksByUserAStock mocks base method.
-func (m *MockStore) GetUserStocksByUserAStock(arg0 context.Context, arg1 db.GetUserStocksByUserAStockParams) ([]db.UserStock, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserStocksByUserAStock", arg0, arg1)
-	ret0, _ := ret[0].([]db.UserStock)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserStocksByUserAStock indicates an expected call of GetUserStocksByUserAStock.
-func (mr *MockStoreMockRecorder) GetUserStocksByUserAStock(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStocksByUserAStock", reflect.TypeOf((*MockStore)(nil).GetUserStocksByUserAStock), arg0, arg1)
-}
-
 // GetUserStocksByUserId mocks base method.
 func (m *MockStore) GetUserStocksByUserId(arg0 context.Context, arg1 db.GetUserStocksByUserIdParams) ([]db.GetUserStocksByUserIdRow, error) {
 	m.ctrl.T.Helper()
@@ -749,6 +689,20 @@ func (m *MockStore) TransferStockTx(arg0 context.Context, arg1 db.TransferStockT
 func (mr *MockStoreMockRecorder) TransferStockTx(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferStockTx", reflect.TypeOf((*MockStore)(nil).TransferStockTx), arg0, arg1)
+}
+
+// TruncateStocks mocks base method.
+func (m *MockStore) TruncateStocks(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TruncateStocks", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TruncateStocks indicates an expected call of TruncateStocks.
+func (mr *MockStoreMockRecorder) TruncateStocks(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TruncateStocks", reflect.TypeOf((*MockStore)(nil).TruncateStocks), arg0)
 }
 
 // UpdateFund mocks base method.

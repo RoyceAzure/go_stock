@@ -40,7 +40,7 @@ func main() {
 	}
 	redisClient := asynq.NewClient(redisOpt)
 	loggerDis := logger.NewLoggerDistributor(redisClient)
-	err = logger.SetUpLoggerDistributor(loggerDis)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
 	if err != nil {
 		log.Fatal().Err(err).Msg("err create db connect")
 	}

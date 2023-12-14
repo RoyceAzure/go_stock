@@ -10,6 +10,10 @@ type JRedisService struct {
 	redisDao jredis.JRedisDao
 }
 
+/*
+use redisDao to manage spr data in redis
+in bs logic level, integrate with cronworker and gapi level
+*/
 func NewJRedisService(redisDao jredis.JRedisDao) *JRedisService {
 	return &JRedisService{
 		redisDao: redisDao,

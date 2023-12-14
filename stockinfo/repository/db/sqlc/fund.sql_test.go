@@ -51,6 +51,20 @@ func CreateRandomFundNoTest(user User, min int64, max int64) (User, Fund) {
 	return user, fund
 }
 
+func CreateFundSpecify(t *testing.T, userId int64, balance string, currencyType string) Fund {
+	arg := CreateFundParams{
+		UserID:       userId,
+		Balance:      balance,
+		CurrencyType: string(currencyType),
+		CrUser:       "test",
+	}
+
+	fund, err := testQueries.CreateFund(context.TODO(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, fund)
+	return fund
+}
+
 func TestGetFund(t *testing.T) {
 	_, fund := CreateRandomFund(t)
 	fund2, err := testQueries.GetFund(context.Background(), fund.FundID)

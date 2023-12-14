@@ -1,5 +1,4 @@
 syntax = "proto3";
-import "stock_transation.proto";
 package pb;
 
 option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
@@ -20,7 +19,15 @@ message GetTransationsRequest{
 }
 
 message GetransationsResponse{
-repeated StockTransation data=1;
+    int64 transation_id=1;
+    int64 user_id=2;
+    int64 stock_id = 3;
+    string stock_code =4;
+    string stock_name=5;
+    string transation_type = 6;
+    int64 trans_amt = 7;
+    string trans_prices_per_share=8;
+    string result=9;
 }
 
 
@@ -33,7 +40,7 @@ message GetAllStockTransationRequest{
 }
 
 message StockTransatsionResponse{
-repeated StockTransation data=1;
+repeated GetransationsResponse data=1;
 }
 
 message GetAllStockTransatioBySidRequest{

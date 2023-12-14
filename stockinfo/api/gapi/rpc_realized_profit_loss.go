@@ -35,15 +35,25 @@ func (server *Server) GetRealizedProfitLoss(ctx context.Context, req *pb.GetReal
 	var datas []*pb.RealizedProfitLoss
 
 	for _, entity := range entities {
+		realized, err := decimal.NewFromString(entity.Realized)
+		if err != nil {
+			return nil, util.InternalError(err)
+		}
+
+		realizedPrecent, err := decimal.NewFromString(entity.RealizedPrecent)
+		if err != nil {
+			return nil, util.InternalError(err)
+		}
+
 		datas = append(datas, &pb.RealizedProfitLoss{
 			UserId:          entity.UserID,
 			ProductName:     entity.ProductName,
 			CostPerPrice:    entity.CostPerPrice,
 			CostTotalPrice:  entity.CostPerPrice,
-			Amt:             string(entity.TransationAmt.Int32),
+			Amt:             fmt.Sprintf("%d", entity.TransationAmt.Int32),
 			DealPerPrice:    entity.TransationPricePerShare.String,
-			Realized:        entity.Realized,
-			RealizedPrecent: entity.RealizedPrecent,
+			Realized:        realized.Round(2).String(),
+			RealizedPrecent: fmt.Sprintf("%s%%", realizedPrecent.Round(2).String()),
 			TransAt:         timestamppb.New(entity.TransAt.Time),
 		})
 	}
@@ -61,9 +71,12 @@ func (server *Server) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUn
 	}
 
 	userStocks, err := server.store.GetUserStocksByUserId(ctx, db.GetUserStocksByUserIdParams{
-		UserID: payload.UserId,
-		Limit:  constants.DEFAULT_PAGE_SIZE,
-		Offset: (constants.DEFAULT_PAGE - 1) * constants.DEFAULT_PAGE_SIZE,
+		UserID: sql.NullInt64{
+			Int64: payload.UserId,
+			Valid: true,
+		},
+		Limits:  constants.DEFAULT_PAGE_SIZE,
+		Offsets: (constants.DEFAULT_PAGE - 1) * constants.DEFAULT_PAGE_SIZE,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -78,7 +91,7 @@ func (server *Server) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUn
 		if !userStock.StockName.Valid {
 			return nil, status.Errorf(codes.Internal, "%s", fmt.Errorf("stock id mismatch"))
 		}
-		stockCodeMap[userStock.StockName.String] = &userStock
+		stockCodeMap[userStock.StockCode.String] = &userStock
 	}
 
 	schedulerClient, cancel, err := server.clientFactory.NewClient()
@@ -92,7 +105,8 @@ func (server *Server) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUn
 		return nil, status.Errorf(codes.Internal, "%s", fmt.Errorf("can't fetch spr datas from scheduler"))
 	}
 
-	var res *pb.GetUnRealizedProfitLossResponse
+	res := pb.GetUnRealizedProfitLossResponse{}
+	// var data []*pb.RealizedProfitLoss
 
 	for _, spr := range sprs.Result {
 		if val, exists := stockCodeMap[spr.StockCode]; exists {
@@ -107,23 +121,25 @@ func (server *Server) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUn
 				return nil, status.Errorf(codes.Internal, "%s", fmt.Errorf("convert purchase price failed"))
 			}
 			currentTotalPrice := currentPrice.Mul(quantity)
-			realized := costTotalPrice.Sub(currentTotalPrice)
+			realized := currentTotalPrice.Sub(costTotalPrice)
 
 			var realizedPrecent decimal.Decimal
 			if realized.Equal(decimal.NewFromInt32(0)) {
 				realizedPrecent = realized.Div(decimal.NewFromInt32(1))
 			} else {
-				realizedPrecent = realized.Div(currentTotalPrice)
+				realizedPrecent = realized.Div(costTotalPrice).Mul(decimal.NewFromInt(100))
 			}
 			res.Data = append(res.Data, &pb.RealizedProfitLoss{
 				ProductName:     fmt.Sprintf("%s %s", spr.StockCode, spr.StockName),
 				CostPerPrice:    val.PurchasePricePerShare,
-				CostTotalPrice:  costTotalPrice.String(),
+				CostTotalPrice:  costTotalPrice.Round(2).String(),
+				CurrentPrice:    currentPrice.String(),
 				Amt:             fmt.Sprintf("%d", val.Quantity),
-				Realized:        realized.String(),
-				RealizedPrecent: realizedPrecent.String(),
+				Realized:        realized.Round(2).String(),
+				RealizedPrecent: fmt.Sprintf("%s%%", realizedPrecent.Round(2).String()),
 			})
 		}
 	}
-	return res, nil
+	// res.Data = data
+	return &res, nil
 }

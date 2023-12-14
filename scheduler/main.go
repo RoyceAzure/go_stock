@@ -69,6 +69,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	go service.InitSDA(ctx)
 	chGrpcServer := make(chan error, 1)
 	chGinServer := make(chan error, 1)
 
@@ -117,6 +118,7 @@ func runGinServer(ch chan<- error, configs config.Config, dao repository.Dao, se
 			Err(err).
 			Msg("cannot start server")
 	}
+	log.Info().Msgf("start gin server at %s", configs.HttpServerAddress)
 	err = server.Start(configs.HttpServerAddress)
 	if err != nil {
 		log.Fatal().
