@@ -43,7 +43,7 @@ func main() {
 	mongoDao := repository.NewMongoDao(client)
 
 	mongoLogger := logservice.NewMongoLogger(mongoDao)
-	err = logservice.SetUpMutiMongoLogger(mongoLogger)
+	err = logservice.SetUpMutiMongoLogger(mongoLogger, config.ServiceID)
 	if err != nil {
 		logservice.Logger.Fatal().
 			Err(err).

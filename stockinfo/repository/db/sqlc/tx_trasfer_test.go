@@ -25,7 +25,10 @@ func TestStockTransTxEach(t *testing.T) {
 	ctx := context.Background()
 
 	//測試用原始數據
-	testUser, testFund, testStock, testUserStock = CreateRandomUserStockNoTest(100, 200, 0, 1)
+	testUser, testFund, testStock, testUserStock = CreateRandomUserStockNoTest(util.RandomInt(1, 10),
+		util.RandomInt(10, 20),
+		util.RandomInt(1, 10),
+		util.RandomInt(10, 100))
 	var userStockChange, stockChange int32
 	var fundChange decimal.Decimal
 	var oriUserStockAmt int32
@@ -88,7 +91,7 @@ func TestStockTransTxEach(t *testing.T) {
 		D_stock_cur_price, err := decimal.NewFromString(transRes.TransationPricePerShare)
 		require.NoError(t, err)
 
-		priceToHandle := D_amt.Mul(D_stock_cur_price)
+		priceToHandle := D_amt.Mul(D_stock_cur_price).Mul(decimal.NewFromInt(1000))
 
 		D_ori_balance, err := decimal.NewFromString(oriFund.Balance)
 		require.NoError(t, err)
@@ -134,15 +137,11 @@ func TestStockTransTxEach(t *testing.T) {
 			stockChange = stockChange - transRes.TransationAmt
 
 			userStockChange = userStockChange + transRes.TransationAmt
-			perPrice, _ := decimal.NewFromString(transRes.TransationPricePerShare)
-			amt := decimal.NewFromInt32(transRes.TransationAmt)
-			fundChange = fundChange.Sub(amt.Mul(perPrice))
+			fundChange = fundChange.Sub(priceToHandle)
 		} else if strings.EqualFold(transRes.TransactionType, "sell") {
 			stockChange = stockChange + transRes.TransationAmt
 			userStockChange = userStockChange - transRes.TransationAmt
-			perPrice, _ := decimal.NewFromString(transRes.TransationPricePerShare)
-			amt := decimal.NewFromInt32(transRes.TransationAmt)
-			fundChange = fundChange.Add(amt.Mul(perPrice))
+			fundChange = fundChange.Add(priceToHandle)
 		}
 	}
 

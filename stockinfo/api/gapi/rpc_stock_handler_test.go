@@ -5,15 +5,14 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/RoyceAzure/go-stockinfo/api/token"
 	mock_gapi "github.com/RoyceAzure/go-stockinfo/api/gapi/mock"
+	"github.com/RoyceAzure/go-stockinfo/api/token"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	mock_scheduler_client "github.com/RoyceAzure/go-stockinfo/shared/pb/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
 )
 
 func TestInitStock(t *testing.T) {
@@ -41,7 +40,7 @@ func TestInitStock(t *testing.T) {
 			buildStub: func(factory *mock_gapi.MockSchedulerClientFactory, client *mock_scheduler_client.MockStockInfoSchdulerClient) {
 				client.EXPECT().GetStockDayAvg(gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("get SDA failed"))
-				factory.EXPECT().NewClient().Return(client, func() {}, nil).
+				factory.EXPECT().NewClient().Return(&client, func() {}, nil).
 					Times(1)
 			},
 			checkReponse: func(t *testing.T, res *pb.InitStockResponse, err error) {
