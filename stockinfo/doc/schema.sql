@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-12-12T06:36:44.916Z
+-- Generated at: 2023-12-15T06:02:19.118Z
 
 CREATE TYPE "transation_result" AS ENUM (
   'createed',
@@ -90,6 +90,7 @@ CREATE TABLE "stock_transaction" (
   "transation_amt" int NOT NULL,
   "transation_price_per_share" decimal NOT NULL,
   "result" transation_result NOT NULL DEFAULT 'createed',
+  "msg" varchar DEFAULT '',
   "cr_date" timestamptz NOT NULL DEFAULT (now()),
   "up_date" timestamptz,
   "cr_user" varchar NOT NULL,

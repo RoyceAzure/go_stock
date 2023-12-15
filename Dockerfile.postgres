@@ -1,0 +1,8 @@
+# 使用 postgres:12-alpine 作為基礎映像
+FROM postgres:12-alpine
+
+# 複製 init-db.sh 腳本到容器的指定位置
+COPY init-db.sh /docker-entrypoint-initdb.d/init-db.sh
+
+# 設置腳本的執行權限
+RUN chmod +x /docker-entrypoint-initdb.d/init-db.sh

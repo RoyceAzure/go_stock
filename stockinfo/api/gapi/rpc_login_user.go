@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
@@ -29,7 +30,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	err = util.CheckPassword(req.Password, user.HashedPassword)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "%s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "%s", fmt.Errorf("wrong password"))
 	}
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(req.Email,

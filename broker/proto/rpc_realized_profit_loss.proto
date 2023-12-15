@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "realized_profit_loss.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
+
+message GetRealizedProfitLossRequest{
+}
+message GetRealizedProfitLossResponse{
+    repeated RealizedProfitLoss data = 1;
+}
+
+
+message GetUnRealizedProfitLossRequest{
+}
+message GetUnRealizedProfitLossResponse{
+    repeated RealizedProfitLoss data = 1;
+}

@@ -3,9 +3,11 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -28,6 +30,13 @@ func (server *Server) InitStock(ctx context.Context, req *pb.InitStockRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	if len(res.Result) == 0 {
+		err := errors.New("SDA is empty, please init stock manually")
+		logger.Logger.Warn().Msg("SDA is empty, please init stock manually")
+		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+
 	successedCount := 0
 	failedCount := 0
 

@@ -2,7 +2,9 @@ version: '3.9'
 services:
 
   postgres:
-    image: postgres:12-alpine
+    build:
+      context: ./
+      dockerfile: Dockerfile.postgres
     environment:
       - POSTGRES_USER=royce
       - POSTGRES_PASSWORD=royce
@@ -10,7 +12,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ps_data-volume:/var/lib/postgresql/data
+      - ps_db_data-volume:/var/lib/postgresql/data
+    # command: ["sh", "/docker-entrypoint-initdb.d/init-db.sh"]
 
   mongo:
     image: 'mongo:4.2.16-bionic'
@@ -140,5 +143,5 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 volumes:
-  ps_data-volume:
+  ps_db_data-volume:
   mongo-volume:

@@ -42,9 +42,12 @@ func (server *SchdulerService) InitSDA(ctx context.Context) {
 	case <-ctx.Done():
 		logger.Logger.Warn().Msg("InitStock get cancel")
 	default:
+		logger.Logger.Info().Msg("start init SDA")
 		res, err := server.DownloadAndInsertDataSVAA(ctx)
 		if err != nil || res == 0 {
 			logger.Logger.Warn().Err(err).Msg("download SDA failed")
+		} else {
+			logger.Logger.Info().Msg("successed init SDA")
 		}
 	}
 }

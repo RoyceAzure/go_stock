@@ -18,6 +18,10 @@ import (
 	"github.com/RoyceAzure/go-stockinfo-scheduler/service/redisService"
 	"github.com/RoyceAzure/go-stockinfo-scheduler/util/config"
 	"github.com/RoyceAzure/go-stockinfo-scheduler/worker"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/hibiken/asynq"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
@@ -41,6 +45,18 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisQueueAddress,
+	}
+	redisClient := asynq.NewClient(redisOpt)
+
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
+
 	pgxPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatal().Err(err).Msg("err create db connect")
@@ -50,17 +66,12 @@ func main() {
 		pgxdecimal.Register(conn.TypeMap())
 		return nil
 	}
+
+	runDBMigration(config.MigrateURL, config.DBSource)
+
 	dao := repository.NewSQLDao(pgxPool)
-	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisQueueAddress,
-	}
-	redisClient := asynq.NewClient(redisOpt)
+
 	taskDistributor := worker.NewRedisTaskDistributor(redisClient)
-	loggerDis := logger.NewLoggerDistributor(redisClient)
-	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
-	if err != nil {
-		log.Fatal().Err(err).Msg("err create db connect")
-	}
 
 	redisDao := jredis.NewJredis(config)
 
@@ -114,14 +125,14 @@ build Server and run
 func runGinServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService) {
 	server, err := api.NewServer(configs, dao, service)
 	if err != nil {
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("cannot start server")
 	}
 	log.Info().Msgf("start gin server at %s", configs.HttpServerAddress)
 	err = server.Start(configs.HttpServerAddress)
 	if err != nil {
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("cannot start server")
 	}
@@ -130,7 +141,7 @@ func runGinServer(ch chan<- error, configs config.Config, dao repository.Dao, se
 func runGrpcServer(ch chan<- error, configs config.Config, dao repository.Dao, service service.SyncDataService, redisService redisService.RedisService) {
 	server, err := gapi.NewServer(configs, dao, service, redisService)
 	if err != nil {
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("cannot start server")
 	}
@@ -168,6 +179,23 @@ func runGrpcServer(ch chan<- error, configs config.Config, dao repository.Dao, s
 main 最好能保有組件控制權
 */
 func runGoCron(ctx context.Context, cronWorker cronworker.CornWorker) {
-	log.Info().Msg("start cron worker")
+	logger.Logger.Info().Msg("start cron worker")
 	cronWorker.Start()
+}
+
+func runDBMigration(migrationURL string, dbSource string) {
+	logger.Logger.Info().Msg("start db migrate")
+	migrateion, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		logger.Logger.Fatal().
+			Err(err).
+			Msg("failed to create db migrate err")
+	}
+
+	if err := migrateion.Up(); err != nil && err != migrate.ErrNoChange {
+		logger.Logger.Fatal().
+			Err(err).
+			Msg("failed to run db migrate err")
+	}
+	logger.Logger.Info().Msgf("db migrate successfully")
 }

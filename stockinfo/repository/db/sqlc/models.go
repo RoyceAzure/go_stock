@@ -116,6 +116,7 @@ type StockTransaction struct {
 	CrUser                  string           `json:"cr_user"`
 	UpUser                  sql.NullString   `json:"up_user"`
 	Result                  TransationResult `json:"result"`
+	Msg                     sql.NullString   `json:"msg"`
 }
 
 type User struct {

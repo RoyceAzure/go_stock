@@ -182,7 +182,7 @@ func TestGetUsers(t *testing.T) {
 	users, err := testQueries.Getusers(context.Background(), arg)
 
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, users, 5)
+	require.GreaterOrEqual(t, len(users), 5)
 
 	for _, user := range users {
 		require.NotEmpty(t, user)

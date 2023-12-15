@@ -54,6 +54,132 @@ func (s *StockInfoServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (
 	return res, nil
 }
 
+func (s *StockInfoServer) GetFund(ctx context.Context, req *pb.GetFundRequest) (*pb.GetFundResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetFund(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) AddFund(ctx context.Context, req *pb.AddFundRequest) (*pb.AddFundResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.AddFund(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetRealizedProfitLoss(ctx context.Context, req *pb.GetRealizedProfitLossRequest) (*pb.GetRealizedProfitLossResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetRealizedProfitLoss(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUnRealizedProfitLossRequest) (*pb.GetUnRealizedProfitLossResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetUnRealizedProfitLoss(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetStock(ctx context.Context, req *pb.GetStockRequest) (*pb.GetStockResponse, error) {
+
+	res, err := s.stockinfoDao.GetStock(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetStocks(ctx context.Context, req *pb.GetStocksRequest) (*pb.GetStocksResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetStocks(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) TransationStock(ctx context.Context, req *pb.TransationRequest) (*pb.TransationResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.TransationStock(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetAllTransations(ctx context.Context, req *pb.GetAllStockTransationRequest) (*pb.StockTransatsionResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetAllTransations(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetUserStock(ctx context.Context, req *pb.GetUserStockRequest) (*pb.GetUserStockResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetUserStock(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *StockInfoServer) GetUserStockById(ctx context.Context, req *pb.GetUserStockByIdRequest) (*pb.GetUserStockBuIdResponse, error) {
+	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := s.stockinfoDao.GetUserStockById(ctx, req, token)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (s *StockInfoServer) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.VerifyEmailResponse, error) {
 	violations := validateVerifyEmailRequest(req)
 	if violations != nil {

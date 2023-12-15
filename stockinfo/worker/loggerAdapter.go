@@ -3,8 +3,8 @@ package worker
 import (
 	"fmt"
 
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 /*
@@ -21,30 +21,30 @@ func NewLoggerAdapter() *loggerAdapter {
 use to call zerolog.log.Withlevel
 */
 func Print(level zerolog.Level, args ...interface{}) {
-	log.WithLevel(level).Msg(fmt.Sprint(args...))
+	logger.Logger.WithLevel(level).Msg(fmt.Sprint(args...))
 }
 
-func (logger loggerAdapter) Debug(args ...interface{}) {
-	log.WithLevel(zerolog.DebugLevel).Msg(fmt.Sprint(args...))
+func (l loggerAdapter) Debug(args ...interface{}) {
+	logger.Logger.WithLevel(zerolog.DebugLevel).Msg(fmt.Sprint(args...))
 }
 
 // Info logs a message at Info level.
-func (logger loggerAdapter) Info(args ...interface{}) {
-	log.WithLevel(zerolog.InfoLevel).Msg(fmt.Sprint(args...))
+func (l loggerAdapter) Info(args ...interface{}) {
+	logger.Logger.WithLevel(zerolog.InfoLevel).Msg(fmt.Sprint(args...))
 }
 
 // Warn logs a message at Warning level.
-func (logger loggerAdapter) Warn(args ...interface{}) {
-	log.WithLevel(zerolog.WarnLevel).Msg(fmt.Sprint(args...))
+func (l loggerAdapter) Warn(args ...interface{}) {
+	logger.Logger.WithLevel(zerolog.WarnLevel).Msg(fmt.Sprint(args...))
 }
 
 // Error logs a message at Error level.
-func (logger loggerAdapter) Error(args ...interface{}) {
-	log.WithLevel(zerolog.ErrorLevel).Msg(fmt.Sprint(args...))
+func (l loggerAdapter) Error(args ...interface{}) {
+	logger.Logger.WithLevel(zerolog.ErrorLevel).Msg(fmt.Sprint(args...))
 }
 
 // Fatal logs a message at Fatal level
 // and process will exit with status set to 1.
-func (logger loggerAdapter) Fatal(args ...interface{}) {
-	log.WithLevel(zerolog.FatalLevel).Msg(fmt.Sprint(args...))
+func (l loggerAdapter) Fatal(args ...interface{}) {
+	logger.Logger.WithLevel(zerolog.FatalLevel).Msg(fmt.Sprint(args...))
 }

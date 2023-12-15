@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	"github.com/hibiken/asynq"
-	"github.com/rs/zerolog/log"
 )
 
 /*
@@ -31,7 +31,7 @@ func (distributor *RedisTaskDistributor) DistributeTaskStockTransation(
 		return fmt.Errorf("failed to enqueue task %w", err)
 	}
 
-	log.Info().
+	logger.Logger.Info().
 		Str("type", task.Type()).
 		Bytes("body", task.Payload()).
 		Str("queue", taskInfo.Queue).

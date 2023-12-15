@@ -110,7 +110,7 @@ generate prototype from STOCK_DAY_ALL.json
 if refresh, will download STOCK_DAY_ALL and save as json file
 */
 func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]repository.StockPriceRealtime, error) {
-	logger.Logger.Info().
+	logger.Logger.Trace().
 		Msg("start of generate prototype")
 	var result []repository.StockPriceRealtime
 	var stock_day_alls []dto.StockDayAvgAllDTO
@@ -170,7 +170,7 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 	fakeService.SetPrototype(result)
 
 	elapsed := time.Since(startTime)
-	logger.Logger.Info().Int64("elpase_time_(ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
+	logger.Logger.Trace().Int64("elpase_time_(ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
 	return result, nil
 }
 

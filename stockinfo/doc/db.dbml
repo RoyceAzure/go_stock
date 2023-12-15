@@ -115,6 +115,7 @@ Table stock_transaction{
   transation_amt int [not null]
   transation_price_per_share decimal [not null] 
   result transation_result [not null, default: 'createed']
+  msg varchar [null, default:'']
   cr_date timestamptz  [not null, default: `now()`]
   up_date timestamptz
   cr_user varchar [not null]

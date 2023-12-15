@@ -277,7 +277,7 @@ gen fake data and save to redis
 不應該每次執行都要init protorype，應該要能直接取得fake data
 */
 func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context) []error {
-	logger.Logger.Info().Msg("start sync spr redis")
+	logger.Logger.Trace().Msg("start sync spr redis")
 	startTime := time.Now().UTC()
 	var errs []error
 	defer func() {
@@ -318,7 +318,7 @@ func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context)
 	service.redisDao.SetSPRLatestKey(key)
 
 	elapsed := time.Since(startTime)
-	logger.Logger.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
+	logger.Logger.Trace().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
 
 	return nil
 }

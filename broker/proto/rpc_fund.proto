@@ -1,0 +1,38 @@
+syntax = "proto3";
+import "fund.proto";
+
+
+package pb;
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
+
+message GetUnRealizedGainRequest{
+
+}
+message GetUnRealizedGainResponse{
+    repeated  RealizedGain data=1;
+}
+
+message GetRealizedGainRequest{
+
+}
+message GetRealizedGainResponse{
+    repeated  RealizedGain data=1;
+}
+
+message GetFundRequest{
+}
+
+message GetFundResponse{
+    repeated Fund data=1;
+}
+
+
+message AddFundRequest{
+    string amount=1;
+    string currency_type=2;
+}
+
+message AddFundResponse{
+    Fund data=1;
+    string result=2;
+}

@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 package pb;
 
-option go_package = "github.com/RoyceAzure/go-stockinfo-broker/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     info: {
       title: "stcok Info scheduler API";

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 )
@@ -32,18 +33,20 @@ func (service *TransferService) StockTransfer(ctx context.Context, arg TransferS
 		TransationID: arg.TransationID,
 		CreateUser:   arg.Operator,
 	})
+	var msg sql.NullString
+	msg.Valid = false
+	var result db.TransationResult
 	if err != nil {
-		service.store.UpdateStockTransationResult(ctx, db.UpdateStockTransationResultParams{
-			Result:       db.TransationResultFailed,
-			TransationID: arg.TransationID,
-		})
-		return err
+		msg.String = err.Error()
+		msg.Valid = true
+		result = db.TransationResultFailed
 	} else {
-		service.store.UpdateStockTransationResult(ctx, db.UpdateStockTransationResultParams{
-			Result:       db.TransationResultSuccessed,
-			TransationID: arg.TransationID,
-		})
+		result = db.TransationResultSuccessed
 	}
-
-	return nil
+	service.store.UpdateStockTransationResult(ctx, db.UpdateStockTransationResultParams{
+		Result:       result,
+		TransationID: arg.TransationID,
+		Msg:          msg,
+	})
+	return err
 }

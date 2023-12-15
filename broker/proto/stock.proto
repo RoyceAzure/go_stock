@@ -1,0 +1,11 @@
+syntax = "proto3";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
+
+message Stock{
+    string stock_code = 1;
+    string stock_name = 2;
+    string current_price = 3;
+}

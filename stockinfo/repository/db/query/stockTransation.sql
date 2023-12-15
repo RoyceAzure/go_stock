@@ -7,9 +7,10 @@ INSERT INTO stock_transaction(
     transaction_date,
     transation_amt,
     transation_price_per_share,
-    cr_user
+    cr_user,
+    msg
 ) VALUES(
-    $1, $2, $3, $4,$5,$6,$7,$8
+    $1, $2, $3, $4,$5,$6,$7,$8,$9
 )   RETURNING *;
 
 -- name: GetStockTransaction :one
@@ -58,7 +59,8 @@ WHERE "transation_id" = $1;
 
 -- name: UpdateStockTransationResult :one
 Update stock_transaction
-SET result = sqlc.arg(result)
+SET result = sqlc.arg(result),
+    msg = COALESCE(sqlc.narg(msg), msg)
 WHERE transation_id = sqlc.arg(transation_id)
 RETURNING *;
 
