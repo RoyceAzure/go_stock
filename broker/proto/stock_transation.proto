@@ -12,5 +12,6 @@ message StockTransation{
     int64 trans_amt = 5;
     string trans_prices_per_share=6;
     string result=7;
+    string msg=8;
 }
 

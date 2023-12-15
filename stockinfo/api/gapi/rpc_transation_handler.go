@@ -190,6 +190,7 @@ func (server *Server) GetAllTransations(ctx context.Context, req *pb.GetAllStock
 			TransAmt:            int64(transation.TransationAmt),
 			TransPricesPerShare: transation.TransationPricePerShare,
 			Result:              string(transation.Result),
+			Msg:                 transation.Msg.String,
 		})
 	}
 

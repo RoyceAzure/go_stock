@@ -14,7 +14,7 @@ import (
 	stockinfo_dao "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/stockinfoDao"
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/util/config"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hibiken/asynq"
 	"github.com/rakyll/statik/fs"
@@ -57,7 +57,7 @@ func main() {
 			Msg("cannot connect stockinfo grpc server")
 	}
 
-	schedulerDao, err := scheduler_dao.NewSchedulerDao(config.GrpcStockinfoAddress)
+	schedulerDao, err := scheduler_dao.NewSchedulerDao(config.GrpcSchedulerAddress)
 	if err != nil {
 		log.Fatal().
 			Err(err).

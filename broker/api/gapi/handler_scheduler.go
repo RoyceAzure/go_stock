@@ -16,9 +16,9 @@ func (s *SchedulerServer) GetStockPriceRealTime(ctx context.Context, req *pb.Sto
 }
 
 func (s *SchedulerServer) GetStockDayAvg(ctx context.Context, req *pb.StockDayAvgRequest) (*pb.StockDayAvgResponse, error) {
-	_, _, err := s.authorizer.AuthorizUser(ctx)
-	if err != nil {
-		return nil, util.UnauthticatedError(err)
-	}
+	// _, _, err := s.authorizer.AuthorizUser(ctx)
+	// if err != nil {
+	// 	return nil, util.UnauthticatedError(err)
+	// }
 	return s.schedulerDao.GetStockDayAvg(ctx, req)
 }

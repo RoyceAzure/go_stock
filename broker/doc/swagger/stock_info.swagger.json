@@ -866,6 +866,9 @@
         },
         "result": {
           "type": "string"
+        },
+        "msg": {
+          "type": "string"
         }
       }
     },

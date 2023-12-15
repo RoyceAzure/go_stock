@@ -28,6 +28,7 @@ message GetransationsResponse{
     int64 trans_amt = 7;
     string trans_prices_per_share=8;
     string result=9;
+    string msg=10;
 }
 
 
