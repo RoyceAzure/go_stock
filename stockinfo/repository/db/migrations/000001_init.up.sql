@@ -1,6 +1,7 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
 -- Generated at: 2023-11-02T09:57:41.602Z
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
@@ -52,7 +53,7 @@ CREATE TABLE "user_stock" (
 );
 
 CREATE TABLE "stock_transaction" (
-  "transation_id" BIGSERIAL PRIMARY KEY,
+ "transation_id" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "user_id" bigint NOT NULL,
   "stock_id" bigint NOT NULL,
   "fund_id" bigint NOT NULL,

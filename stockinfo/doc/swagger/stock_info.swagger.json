@@ -841,8 +841,7 @@
       "type": "object",
       "properties": {
         "transationId": {
-          "type": "string",
-          "format": "int64"
+          "type": "string"
         },
         "userId": {
           "type": "string",

@@ -9,14 +9,15 @@ import (
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	"github.com/RoyceAzure/go-stockinfo/service"
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
+	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 )
 
 const TaskStockTransation = "task:stock_transation"
 
 type PayloadTransation struct {
-	TransationID int64  `json:"trans_id"`
-	Operator     string `json:"operator"`
+	TransationID uuid.UUID `json:"trans_id"`
+	Operator     string    `json:"operator"`
 }
 
 /*
@@ -48,7 +49,7 @@ func (processer *RedisTaskProcessor) ProcessTaskStockTransfer(
 		return fmt.Errorf("failed to process task stock transfer")
 	}
 	logger.Logger.Info().Str("type", task.Type()).
-		Int64("transation_id", payload.TransationID).
+		Str("transation_id", payload.TransationID.String()).
 		Msg("processed task successed")
 	return nil
 }

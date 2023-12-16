@@ -200,7 +200,7 @@ func (mr *MockStoreMockRecorder) DeleteStock(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // DeleteStockTransaction mocks base method.
-func (m *MockStore) DeleteStockTransaction(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteStockTransaction(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteStockTransaction", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -452,7 +452,7 @@ func (mr *MockStoreMockRecorder) GetStockForUpdate(arg0, arg1 interface{}) *gomo
 }
 
 // GetStockTransaction mocks base method.
-func (m *MockStore) GetStockTransaction(arg0 context.Context, arg1 int64) (db.StockTransaction, error) {
+func (m *MockStore) GetStockTransaction(arg0 context.Context, arg1 uuid.UUID) (db.StockTransaction, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetStockTransaction", arg0, arg1)
 	ret0, _ := ret[0].(db.StockTransaction)

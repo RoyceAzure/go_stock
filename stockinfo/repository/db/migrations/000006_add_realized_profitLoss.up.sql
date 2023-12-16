@@ -1,6 +1,6 @@
 CREATE TABLE "realized_profit_loss" (
   "id" BIGSERIAL PRIMARY KEY,
-  "transation_id" bigint NOT NULL,
+  "transation_id" uuid NOT NULL,
   "user_id" bigint NOT NULL,
   "product_name" varchar NOT NULL,
   "cost_per_price" decimal NOT NULL,
@@ -8,3 +8,7 @@ CREATE TABLE "realized_profit_loss" (
   "realized" decimal NOT NULL,
   "realized_precent" varchar NOT NULL
 );
+
+ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("transation_id") REFERENCES "stock_transaction" ("transation_id");
+
+ALTER TABLE "realized_profit_loss" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("user_id");

@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-12-15T06:02:19.118Z
+-- Generated at: 2023-12-16T07:53:10.328Z
 
 CREATE TYPE "transation_result" AS ENUM (
   'createed',
@@ -81,7 +81,7 @@ CREATE TABLE "user_stock" (
 );
 
 CREATE TABLE "stock_transaction" (
-  "transation_id" BIGSERIAL PRIMARY KEY,
+  "transation_id" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "user_id" bigint NOT NULL,
   "stock_id" bigint NOT NULL,
   "fund_id" bigint NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE "stock_transaction" (
 
 CREATE TABLE "realized_profit_loss" (
   "id" BIGSERIAL PRIMARY KEY,
-  "transation_id" bigint NOT NULL,
+  "transation_id" uuid NOT NULL,
   "user_id" bigint NOT NULL,
   "product_name" varchar NOT NULL,
   "cost_per_price" decimal NOT NULL,

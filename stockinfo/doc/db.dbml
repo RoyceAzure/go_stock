@@ -106,7 +106,7 @@ Table user_stock{
 }
 
 Table stock_transaction{
-  transation_id bigserial [pk, increment]
+  transation_id uuid [pk ,default: `uuid_generate_v4()`]
   user_id bigint [not null]
   stock_id bigint [not null]
   fund_id bigint [not null]
@@ -131,7 +131,7 @@ Table stock_transaction{
 
 Table realized_profit_loss{
   id bigserial [pk, increment]
-  transation_id bigint [ref: > stock_transaction.transation_id, not null]
+  transation_id uuid [ref: > stock_transaction.transation_id, not null]
   user_id bigint [ref: > U.user_id, not null]
   product_name varchar [not null]
   cost_per_price decimal [not null]

@@ -19,7 +19,7 @@ message GetTransationsRequest{
 }
 
 message GetransationsResponse{
-    int64 transation_id=1;
+    string transation_id=1;
     int64 user_id=2;
     int64 stock_id = 3;
     string stock_code =4;

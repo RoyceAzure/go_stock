@@ -11,6 +11,7 @@ import (
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	util "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -25,8 +26,8 @@ import (
 在進入Repo, 轉成entity前  都應該用可計算的type形式保存  以便AP做運算
 */
 type TransferStockTxParams struct {
-	TransationID int64  `json:"trans_id"`
-	CreateUser   string `json:"cr_uesr"`
+	TransationID uuid.UUID `json:"trans_id"`
+	CreateUser   string    `json:"cr_uesr"`
 }
 
 type TransferStockTxResults struct {
@@ -126,7 +127,8 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			return fmt.Errorf("not enough stock %w", constants.ErrInValidatePreConditionOp)
 		}
 		//計算操作所需金額
-		D_priceToHandle := currentPerPrice.Mul(decimal.NewFromInt32(stockTrans.TransationAmt)).Mul(decimal.NewFromInt(1000))
+		D_perPriceToHandle := currentPerPrice.Mul(decimal.NewFromInt32(stockTrans.TransationAmt))
+		D_priceToHandle := D_perPriceToHandle.Mul(decimal.NewFromInt(1000))
 		if err != nil {
 			logger.Logger.Error().Err(err).Msg("failed to compute total price")
 			return constants.ErrInternal
@@ -160,7 +162,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 		}
 		costAmt := decimal.NewFromInt32(oriUserStock.Quantity)
 
-		costTotalPrice := costPerPrice.Mul(costAmt)
+		costTotalPrice := costPerPrice.Mul(costAmt).Mul(decimal.NewFromInt(1000))
 
 		//更新操做
 		if isSelled {
@@ -231,7 +233,7 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			new_user_stock_quantity = oriUserStock.Quantity + stockTrans.TransationAmt
 			//userStock
 			if isHasUserStock {
-				newPricePerShare := (costTotalPrice.Add(D_priceToHandle)).Div(D_amt.Add(costAmt))
+				newPricePerShare := (costPerPrice.Add(D_perPriceToHandle)).Div(D_amt.Add(costAmt))
 				newUserStock, err = q.UpdateUserStock(ctx, UpdateUserStockParams{
 					UserID:                stockTrans.UserID,
 					StockID:               stockTrans.StockID,

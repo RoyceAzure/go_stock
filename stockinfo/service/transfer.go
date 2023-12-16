@@ -5,11 +5,12 @@ import (
 	"database/sql"
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/google/uuid"
 )
 
 type TransferStockServiceParams struct {
-	TransationID int64  `json:"trans_id"`
-	Operator     string `json:"operator"`
+	TransationID uuid.UUID `json:"trans_id"`
+	Operator     string    `json:"operator"`
 }
 
 /*

@@ -49,7 +49,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
 	//session跟token綁定??
-	mtda := server.extractMetaData(ctx)
+	mtda := util.ExtractMetaData(ctx)
 	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:           refreshPayload.ID,
 		UserID:       user.UserID,

@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 const createRealizedProfitLoss = `-- name: CreateRealizedProfitLoss :one
@@ -25,13 +27,13 @@ INSERT INTO realized_profit_loss(
 `
 
 type CreateRealizedProfitLossParams struct {
-	TransationID    int64  `json:"transation_id"`
-	UserID          int64  `json:"user_id"`
-	ProductName     string `json:"product_name"`
-	CostPerPrice    string `json:"cost_per_price"`
-	CostTotalPrice  string `json:"cost_total_price"`
-	Realized        string `json:"realized"`
-	RealizedPrecent string `json:"realized_precent"`
+	TransationID    uuid.UUID `json:"transation_id"`
+	UserID          int64     `json:"user_id"`
+	ProductName     string    `json:"product_name"`
+	CostPerPrice    string    `json:"cost_per_price"`
+	CostTotalPrice  string    `json:"cost_total_price"`
+	Realized        string    `json:"realized"`
+	RealizedPrecent string    `json:"realized_precent"`
 }
 
 func (q *Queries) CreateRealizedProfitLoss(ctx context.Context, arg CreateRealizedProfitLossParams) (RealizedProfitLoss, error) {

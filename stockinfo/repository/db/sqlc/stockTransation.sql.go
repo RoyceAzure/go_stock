@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const createStockTransaction = `-- name: CreateStockTransaction :one
@@ -76,7 +78,7 @@ DELETE FROM stock_transaction
 WHERE "transation_id" = $1
 `
 
-func (q *Queries) DeleteStockTransaction(ctx context.Context, transationID int64) error {
+func (q *Queries) DeleteStockTransaction(ctx context.Context, transationID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteStockTransaction, transationID)
 	return err
 }
@@ -86,7 +88,7 @@ SELECT transation_id, user_id, stock_id, fund_id, transaction_type, transaction_
 WHERE "transation_id" = $1 LIMIT 1
 `
 
-func (q *Queries) GetStockTransaction(ctx context.Context, transationID int64) (StockTransaction, error) {
+func (q *Queries) GetStockTransaction(ctx context.Context, transationID uuid.UUID) (StockTransaction, error) {
 	row := q.db.QueryRowContext(ctx, getStockTransaction, transationID)
 	var i StockTransaction
 	err := row.Scan(
@@ -286,7 +288,7 @@ type GetStockTransactionsFilterParams struct {
 }
 
 type GetStockTransactionsFilterRow struct {
-	TransationID            int64            `json:"transation_id"`
+	TransationID            uuid.UUID        `json:"transation_id"`
 	UserID                  int64            `json:"user_id"`
 	StockID                 int64            `json:"stock_id"`
 	FundID                  int64            `json:"fund_id"`
@@ -379,7 +381,7 @@ RETURNING transation_id, user_id, stock_id, fund_id, transaction_type, transacti
 type UpdateStockTransationResultParams struct {
 	Result       TransationResult `json:"result"`
 	Msg          sql.NullString   `json:"msg"`
-	TransationID int64            `json:"transation_id"`
+	TransationID uuid.UUID        `json:"transation_id"`
 }
 
 func (q *Queries) UpdateStockTransationResult(ctx context.Context, arg UpdateStockTransationResultParams) (StockTransaction, error) {

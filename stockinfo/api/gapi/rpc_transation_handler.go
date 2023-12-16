@@ -30,7 +30,6 @@ func (server *Server) TransationStock(ctx context.Context, req *pb.TransationReq
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}
-
 	fund, err := server.store.GetFundByUidandCurForUpdateNoK(ctx, db.GetFundByUidandCurForUpdateNoKParams{
 		UserID:       payload.UserId,
 		CurrencyType: string(constants.TW),
@@ -106,7 +105,7 @@ func (server *Server) TransationStock(ctx context.Context, req *pb.TransationReq
 		return nil, util.InternalError(err)
 	}
 	return &pb.TransationResponse{
-		Result: fmt.Sprintf("commit transation Successed, id %d", stockTrans.TransationID),
+		Result: fmt.Sprintf("commit transation Successed, id %s", stockTrans.TransationID.String()),
 	}, nil
 }
 
@@ -181,7 +180,7 @@ func (server *Server) GetAllTransations(ctx context.Context, req *pb.GetAllStock
 
 	for _, transation := range transations {
 		data = append(data, &pb.GetransationsResponse{
-			TransationId:        transation.TransationID,
+			TransationId:        transation.TransationID.String(),
 			UserId:              transation.UserID,
 			StockId:             transation.StockID,
 			StockCode:           transation.StockCode.String,

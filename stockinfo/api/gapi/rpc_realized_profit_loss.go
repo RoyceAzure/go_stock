@@ -115,12 +115,12 @@ func (server *Server) GetUnRealizedProfitLoss(ctx context.Context, req *pb.GetUn
 				return nil, status.Errorf(codes.Internal, "%s", fmt.Errorf("convert purchase price failed"))
 			}
 			quantity := decimal.NewFromInt32(val.Quantity)
-			costTotalPrice := costPerPrice.Mul(quantity)
+			costTotalPrice := costPerPrice.Mul(quantity).Mul(decimal.NewFromInt(1000))
 			currentPrice, err := decimal.NewFromString(spr.OpenPrice)
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, "%s", fmt.Errorf("convert purchase price failed"))
 			}
-			currentTotalPrice := currentPrice.Mul(quantity)
+			currentTotalPrice := currentPrice.Mul(quantity).Mul(decimal.NewFromInt(1000))
 			realized := currentTotalPrice.Sub(costTotalPrice)
 
 			var realizedPrecent decimal.Decimal

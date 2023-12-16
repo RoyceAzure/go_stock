@@ -21,7 +21,7 @@ type Querier interface {
 	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteFund(ctx context.Context, fundID int64) error
 	DeleteStock(ctx context.Context, stockID int64) error
-	DeleteStockTransaction(ctx context.Context, transationID int64) error
+	DeleteStockTransaction(ctx context.Context, transationID uuid.UUID) error
 	DeleteUser(ctx context.Context, userID int64) error
 	DeleteUserStock(ctx context.Context, userStockID int64) error
 	GetFund(ctx context.Context, fundID int64) (Fund, error)
@@ -38,7 +38,7 @@ type Querier interface {
 	GetStockByCN(ctx context.Context, stockName string) (Stock, error)
 	GetStockByCode(ctx context.Context, stockCode string) (Stock, error)
 	GetStockForUpdate(ctx context.Context, stockID int64) (Stock, error)
-	GetStockTransaction(ctx context.Context, transationID int64) (StockTransaction, error)
+	GetStockTransaction(ctx context.Context, transationID uuid.UUID) (StockTransaction, error)
 	GetStockTransactionsByDate(ctx context.Context, arg GetStockTransactionsByDateParams) ([]StockTransaction, error)
 	GetStockTransactionsByStockId(ctx context.Context, arg GetStockTransactionsByStockIdParams) ([]StockTransaction, error)
 	GetStockTransactionsByUserId(ctx context.Context, arg GetStockTransactionsByUserIdParams) ([]StockTransaction, error)

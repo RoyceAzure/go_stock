@@ -69,14 +69,14 @@ type Fund struct {
 }
 
 type RealizedProfitLoss struct {
-	ID              int64  `json:"id"`
-	TransationID    int64  `json:"transation_id"`
-	UserID          int64  `json:"user_id"`
-	ProductName     string `json:"product_name"`
-	CostPerPrice    string `json:"cost_per_price"`
-	CostTotalPrice  string `json:"cost_total_price"`
-	Realized        string `json:"realized"`
-	RealizedPrecent string `json:"realized_precent"`
+	ID              int64     `json:"id"`
+	TransationID    uuid.UUID `json:"transation_id"`
+	UserID          int64     `json:"user_id"`
+	ProductName     string    `json:"product_name"`
+	CostPerPrice    string    `json:"cost_per_price"`
+	CostTotalPrice  string    `json:"cost_total_price"`
+	Realized        string    `json:"realized"`
+	RealizedPrecent string    `json:"realized_precent"`
 }
 
 type Session struct {
@@ -103,7 +103,7 @@ type Stock struct {
 }
 
 type StockTransaction struct {
-	TransationID            int64            `json:"transation_id"`
+	TransationID            uuid.UUID        `json:"transation_id"`
 	UserID                  int64            `json:"user_id"`
 	StockID                 int64            `json:"stock_id"`
 	FundID                  int64            `json:"fund_id"`
