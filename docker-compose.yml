@@ -87,6 +87,7 @@ services:
       dockerfile: Dockerfile.distributor
     ports:
       - "8083:8083"
+      - "9093:9093"
     environment:
       - DB_SOURCE=postgres://royce:royce@postgres:5432/stock_info_distributor?sslmode=disable
       - GRPC_SCHEDULER_ADDRESS=scheduler:9092

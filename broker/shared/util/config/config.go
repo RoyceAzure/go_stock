@@ -24,6 +24,7 @@ type Config struct {
 	GrpcServerAddress       string        `mapstructure:"GRPC_SERVER_ADDRESS"`
 	GrpcSchedulerAddress    string        `mapstructure:"GRPC_SCHEDULER_ADDRESS"`
 	GrpcStockinfoAddress    string        `mapstructure:"GRPC_STOCKINFO_ADDRESS"`
+	GrpcDistributorAddress  string        `mapstructure:"GRPC_DISTRIBUTOR_ADDRESS"`
 	KafkaDistributorAddress string        `mapstructure:"KAFKA_DISTRIBUTOR_ADDRESS"`
 	MigrateFilePath         string        `mapstructure:"MIGRATE_FILE_PATH"`
 	RedisQueueAddress       string        `mapstructure:"REDIS_Q_ADDRESS"`

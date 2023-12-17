@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"strings"
 
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -41,7 +42,7 @@ func ExtractMetaData(ctx context.Context) *MetaData {
 		}
 
 		if p, ok := peer.FromContext(ctx); ok {
-			mtda.ClientIP = p.Addr.String()
+			mtda.ClientIP = strings.Split(p.Addr.String(), ":")[0]
 		}
 	}
 	return mtda

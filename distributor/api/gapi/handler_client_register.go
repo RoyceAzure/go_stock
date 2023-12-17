@@ -14,14 +14,11 @@ import (
 )
 
 func (server *Server) CreateClientRegister(ctx context.Context, req *pb.CreateClientRegisterRequest) (*pb.CreateClientRegisterResponse, error) {
-	_, err := server.authorizUser(ctx)
-	if err != nil {
-		return nil, util.UnauthticatedError(err)
-	}
 	violations := validateCreateClientRegisterRequest(req)
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
 	}
+	var err error
 	var fc repository.FrontendClient
 	if req.ClientId == "" {
 		md := util.ExtractMetaData(ctx)
@@ -67,10 +64,6 @@ func (server *Server) CreateClientRegister(ctx context.Context, req *pb.CreateCl
 }
 
 func (server *Server) DeleteClientRegister(ctx context.Context, req *pb.DeleteClientRegisterRequest) (*pb.DeleteClientRegisterResponse, error) {
-	_, err := server.authorizUser(ctx)
-	if err != nil {
-		return nil, util.UnauthticatedError(err)
-	}
 	violations := validateDeleteClientRegisterRequest(req)
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
@@ -82,7 +75,7 @@ func (server *Server) DeleteClientRegister(ctx context.Context, req *pb.DeleteCl
 		StockCode: req.StockCode,
 	}
 
-	err = server.dbDao.DeleteClientRegister(ctx, arg)
+	err := server.dbDao.DeleteClientRegister(ctx, arg)
 	if err != nil {
 		err = fmt.Errorf("delete client register get err : %w", err)
 		return nil, util.InternalError(err)
@@ -94,10 +87,6 @@ func (server *Server) DeleteClientRegister(ctx context.Context, req *pb.DeleteCl
 }
 
 func (server *Server) GetClientRegisterByClientUID(ctx context.Context, req *pb.GetClientRegisterByClientUIDRequest) (*pb.GetClientRegisterResponse, error) {
-	_, err := server.authorizUser(ctx)
-	if err != nil {
-		return nil, util.UnauthticatedError(err)
-	}
 	violations := validateGetClientRegisterByClientUIDRequest(req)
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
