@@ -14,11 +14,10 @@ import (
 )
 
 func (server *Server) CreateFrontendClient(ctx context.Context, req *pb.CreateFrontendClientRequest) (*pb.CreateFrontendClientResponse, error) {
-	// violations := validateCreateClientRegisterRequest(req)
-	// if violations != nil {
-	// 	return nil, util.InvalidArgumentError(violations)
-	// }
-	var err error
+	_, err := server.authorizUser(ctx)
+	if err != nil {
+		return nil, util.UnauthticatedError(err)
+	}
 
 	md := util.ExtractMetaData(ctx)
 	if !util.IsValidIP(md.ClientIP) {
@@ -52,6 +51,10 @@ func (server *Server) CreateFrontendClient(ctx context.Context, req *pb.CreateFr
 }
 
 func (server *Server) DeleteFrontendClient(ctx context.Context, req *pb.DeleteFrontendClientRequest) (*pb.DeleteFrontendClientResponse, error) {
+	_, err := server.authorizUser(ctx)
+	if err != nil {
+		return nil, util.UnauthticatedError(err)
+	}
 	violations := validateDeleteFrontendClientRequest(req)
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
@@ -59,7 +62,7 @@ func (server *Server) DeleteFrontendClient(ctx context.Context, req *pb.DeleteFr
 
 	clientId, _ := uuid.Parse(req.ClientId)
 
-	err := server.dbDao.DeleteFrontendClient(ctx, clientId)
+	err = server.dbDao.DeleteFrontendClient(ctx, clientId)
 	if err != nil {
 		logger.Logger.Error().Err(err).Msg("delete client register get err")
 		return nil, util.InternalError(err)
@@ -71,6 +74,10 @@ func (server *Server) DeleteFrontendClient(ctx context.Context, req *pb.DeleteFr
 }
 
 func (server *Server) GetFrontendClientByIP(ctx context.Context, req *pb.GetFrontendClientByIPRequest) (*pb.GetFrontendClientByIPResponse, error) {
+	_, err := server.authorizUser(ctx)
+	if err != nil {
+		return nil, util.UnauthticatedError(err)
+	}
 	md := util.ExtractMetaData(ctx)
 	if !util.IsValidIP(md.ClientIP) {
 		err := fmt.Errorf("ip is invalid")

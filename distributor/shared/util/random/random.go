@@ -15,6 +15,13 @@ func RandomIP() string {
 	return fmt.Sprintf("%d.%d.%d.%d", rand.Intn(256), rand.Intn(256), rand.Intn(256), rand.Intn(256))
 }
 
+func RandomInt(min, max int64) int64 {
+	return min + rand.Int63n(max-min+1)
+}
+
+func RandomFloat(max float64) float64 {
+	return rand.Float64() * max
+}
 func RandomStrInt(n int) string {
 	return fmt.Sprintf("%d", rand.Intn(n))
 }

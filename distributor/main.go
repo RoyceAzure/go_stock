@@ -8,6 +8,7 @@ import (
 
 	"github.com/RoyceAzure/go-stockinfo-distributor/api"
 	"github.com/RoyceAzure/go-stockinfo-distributor/api/gapi"
+	"github.com/RoyceAzure/go-stockinfo-distributor/api/token"
 	"github.com/RoyceAzure/go-stockinfo-distributor/cronworker"
 	"github.com/RoyceAzure/go-stockinfo-distributor/jkafka"
 	sqlc "github.com/RoyceAzure/go-stockinfo-distributor/repository/db/sqlc"
@@ -75,9 +76,19 @@ func main() {
 	cronWorker.SetUpSchdulerWorker(context.Background())
 	defer cronWorker.StopAsync()
 
+	tokenMakerGW, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		logger.Logger.Fatal().Err(err).Msg("create token maker")
+	}
+
+	tokenMakerServer, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		logger.Logger.Fatal().Err(err).Msg("create token maker")
+	}
+
 	go runGoCron(context.Background(), cronWorker)
-	go runGRPCGatewayServer(config, dbDao, remoteDao)
-	runGRPCServer(config, dbDao, remoteDao)
+	go runGRPCGatewayServer(config, dbDao, remoteDao, tokenMakerGW)
+	runGRPCServer(config, dbDao, remoteDao, tokenMakerServer)
 }
 
 func runGoCron(ctx context.Context, cronWorker cronworker.CornWorker) {
@@ -113,8 +124,8 @@ func runDBMigration(migrationURL string, dbSource string) {
 	logger.Logger.Info().Msgf("db migrate successfully")
 }
 
-func runGRPCServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao) {
-	server := gapi.NewServer(dbDao, schdulerDao)
+func runGRPCServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao, tokenMaker token.Maker) {
+	server := gapi.NewServer(dbDao, schdulerDao, tokenMaker)
 
 	grpcServer := grpc.NewServer()
 
@@ -137,9 +148,9 @@ func runGRPCServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao
 	}
 }
 
-func runGRPCGatewayServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao) {
+func runGRPCGatewayServer(configs config.Config, dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao, tokenMaker token.Maker) {
 	// 創建新的gRPC伺服器
-	server := gapi.NewServer(dbDao, schdulerDao)
+	server := gapi.NewServer(dbDao, schdulerDao, tokenMaker)
 
 	/*runtime.WithMarshalerOption: 這是一個設置gRPC-Gateway中的Marshaller選項的函數。Marshaller是用於將數據格式從Protobuf轉換為JSON的組件。這裡指定了對於所有的MIME類型(runtime.MIMEWildcard)要使用的Marshaller配置。
 

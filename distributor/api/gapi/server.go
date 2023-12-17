@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 
+	"github.com/RoyceAzure/go-stockinfo-distributor/api/token"
 	sqlc "github.com/RoyceAzure/go-stockinfo-distributor/repository/db/sqlc"
 	remote_repo "github.com/RoyceAzure/go-stockinfo-distributor/repository/remote_repo"
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/pb"
@@ -23,12 +24,14 @@ type Server struct {
 	pb.UnimplementedStockInfoDistributorServer
 	dbDao       sqlc.DistributorDao
 	schdulerDao remote_repo.SchdulerInfoDao
+	tokenMaker  token.Maker
 }
 
-func NewServer(dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao) *Server {
+func NewServer(dbDao sqlc.DistributorDao, schdulerDao remote_repo.SchdulerInfoDao, tokenMaker token.Maker) *Server {
 	server := Server{
 		dbDao:       dbDao,
 		schdulerDao: schdulerDao,
+		tokenMaker:  tokenMaker,
 	}
 	return &server
 }
