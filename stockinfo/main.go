@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	api "github.com/RoyceAzure/go-stockinfo/api"
 	"github.com/RoyceAzure/go-stockinfo/api/gapi"
@@ -34,6 +35,7 @@ import (
 )
 
 func main() {
+	zerolog.TimeFieldFormat = time.RFC3339
 	config, err := config.LoadConfig(".") //表示讀取當前資料夾
 	if err != nil {
 		log.Fatal().

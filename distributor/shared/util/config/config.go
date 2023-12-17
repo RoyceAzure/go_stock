@@ -11,7 +11,8 @@ type Config struct {
 	Enviornmant             string `mapstructure:"ENVIRONMENT"`
 	DBDriver                string `mapstructure:"DB_DRIVER"`
 	DBSource                string `mapstructure:"DB_SOURCE"`
-	HttpServerAddress       string `mapstructure:"DISTRIBUTOR_HTTP_SERVER_ADDRESS"`
+	HttpServerAddress       string `mapstructure:"GRPC_GW_SERVER_ADDRESS"`
+	GrpcServerAddress       string `mapstructure:"GRPC_SERVER_ADDRESS"`
 	GrpcSchedulerAddress    string `mapstructure:"GRPC_SCHEDULER_ADDRESS"`
 	KafkaDistributorAddress string `mapstructure:"KAFKA_DISTRIBUTOR_ADDRESS"`
 	MigrateFilePath         string `mapstructure:"MIGRATE_FILE_PATH"`

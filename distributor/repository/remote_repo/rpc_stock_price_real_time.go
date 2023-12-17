@@ -6,7 +6,7 @@ import (
 	"time"
 
 	logger "github.com/RoyceAzure/go-stockinfo-distributor/repository/logger_distributor"
-	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb/stock_info_scheduler"
+	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb"
 )
 
 const SPR_SAVED_DUR = time.Second * 5

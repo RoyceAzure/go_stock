@@ -1,0 +1,13 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-distributor/pb";
+
+message FrontendClient{
+    string client_id = 1;
+    string ip = 2;
+    string region=3;
+    google.protobuf.Timestamp  create_at= 4;
+}

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.20.0
-// source: stock_info_scheduler/service_stockinfo_schduler.proto
+// source: service_stockinfo_schduler.proto
 
 package pb
 
@@ -142,5 +142,5 @@ var StockInfoSchduler_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "stock_info_scheduler/service_stockinfo_schduler.proto",
+	Metadata: "service_stockinfo_schduler.proto",
 }

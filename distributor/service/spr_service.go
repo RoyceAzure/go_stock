@@ -10,7 +10,7 @@ import (
 
 	logger "github.com/RoyceAzure/go-stockinfo-distributor/repository/logger_distributor"
 	dto "github.com/RoyceAzure/go-stockinfo-distributor/shared/model/dto"
-	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb/stock_info_scheduler"
+	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo-distributor/shared/util"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"

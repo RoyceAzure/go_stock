@@ -71,10 +71,10 @@ db_schema:
 protoc:
 	powershell -Command "Remove-Item -Path 'shared/pb/*.go' -Force"
 	protoc   --grpc-gateway_out shared/pb \
-	--proto_path=C:/Users/royce/go/pkg/mod/github.com/protocolbuffers/protobuf@v4.24.4+incompatible/src \
+	-I=./proto -I=C:/Users/royce/include \
 	--proto_path=proto  --go_out=shared/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \
 	--go-grpc_out=shared/pb --go-grpc_opt=paths=source_relative \
-	proto/stock_info_scheduler/*.proto
+	proto/*.proto
 
 evans:
 	docker run -it --rm -v $(current_dir):/mount:ro ghcr.io/ktr0731/evans:latest --host host.docker.internal --port 9090 -r repl

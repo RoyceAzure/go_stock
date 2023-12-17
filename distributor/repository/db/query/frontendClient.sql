@@ -23,4 +23,4 @@ OFFSET $2;
 
 -- name: DeleteFrontendClient :exec
 DELETE FROM "frontend_client"
-WHERE client_uid = sqlc.arg(client_uid);
+WHERE client_uid = sqlc.arg(client_uid) CASCADE;

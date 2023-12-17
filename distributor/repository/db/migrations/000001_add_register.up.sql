@@ -35,4 +35,4 @@ CREATE INDEX ON "frontend_client" ("client_uid");
 
 CREATE UNIQUE INDEX ON "frontend_client" ("ip");
 
-ALTER TABLE "client_register" ADD FOREIGN KEY ("client_uid") REFERENCES "frontend_client" ("client_uid");
+ALTER TABLE "client_register" ADD FOREIGN KEY ("client_uid") REFERENCES "frontend_client" ("client_uid") ON DELETE CASCADE;
