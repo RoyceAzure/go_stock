@@ -54,10 +54,3 @@ func (stockinfoDao *StockInfoDao) VerifyEmail(ctx context.Context, req *pb.Verif
 	}
 	return res, nil
 }
-func (stockinfoDao *StockInfoDao) InitStock(ctx context.Context, req *pb.InitStockRequest) (*pb.InitStockResponse, error) {
-	res, err := stockinfoDao.client.InitStock(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}

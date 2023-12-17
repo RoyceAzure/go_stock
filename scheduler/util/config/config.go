@@ -12,7 +12,7 @@ type Config struct {
 	DBDriver                     string        `mapstructure:"DB_DRIVER"`
 	DBSource                     string        `mapstructure:"DB_SOURCE"`
 	MigrateURL                   string        `mapstructure:"MIGRATE_URL"`
-	HttpServerAddress            string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	HttpServerAddress            string        `mapstructure:"SCHDULER_HTTP_SERVER_ADDRESS"`
 	SCHDULER_GRPC_SERVER_ADDRESS string        `mapstructure:"SCHDULER_GRPC_SERVER_ADDRESS"`
 	TokenSymmetricKey            string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration          time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`

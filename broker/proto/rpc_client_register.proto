@@ -1,0 +1,36 @@
+syntax = "proto3";
+import "client_register.proto";
+import "google/protobuf/timestamp.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/pb";
+
+message CreateClientRegisterRequest{
+    string client_id = 1;
+    string stock_code = 2;
+}
+
+message CreateClientRegisterResponse{
+    string client_id = 1;
+    string stock_code = 2;
+    google.protobuf.Timestamp  create_at= 3;
+}
+
+
+message DeleteClientRegisterRequest{
+    string client_id = 1;
+    string stock_code = 2;
+}
+
+message DeleteClientRegisterResponse{
+    string result=1;
+}
+
+message GetClientRegisterByClientUIDRequest{
+    string client_id = 1;
+}
+
+message GetClientRegisterResponse{
+    repeated ClientRegister data=1;
+}

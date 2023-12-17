@@ -3,9 +3,9 @@ package gapi
 import (
 	"context"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,7 +14,7 @@ import (
 func (server *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.VerifyEmailResponse, error) {
 	violations := validateVerifyEmailRequest(req)
 	if violations != nil {
-		return nil, utility.InvalidArgumentError(violations)
+		return nil, util.InvalidArgumentError(violations)
 	}
 
 	txResult, err := server.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
@@ -34,11 +34,11 @@ func (server *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailReques
 }
 
 func validateVerifyEmailRequest(req *pb.VerifyEmailRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := utility.ValidEmailID(req.GetEmailId()); err != nil {
-		violations = append(violations, utility.FieldViolation("email_id", err))
+	if err := util.ValidEmailID(req.GetEmailId()); err != nil {
+		violations = append(violations, util.FieldViolation("email_id", err))
 	}
-	if err := utility.ValidSecretCode(req.GetSecretCode()); err != nil {
-		violations = append(violations, utility.FieldViolation("secret_code", err))
+	if err := util.ValidSecretCode(req.GetSecretCode()); err != nil {
+		violations = append(violations, util.FieldViolation("secret_code", err))
 	}
 	return violations
 }

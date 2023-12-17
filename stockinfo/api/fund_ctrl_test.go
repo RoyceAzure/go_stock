@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	mockdb "github.com/RoyceAzure/go-stockinfo/project/db/mock"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	mockdb "github.com/RoyceAzure/go-stockinfo/repository/db/mock"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
@@ -27,10 +27,10 @@ func randomFund() (db.User, db.Fund) {
 
 func CreateRandomFund(user db.User) db.Fund {
 	return db.Fund{
-		FundID:       utility.RandomInt(1, 100),
+		FundID:       util.RandomInt(1, 100),
 		UserID:       user.UserID,
-		Balance:      strconv.FormatInt(utility.RandomInt(10000, 1000000), 10),
-		CurrencyType: utility.RandomCurrencyTypeStr(),
+		Balance:      strconv.FormatInt(util.RandomInt(10000, 1000000), 10),
+		CurrencyType: util.RandomCurrencyTypeStr(),
 		CrDate:       time.Now().UTC(),
 		CrUser:       "SYSTEM",
 	}

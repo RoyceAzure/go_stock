@@ -3,14 +3,17 @@ package worker
 import (
 	"context"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/mail"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/service"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/mail"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
 
 const (
-	MailQueue = "mailQueue"
+	MailQueue            = "mailQueue"
+	SyncStockQueue       = "syncStockQueue"
+	StockTransationQueue = "stockTransationQueue"
 )
 
 /*
@@ -21,23 +24,30 @@ type TaskProcessor interface {
 	StartWithHandler(handler *asynq.ServeMux) error
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
 	ProcessTaskBatchUpdateStock(ctx context.Context, task *asynq.Task) error
+	ProcessTaskStockTransfer(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
-	server *asynq.Server
-	store  db.Store
-	mailer mail.EmailSender
+	server           *asynq.Server
+	store            db.Store
+	mailer           mail.EmailSender
+	stockTranService service.ITransferService
 }
 
 /*
 server是processot自己建立的? 是host建立asynq server去遠端redis 拿取任務資料
 */
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender) TaskProcessor {
+func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt,
+	store db.Store,
+	mailer mail.EmailSender,
+	stockTranService service.ITransferService) TaskProcessor {
 	server := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
 			Queues: map[string]int{
-				MailQueue: 10,
+				StockTransationQueue: 10,
+				MailQueue:            8,
+				SyncStockQueue:       6,
 			},
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
 				log.Error().
@@ -51,9 +61,10 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer
 	)
 
 	return &RedisTaskProcessor{
-		server: server,
-		store:  store,
-		mailer: mailer,
+		server:           server,
+		store:            store,
+		mailer:           mailer,
+		stockTranService: stockTranService,
 	}
 }
 
@@ -68,6 +79,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
 	mux.HandleFunc(TaskBatchUpdateStock, processor.ProcessTaskBatchUpdateStock)
+	mux.HandleFunc(TaskStockTransation, processor.ProcessTaskStockTransfer)
 	return processor.server.Start(mux)
 }
 func (processor *RedisTaskProcessor) StartWithHandler(handler *asynq.ServeMux) error {

@@ -1,8 +1,8 @@
 package gapi
 
 import (
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

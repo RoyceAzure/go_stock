@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
+	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/hibiken/asynq"
-	"github.com/rs/zerolog/log"
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
@@ -40,7 +40,7 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 		return fmt.Errorf("failed to enqueue task %w", err)
 	}
 
-	log.Info().
+	logger.Logger.Info().
 		Str("type", task.Type()).
 		Bytes("body", task.Payload()).
 		Str("queue", taskInfo.Queue).
@@ -98,7 +98,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("failed to create verify email %w", err)
 	}
 
-	log.Info().Str("type", task.Type()).
+	logger.Logger.Info().Str("type", task.Type()).
 		Bytes("task payload", task.Payload()).
 		Str("user email", user.Email).
 		Msg("porcessed task")

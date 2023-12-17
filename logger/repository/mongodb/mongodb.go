@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -28,6 +29,7 @@ const (
 type IMongoDao interface {
 	Insert(ctx context.Context, entry LogEntry) error
 	GetAll(ctx context.Context) ([]*LogEntry, error)
+	InsertBsonM(ctx context.Context, entry primitive.M) error
 }
 
 type MongoDao struct {
@@ -89,6 +91,35 @@ func (dao *MongoDao) Insert(ctx context.Context, entry LogEntry) error {
 	database := dao.client.Database(LOG_DATABASE)
 
 	switch entry.Level {
+	case LevelInfoValue:
+		collection = database.Collection(LOG_INFO_COLLECTION)
+	case LevelWarnValue:
+		collection = database.Collection(LOG_WARN_COLLECTION)
+	case LevelTraceValue:
+		collection = database.Collection(LOG_TRACE_COLLECTION)
+	case LevelErrorValue:
+		collection = database.Collection(LOG_ERR_COLLECTION)
+	default:
+		collection = database.Collection(LOG_INFO_COLLECTION)
+	}
+
+	_, err := collection.InsertOne(ctx, entry)
+
+	return err
+}
+
+func (dao *MongoDao) InsertBsonM(ctx context.Context, entry primitive.M) error {
+
+	var collection *mongo.Collection
+
+	database := dao.client.Database(LOG_DATABASE)
+
+	level, ok := entry["level"].(string)
+	if !ok {
+		return fmt.Errorf("insert bson to db get err, can't fecth level")
+	}
+
+	switch level {
 	case LevelInfoValue:
 		collection = database.Collection(LOG_INFO_COLLECTION)
 	case LevelWarnValue:

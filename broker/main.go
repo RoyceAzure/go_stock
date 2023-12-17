@@ -4,18 +4,23 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/RoyceAzure/go-stockinfo-broker/api"
 	"github.com/RoyceAzure/go-stockinfo-broker/api/gapi"
 	"github.com/RoyceAzure/go-stockinfo-broker/api/token"
 	_ "github.com/RoyceAzure/go-stockinfo-broker/doc/statik"
+	distributor_dao "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/distributorDao"
+	logger "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/logger_distributor"
 	scheduler_dao "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/schedulerDao"
 	stockinfo_dao "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/stockinfoDao"
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/util/config"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/hibiken/asynq"
 	"github.com/rakyll/statik/fs"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -23,19 +28,33 @@ import (
 )
 
 func main() {
+	zerolog.TimeFieldFormat = time.RFC3339
 	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("cannot start gateway http server")
 	}
-	conn, err := amqp.Dial(config.RabbitMQAddress)
-	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Failed to connect to RabbitMQ")
+
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisQueueAddress,
 	}
-	defer conn.Close()
+
+	//set up mongo logger
+	redisClient := asynq.NewClient(redisOpt)
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
+
+	// conn, err := amqp.Dial(config.RabbitMQAddress)
+	// if err != nil {
+	// 	log.Fatal().
+	// 		Err(err).
+	// 		Msg("Failed to connect to RabbitMQ")
+	// }
+	// defer conn.Close()
 
 	// e := rabbitmq.NewRabbitMqEmmiter(conn)
 	// log.Print(e.EmmitEvent("1", "1").Error())
@@ -48,24 +67,35 @@ func main() {
 	// }
 	// server.Start(config.HttpServerAddress)
 
-	stockinfoDao, err := stockinfo_dao.NewStockInfoDao(config.GrpcStockinfoAddress)
+	stockinfoDao, closeConnInfo, err := stockinfo_dao.NewStockInfoDao(config.GrpcStockinfoAddress)
 	if err != nil {
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("cannot connect stockinfo grpc server")
 	}
+	defer closeConnInfo()
 
-	schedulerDao, err := scheduler_dao.NewSchedulerDao(config.GrpcStockinfoAddress)
+	schedulerDao, closeConnSc, err := scheduler_dao.NewSchedulerDao(config.GrpcSchedulerAddress)
 	if err != nil {
-		log.Fatal().
+		logger.Logger.Fatal().
 			Err(err).
 			Msg("cannot connect scheduler grpc server")
 	}
-	go runGRPCGatewayServer(config, schedulerDao, stockinfoDao, config.TokenSymmetricKey)
-	runGRPCServer(config, schedulerDao, stockinfoDao, config.TokenSymmetricKey)
+	defer closeConnSc()
+
+	distributorDao, closeConnDi, err := distributor_dao.NewDistributorDao(config.GrpcDistributorAddress)
+	if err != nil {
+		logger.Logger.Fatal().
+			Err(err).
+			Msg("cannot connect distributor grpc server")
+	}
+	defer closeConnDi()
+
+	go runGRPCGatewayServer(config, schedulerDao, stockinfoDao, distributorDao, config.TokenSymmetricKey)
+	runGRPCServer(config, schedulerDao, stockinfoDao, distributorDao, config.TokenSymmetricKey)
 }
 
-func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerDao, stockinfoDao stockinfo_dao.IStockInfoDao, symmerickey string) {
+func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerDao, stockinfoDao stockinfo_dao.IStockInfoDao, distributorDao distributor_dao.IDistributorDao, symmerickey string) {
 
 	tokenMakerStockinfo, err := token.NewPasetoMaker(symmerickey)
 	if err != nil {
@@ -81,9 +111,18 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 			Msg("cannot start gateway http server")
 	}
 
+	tokenMakerDistributor, err := token.NewPasetoMaker(symmerickey)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start gateway http server")
+	}
+
 	authorizeStockinfo := api.NewAuthorizor(tokenMakerStockinfo)
 
 	authorizeScheduler := api.NewAuthorizor(tokenMakerScheduler)
+
+	authorizeDistributor := api.NewAuthorizor(tokenMakerDistributor)
 
 	// 創建新的gRPC伺服器
 
@@ -101,9 +140,17 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 			Msg("cannot start gateway http server")
 	}
 
+	serverDistributor, err := gapi.NewDistributorServer(distributorDao, authorizeDistributor)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start gateway http server")
+	}
+
 	jsonOpt := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
-			UseProtoNames: true,
+			UseProtoNames:   true,
+			EmitUnpopulated: false,
 		},
 		UnmarshalOptions: protojson.UnmarshalOptions{
 			DiscardUnknown: true,
@@ -120,7 +167,7 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 
 	是的，它是一個特殊的多路復用器，專為將 HTTP 請求轉換為 gRPC 請求而設計。當一個 HTTP 請求到達時，這個多路復用器會根據註冊的 gRPC 路由和方法轉換該請求，然後轉發它到對應的 gRPC 伺服器方法。
 	總之，runtime.NewServeMux() 既是一個 handler，也是一個 multiplexer，但它專為 grpc-gateway 設計，用於在 gRPC 伺服器和 HTTP 客戶端之間進行轉換和路由。*/
-	grpcMux := runtime.NewServeMux(jsonOpt)
+	grpcMux := runtime.NewServeMux(jsonOpt, runtime.WithMetadata(gapi.CustomMatcher))
 
 	// 創建一個可取消的背景上下文
 	ctx, cancel := context.WithCancel(context.Background())
@@ -142,6 +189,13 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 	}
 
 	err = pb.RegisterStockInfoSchdulerHandlerServer(ctx, grpcMux, serverScheduler)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot register scheduler handler server")
+	}
+
+	err = pb.RegisterStockInfoDistributorHandlerServer(ctx, grpcMux, serverDistributor)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -190,7 +244,10 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
 
 	//
-	handler := gapi.HttpLogger(mux)
+	loggerHandler := gapi.HttpLogger(mux)
+	handler := gapi.IdMiddleWareHandler(loggerHandler)
+	// handler1 := gapi.IdMiddleWareHandler(mux)
+	// handler := gapi.HttpLogger(handler1)
 
 	// 啟動HTTP伺服器
 	err = http.Serve(listener, handler)
@@ -201,7 +258,7 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 	}
 }
 
-func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerDao, stockinfoDao stockinfo_dao.IStockInfoDao, symmerickey string) {
+func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerDao, stockinfoDao stockinfo_dao.IStockInfoDao, distributorDao distributor_dao.IDistributorDao, symmerickey string) {
 
 	tokenMakerStockinfo, err := token.NewPasetoMaker(symmerickey)
 	if err != nil {
@@ -217,9 +274,18 @@ func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerD
 			Msg("cannot start gateway http server")
 	}
 
+	tokenMakerDistributor, err := token.NewPasetoMaker(symmerickey)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start gateway http server")
+	}
+
 	authorizeStockinfo := api.NewAuthorizor(tokenMakerStockinfo)
 
 	authorizeScheduler := api.NewAuthorizor(tokenMakerScheduler)
+
+	authorizeDistributor := api.NewAuthorizor(tokenMakerDistributor)
 
 	// 創建新的gRPC伺服器
 
@@ -236,14 +302,21 @@ func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerD
 			Err(err).
 			Msg("cannot start gateway http server")
 	}
+
+	serverDistributor, err := gapi.NewDistributorServer(distributorDao, authorizeDistributor)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot start gateway http server")
+	}
 	/*
 		使用 pb.RegisterStockInfoServer 函數註冊了先前創建的伺服器實例，使其能夠處理 StockInfoServer 接口的 RPC 請求。
 	*/
 
-	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
+	unaryInterceptor := grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(gapi.IdMiddleWare, gapi.GrpcLogger))
 
 	//NewServer 可以接收多個grpc.ServerOption  而上面的Interceptor 就是一個grpc.ServerOption
-	grpcServer := grpc.NewServer(grpcLogger)
+	grpcServer := grpc.NewServer(unaryInterceptor)
 	/*
 		gRPC 中，一個 grpc.Server 可以註冊多個服務接口。
 		每個服務接口通常對應於 .proto 文件中定義的一個 service。這允許單個 gRPC 伺服器同時提供多個服務，而不需要啟動多個伺服器實例。
@@ -251,6 +324,7 @@ func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerD
 
 	pb.RegisterStockInfoServer(grpcServer, serverStockinfo)
 	pb.RegisterStockInfoSchdulerServer(grpcServer, serverScheduler)
+	pb.RegisterStockInfoDistributorServer(grpcServer, serverDistributor)
 	//reflection.Register 允許客戶端使用反射來獲知伺服器上的服務和方法。
 	reflection.Register(grpcServer)
 

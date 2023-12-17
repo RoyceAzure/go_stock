@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	logger "github.com/RoyceAzure/go-stockinfo-broker/repository/remote_dao/logger_distributor"
+	"github.com/RoyceAzure/go-stockinfo-broker/shared/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,6 +18,11 @@ func GrpcLogger(ctx context.Context,
 	handler grpc.UnaryHandler) (resp any, err error) {
 
 	startTime := time.Now()
+	log := logger.Logger.Info()
+
+	var reqID string
+	reqID, _ = ctx.Value(util.RequestIDKey).(string)
+
 	result, err := handler(ctx, req)
 	duration := time.Since(startTime)
 
@@ -25,12 +31,17 @@ func GrpcLogger(ctx context.Context,
 		statusCode = st.Code()
 	}
 
-	logger := log.Info()
 	if err != nil {
-		logger = log.Error().Err(err)
+		log = logger.Logger.Error().Err(err)
 	}
-	logger.Str("protocol", "grpc").
+
+	mtda := util.ExtractMetaData(ctx)
+
+	log.Str("protocol", "grpc").
+		Str("req_id", reqID).
 		Str("method", info.FullMethod).
+		Str("user_ageent", mtda.UserAgent).
+		Str("ip", mtda.ClientIP).
 		Int("status_code", int(statusCode)).
 		Str("status_text", statusCode.String()).
 		Dur("duration", duration).
@@ -71,7 +82,8 @@ func (rec *ResponseRecoder) Write(body []byte) (int, error) {
 */
 func HttpLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		logger := log.Info()
+		log := logger.Logger.Info()
+		// log.Msg("in HttpLogger")
 		startTime := time.Now()
 
 		rec := &ResponseRecoder{
@@ -79,19 +91,22 @@ func HttpLogger(handler http.Handler) http.Handler {
 			StatusCode:     http.StatusOK,
 		}
 
+		reqId := req.Header.Get(string(util.RequestIDKey))
+
 		handler.ServeHTTP(rec, req)
 
 		if rec.StatusCode != http.StatusOK {
-			logger = log.Error().Bytes("res body", rec.Body)
+			log = logger.Logger.Error().Bytes("res body", rec.Body)
 		}
 
-		duration := time.Since(startTime)
-		logger.Str("protocol", "http").
+		duration := time.Since(startTime).Milliseconds()
+		log.Str("protocol", "http").
 			Str("method", req.Method).
+			Str("request_id", reqId).
 			Str("path", req.RequestURI).
 			Int("status_code", rec.StatusCode).
 			Str("status_text", http.StatusText(rec.StatusCode)).
-			Dur("duration", duration).
+			Int64("duration in ms", duration).
 			Msg("received a HTTP request")
 	})
 }

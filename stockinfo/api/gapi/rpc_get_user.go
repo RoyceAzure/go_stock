@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -13,7 +13,7 @@ import (
 func (server *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	payload, err := server.authorizUser(ctx)
 	if err != nil {
-		return nil, utility.UnauthticatedError(err)
+		return nil, util.UnauthticatedError(err)
 	}
 
 	user, err := server.store.GetUser(ctx, payload.UserId)

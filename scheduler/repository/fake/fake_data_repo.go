@@ -12,7 +12,9 @@ import (
 	dto "github.com/RoyceAzure/go-stockinfo-scheduler/shared/model/DTO"
 	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
 	"github.com/RoyceAzure/go-stockinfo-scheduler/util/constants"
+	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 var BATCH_SIZE = 2000
@@ -30,10 +32,18 @@ type FakeSPRDataService struct {
 	mutex     sync.RWMutex
 }
 
-func NewFakeSPRDataService(dao repository.Dao) *FakeSPRDataService {
-	return &FakeSPRDataService{
+func NewFakeSPRDataService(dao repository.Dao) (*FakeSPRDataService, error) {
+	fakeDataService := &FakeSPRDataService{
 		dao: dao,
 	}
+
+	prototype, err := fakeDataService.GeneratePrototype(true)
+	if err != nil {
+		return nil, err
+	}
+	fakeDataService.SetPrototype(prototype)
+
+	return fakeDataService, nil
 }
 
 func (fakeService *FakeSPRDataService) SetPrototype(prototype []repository.StockPriceRealtime) {
@@ -51,8 +61,9 @@ func (fakeService *FakeSPRDataService) GetPrototype() []repository.StockPriceRea
 
 /*
 根據prototype產生 fake data
+if presesrve, new fakedata will save as prototype
 */
-func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPriceRealtime, error) {
+func (fakeService *FakeSPRDataService) GenerateFakeData(presesrve bool) ([]repository.StockPriceRealtime, error) {
 
 	var result []repository.StockPriceRealtime
 
@@ -87,11 +98,19 @@ func (fakeService *FakeSPRDataService) GenerateFakeData() ([]repository.StockPri
 	for process := range processed {
 		result = append(result, process)
 	}
+
+	if presesrve {
+		fakeService.SetPrototype(result)
+	}
 	return result, nil
 }
 
+/*
+generate prototype from STOCK_DAY_ALL.json
+if refresh, will download STOCK_DAY_ALL and save as json file
+*/
 func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]repository.StockPriceRealtime, error) {
-	logger.Logger.Info().
+	logger.Logger.Trace().
 		Msg("start of generate prototype")
 	var result []repository.StockPriceRealtime
 	var stock_day_alls []dto.StockDayAvgAllDTO
@@ -151,7 +170,7 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 	fakeService.SetPrototype(result)
 
 	elapsed := time.Since(startTime)
-	logger.Logger.Info().Int64("elpase_time_(ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
+	logger.Logger.Trace().Int64("elpase_time_(ms)", int64(elapsed/time.Millisecond)).Msg("end of generate prototype")
 	return result, nil
 }
 
@@ -161,23 +180,43 @@ func (fakeService *FakeSPRDataService) GeneratePrototype(refresh bool) ([]reposi
 */
 func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository.StockPriceRealtime, error) {
 	var result repository.StockPriceRealtime
-	var open_priceOri float64
-	open_priceOri, err := util.NumericToFloat64(prototype.OpeningPrice)
+	var openPrice, closePrice pgxdecimal.Decimal
+	err := openPrice.ScanNumeric(prototype.OpeningPrice)
+	if err != nil {
+		logger.Logger.Warn().Err(err).Msg("stock open price can't convert to float64")
+		return result, err
+	}
+	err = closePrice.ScanNumeric(prototype.ClosingPrice)
 	if err != nil {
 		logger.Logger.Warn().Err(err).Msg("stock open price can't convert to float64")
 		return result, err
 	}
 
-	randomFloatInRange := rand.Float64() * 3 / 100
-	var finalPrice float64
+	var finalOpenPrice, finalClosePrice *decimal.Decimal
+
+	randomFloatInRange := decimal.NewFromFloat32(rand.Float32() * 3 / 100)
 	randomDir := rand.Int31n(1)
-	if randomDir == 0 {
-		finalPrice = open_priceOri * (1 - randomFloatInRange)
-	} else {
-		finalPrice = open_priceOri * (1 + randomFloatInRange)
-	}
-	open_price_numeric, err := util.StringToNumeric(util.Float64ToString(finalPrice))
+
+	finalOpenPrice, err = processPrice(openPrice, randomDir, randomFloatInRange)
 	if err != nil {
+		logger.Logger.Warn().Err(err).Msg("stock open price can't convert to decimal")
+		return result, err
+	}
+	finalClosePrice, err = processPrice(openPrice, randomDir, randomFloatInRange)
+	if err != nil {
+		logger.Logger.Warn().Err(err).Msg("stock close price can't convert to decimal")
+		return result, err
+	}
+
+	var OpeningPrice, ClosingPrice pgtype.Numeric
+	err = OpeningPrice.Scan(finalOpenPrice.String())
+	if err != nil {
+		logger.Logger.Warn().Err(err).Msg("stock open price can't convert to numeric")
+		return result, err
+	}
+	err = ClosingPrice.Scan(finalClosePrice.String())
+	if err != nil {
+		logger.Logger.Warn().Err(err).Msg("stock close price can't convert to numeric")
 		return result, err
 	}
 
@@ -185,7 +224,6 @@ func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository
 	trade_val, _ := util.RandomNumeric(6, 2)
 	heightest_price, _ := util.RandomNumeric(6, 2)
 	lowest_price, _ := util.RandomNumeric(6, 2)
-	closing_price, _ := util.RandomNumeric(6, 2)
 	change, _ := util.RandomNumeric(6, 2)
 	trasation, _ := util.RandomNumeric(6, 2)
 
@@ -194,10 +232,10 @@ func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository
 		StockName:    prototype.StockName,
 		TradeVolume:  trade_vol,
 		TradeValue:   trade_val,
-		OpeningPrice: open_price_numeric,
+		OpeningPrice: OpeningPrice,
 		HighestPrice: heightest_price,
 		LowestPrice:  lowest_price,
-		ClosingPrice: closing_price,
+		ClosingPrice: ClosingPrice,
 		Change:       change,
 		Transaction:  trasation,
 		TransTime:    time.Now().UTC(),
@@ -206,19 +244,70 @@ func createSCRFromPrototype(prototype repository.StockPriceRealtime) (repository
 
 /*
 for generate prototype
+use SDA.MonthlyAvgPrice as prototype OpeningPrice
+use SDA.ClosePrice as prototype ClosingPrice
 */
 func Sdavg2StockPriceRealTime(value dto.StockDayAvgAllDTO) (*repository.StockPriceRealtime, error) {
+	var openPrice pgtype.Numeric
+	err := openPrice.Scan(value.MonthlyAvgPrice)
+	if err != nil {
+		return nil, err
+	}
+	//string to numeric
+	var closePrice pgtype.Numeric
+	err = closePrice.Scan(value.ClosePrice)
+	if err != nil {
+		return nil, err
+	}
+
 	return &repository.StockPriceRealtime{
 		Code:         value.Code,
 		StockName:    value.StockName,
 		TradeVolume:  pgtype.Numeric{Valid: true},
 		TradeValue:   pgtype.Numeric{Valid: true},
-		OpeningPrice: pgtype.Numeric{Valid: true},
+		OpeningPrice: openPrice,
 		HighestPrice: pgtype.Numeric{Valid: true},
 		LowestPrice:  pgtype.Numeric{Valid: true},
-		ClosingPrice: pgtype.Numeric{Valid: true},
+		ClosingPrice: closePrice,
 		Change:       pgtype.Numeric{Valid: true},
 		Transaction:  pgtype.Numeric{Valid: true},
 		TransTime:    time.Now().UTC(),
 	}, nil
+}
+
+/*
+des:
+
+	將pgxdecimal.Decimal 隨機變換百分比趴樹的值  回傳*decimal.Decimal
+
+parm:
+
+	price (pgxdecimal.Decimal) : value to be mutiply by randomFloatInRange
+	randomDir (int32) : change direction, 0 down, 1 up
+	randomFloatInRange (decimal.Decimal) : precent of 震幅
+
+return:
+
+	*decimal.Decimal
+*/
+func processPrice(price pgxdecimal.Decimal, randomDir int32, randomFloatInRange decimal.Decimal) (*decimal.Decimal, error) {
+	var finalPrice decimal.Decimal
+	decimalOne := decimal.NewFromInt(1)
+
+	priceStr := decimal.Decimal(price).String()
+
+	// 將 pgxdecimal.Decimal 轉換為 decimal.Decimal
+	decPrice, err := decimal.NewFromString(priceStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// 進行計算
+	if randomDir == 0 {
+		finalPrice = decPrice.Mul(decimalOne.Sub(randomFloatInRange))
+	} else {
+		finalPrice = decPrice.Mul(decimalOne.Add(randomFloatInRange))
+	}
+
+	return &finalPrice, nil
 }

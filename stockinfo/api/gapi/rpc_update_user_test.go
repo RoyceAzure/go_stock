@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	mockdb "github.com/RoyceAzure/go-stockinfo/project/db/mock"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	mockdb "github.com/RoyceAzure/go-stockinfo/repository/db/mock"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -20,11 +20,11 @@ import (
 func TestUpdateUserApi(t *testing.T) {
 	// 或許在測試API時  randomUser就應該產生DTO 而不是model
 	user := randomUser()
-	newName := utility.RandomString(10)
+	newName := util.RandomString(10)
 	invalidName := "fds"
 	invalidSSO := "aa"
 	// newPas := utility.RandomString(32)
-	newSSo := utility.RandomSSOTypeStr()
+	newSSo := util.RandomSSOTypeStr()
 	up_date := time.Now().UTC()
 	testCase := []struct {
 		name         string //子測試名稱
@@ -44,8 +44,8 @@ func TestUpdateUserApi(t *testing.T) {
 				//這裡手動模擬API處理參數
 				arg := db.UpdateUserParams{
 					UserID:       user.UserID,
-					UserName:     utility.StringToSqlNiStr(newName),
-					SsoIdentifer: utility.StringToSqlNiStr(newSSo),
+					UserName:     util.StringToSqlNiStr(newName),
+					SsoIdentifer: util.StringToSqlNiStr(newSSo),
 				}
 				updateUser := db.User{
 					UserID:            user.UserID,
@@ -53,10 +53,10 @@ func TestUpdateUserApi(t *testing.T) {
 					Email:             user.Email,
 					HashedPassword:    user.HashedPassword,
 					PasswordChangedAt: user.PasswordChangedAt,
-					SsoIdentifer:      utility.StringToSqlNiStr(newSSo),
+					SsoIdentifer:      util.StringToSqlNiStr(newSSo),
 					IsEmailVerified:   user.IsEmailVerified,
 					CrDate:            user.CrDate,
-					UpDate:            utility.TimeToSqlNiTime(up_date),
+					UpDate:            util.TimeToSqlNiTime(up_date),
 				}
 				store.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Eq(arg)).
@@ -87,8 +87,8 @@ func TestUpdateUserApi(t *testing.T) {
 				//這裡手動模擬API處理參數
 				arg := db.UpdateUserParams{
 					UserID:       user.UserID,
-					UserName:     utility.StringToSqlNiStr(newName),
-					SsoIdentifer: utility.StringToSqlNiStr(newSSo),
+					UserName:     util.StringToSqlNiStr(newName),
+					SsoIdentifer: util.StringToSqlNiStr(newSSo),
 				}
 				store.EXPECT().
 					UpdateUser(gomock.Any(), gomock.Eq(arg)).

@@ -1,10 +1,8 @@
 syntax = "proto3";
-
 import "user.proto";
-
 package pb;
 
-option go_package = "github.com/RoyceAzure/go-stockinfo-broker/api/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
 
 message CreateUserRequest{
     string user_name = 1;

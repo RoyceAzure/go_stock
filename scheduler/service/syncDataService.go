@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -42,6 +43,9 @@ type STOCK_DAY_AVG_ALL_DTO struct {
 	MonthlyAVGPRice string `json:"MonthlyAveragePrice"`
 }
 
+/*
+冪等操作
+*/
 func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (int64, error) {
 	logger.Logger.Info().Msg("start download and insert data SVAA")
 	var dtos []STOCK_DAY_AVG_ALL_DTO
@@ -55,6 +59,24 @@ func (service *SchdulerService) DownloadAndInsertDataSVAA(ctx context.Context) (
 
 	err = json.Unmarshal(byteData, &dtos)
 	if err != nil {
+		return 0, err
+	}
+
+	//刪除舊資料
+	startTime := time.Now().UTC()
+	crDateStart := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
+	crDateEnd := crDateStart.AddDate(0, 0, 1).Add(-time.Nanosecond)
+	err = service.dao.DeleteSDAVGALLCodeByTime(ctx, repository.DeleteSDAVGALLCodeByTimeParams{
+		CrDateStart: pgtype.Timestamptz{
+			Time:  crDateStart,
+			Valid: true,
+		},
+		CrDateEnd: pgtype.Timestamptz{
+			Time:  crDateEnd,
+			Valid: true,
+		},
+	})
+	if err != nil && !errors.Is(err, repository.ErrRecordNotFound) {
 		return 0, err
 	}
 
@@ -151,7 +173,7 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 	opts := []asynq.Option{
 		asynq.MaxRetry(10),
 		asynq.ProcessIn(10 * time.Second),
-		asynq.Queue(worker.QueueCritical),
+		asynq.Queue(worker.SyncStockQueue),
 	}
 	for batch := range processed {
 		payload = append(payload, batch)
@@ -177,19 +199,21 @@ func (service *SchdulerService) SyncStock(ctx context.Context) (int64, []error) 
 	return int64(task_count), errs
 }
 
+/*
+save to scheduler DB
+*/
+
 func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int64, []error) {
 	logger.Logger.Info().Msg("start sync stock price realtime")
 	startTime := time.Now().UTC()
 	var errs []error
 
-	fakedataService := fake.FakeSPRDataService{}
-	prototype, err := fakedataService.GeneratePrototype(true)
+	fakedataService, err := fake.NewFakeSPRDataService(service.dao)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("generate fake data prototype get err, %w", err))
 		return 0, errs
 	}
-	fakedataService.SetPrototype(prototype)
-	fakesprs, err := fakedataService.GenerateFakeData()
+	fakesprs, err := fakedataService.GenerateFakeData(true)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("generate fake data get err"))
 		return 0, errs
@@ -246,9 +270,14 @@ func (service *SchdulerService) SyncStockPriceRealTime(ctx context.Context) (int
 }
 
 /*
- */
+save to redis
+
+gen fake data and save to redis
+
+不應該每次執行都要init protorype，應該要能直接取得fake data
+*/
 func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context) []error {
-	logger.Logger.Info().Msg("start sync spr redis")
+	logger.Logger.Trace().Msg("start sync spr redis")
 	startTime := time.Now().UTC()
 	var errs []error
 	defer func() {
@@ -257,14 +286,12 @@ func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context)
 		}
 	}()
 
-	fakedataService := fake.FakeSPRDataService{}
-	prototype, err := fakedataService.GeneratePrototype(true)
+	fakedataService, err := fake.NewFakeSPRDataService(service.dao)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("generate fake data prototype get err, %w", err))
 		return errs
 	}
-	fakedataService.SetPrototype(prototype)
-	fakesprs, err := fakedataService.GenerateFakeData()
+	fakesprs, err := fakedataService.GenerateFakeData(true)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("generate fake data get err"))
 		return errs
@@ -291,7 +318,7 @@ func (service *SchdulerService) RedisSyncStockPriceRealTime(ctx context.Context)
 	service.redisDao.SetSPRLatestKey(key)
 
 	elapsed := time.Since(startTime)
-	logger.Logger.Info().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
+	logger.Logger.Trace().Int64("elpase time (ms)", int64(elapsed/time.Millisecond)).Msg("end of sync spr redis")
 
 	return nil
 }

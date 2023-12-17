@@ -1,0 +1,22 @@
+syntax = "proto3";
+import "user_stock.proto";
+package pb;
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
+
+message GetUserStockRequest{
+    int32 page_size=1;
+    int32 page=2;
+}
+message GetUserStockResponse{
+    repeated UserStock data=1;
+}
+
+message GetUserStockByIdRequest{
+    int64 user_id=1;
+}
+message GetUserStockBuIdResponse{
+    repeated UserStock data=1;
+}
+
+

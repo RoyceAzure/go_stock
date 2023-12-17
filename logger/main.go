@@ -12,10 +12,12 @@ import (
 	logservice "github.com/RoyceAzure/go-stockinfo-logger/service"
 	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	zerolog.TimeFieldFormat = time.RFC3339
 	config, err := config.LoadConfig(".") //表示讀取當前資料夾
 	if err != nil {
 		log.Fatal().
@@ -43,7 +45,7 @@ func main() {
 	mongoDao := repository.NewMongoDao(client)
 
 	mongoLogger := logservice.NewMongoLogger(mongoDao)
-	err = logservice.SetUpMutiMongoLogger(mongoLogger)
+	err = logservice.SetUpMutiMongoLogger(mongoLogger, config.ServiceID)
 	if err != nil {
 		logservice.Logger.Fatal().
 			Err(err).

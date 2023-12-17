@@ -17,34 +17,31 @@ dropdb:
 	docker exec -it project7-postgres  dropdb --username=royce stock_info
 
 sqlc:
-	docker run --rm -v $(current_dir)/project:/src -w /src sqlc/sqlc:latest generate
+	docker run --rm -v $(current_dir)/repository:/src -w /src sqlc/sqlc:latest generate
 
 awsmigrateup:
-	migrate -path project/db/migrations/ -database $(DB_URL_AWS) --verbose up
+	migrate -path repository/db/migrations/ -database $(DB_URL_AWS) --verbose up
 
 migrateup:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose up
 
 migrateupto:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	to $(stage)
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	to $(stage)
 
 migratedownto:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
 
 migrateup1:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	1
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose up	1
 
 migrateudown1:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down 1
-
-migratedownto:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down to $(stage)
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose down 1
 
 migratedown:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose down
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose down
 
 migrateforce:
-	migrate -path project/db/migrations/ -database $(DB_URL_LOCAL) --verbose force $(stage)
+	migrate -path repository/db/migrations/ -database $(DB_URL_LOCAL) --verbose force $(stage)
 
 new_migration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
@@ -61,6 +58,7 @@ server:
 # mock:
 # 	mockgen -source="./distributor.go" -package=mockwk -destination="mock/distributor_mock.go"
 # 	mockgen  . Store
+# mockgen --destination github.com/RoyceAzure/go-stockinfo/repository/mock --package mock_sqlc  github.com/RoyceAzure/go-stockinfo/repository/db/sqlc Store
 
 db_docs:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbdocs build ./db.dbml
@@ -69,11 +67,11 @@ db_schema:
 	docker run --rm -v $(current_dir)/doc:/app/data -w /app/data node_docs dbml2sql --postgres -o schema.sql db.dbml
 
 protoc:
-	powershell -Command "Remove-Item -Path 'api/pb/*.go' -Force"
+	powershell -Command "Remove-Item -Path 'shared/pb/*.go' -Force"
 	powershell -Command "Remove-Item -Path 'doc/swagger/*.swagger.json' -Force"
-	protoc   -I=C:/Users/royce/include -I=./proto --grpc-gateway_out api/pb \
-	--proto_path=proto  --go_out=api/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \
-	--go-grpc_out=api/pb --go-grpc_opt=paths=source_relative --openapiv2_out doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=stock_info \
+	protoc	-I=C:/Users/royce/include -I=./proto --grpc-gateway_out shared/pb \
+	--go_out=shared/pb  --go_opt=paths=source_relative  --grpc-gateway_opt=paths=source_relative \
+	--go-grpc_out=shared/pb --go-grpc_opt=paths=source_relative --openapiv2_out doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=stock_info \
 	proto/*.proto
 	statik -src=./doc/swagger -dest=./doc -f
 

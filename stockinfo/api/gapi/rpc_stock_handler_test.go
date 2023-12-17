@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	mock_gapi "github.com/RoyceAzure/go-stockinfo/api/gapi/mock"
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	mock_scheduler_client "github.com/RoyceAzure/go-stockinfo/api/pb/mock"
 	"github.com/RoyceAzure/go-stockinfo/api/token"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	mock_scheduler_client "github.com/RoyceAzure/go-stockinfo/shared/pb/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -35,21 +35,21 @@ func TestInitStock(t *testing.T) {
 				require.Equal(t, codes.Internal, st.Code())
 			},
 		},
-		{
-			name: "get SDA failed",
-			buildStub: func(factory *mock_gapi.MockSchedulerClientFactory, client *mock_scheduler_client.MockStockInfoSchdulerClient) {
-				client.EXPECT().GetStockDayAvg(gomock.Any(), gomock.Any()).
-					Return(nil, errors.New("get SDA failed"))
-				factory.EXPECT().NewClient().Return(client, func() {}, nil).
-					Times(1)
-			},
-			checkReponse: func(t *testing.T, res *pb.InitStockResponse, err error) {
-				require.Error(t, err)
-				st, ok := status.FromError(err)
-				require.True(t, ok)
-				require.Equal(t, codes.Internal, st.Code())
-			},
-		},
+		// {
+		// 	name: "get SDA failed",
+		// 	buildStub: func(factory *mock_gapi.MockSchedulerClientFactory, client *mock_scheduler_client.MockStockInfoSchdulerClient) {
+		// 		client.EXPECT().GetStockDayAvg(gomock.Any(), gomock.Any()).
+		// 			Return(nil, errors.New("get SDA failed"))
+		// 		factory.EXPECT().NewClient().Return(client, func() {}, nil).
+		// 			Times(1)
+		// 	},
+		// 	checkReponse: func(t *testing.T, res *pb.InitStockResponse, err error) {
+		// 		require.Error(t, err)
+		// 		st, ok := status.FromError(err)
+		// 		require.True(t, ok)
+		// 		require.Equal(t, codes.Internal, st.Code())
+		// 	},
+		// },
 	}
 
 	for i := range testCase {

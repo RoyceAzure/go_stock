@@ -9,6 +9,13 @@ Project stockinfo{
 }
 
 
+Enum transation_result {
+  createed
+  processed
+  successed
+  failed
+}
+
 Table user as U{
   user_id bigserial [pk]
   user_name varchar [not null]
@@ -99,13 +106,16 @@ Table user_stock{
 }
 
 Table stock_transaction{
-  TransationId bigserial [pk, increment]
+  transation_id uuid [pk ,default: `uuid_generate_v4()`]
   user_id bigint [not null]
   stock_id bigint [not null]
+  fund_id bigint [not null]
   transaction_type varchar [not null]
   transaction_date timestamp [not null, default: `now()`]
   transation_amt int [not null]
   transation_price_per_share decimal [not null] 
+  result transation_result [not null, default: 'createed']
+  msg varchar [null, default:'']
   cr_date timestamptz  [not null, default: `now()`]
   up_date timestamptz
   cr_user varchar [not null]
@@ -113,12 +123,25 @@ Table stock_transaction{
 
 
   Indexes{
-    TransationId
+    transation_id
     (user_id, stock_id)
   }
 }
 
+
+Table realized_profit_loss{
+  id bigserial [pk, increment]
+  transation_id uuid [ref: > stock_transaction.transation_id, not null]
+  user_id bigint [ref: > U.user_id, not null]
+  product_name varchar [not null]
+  cost_per_price decimal [not null]
+  cost_total_price decimal [not null]
+  realized decimal [not null]
+  realized_precent varchar [not null]
+  Indexes{
+    transation_id
+    user_id
+  }
+}
+
 Ref: user_stock.user_id > user.user_id 
-Ref: stock_transaction.user_id > user.user_id
-Ref: user_stock.stock_id > stock.stock_id 
-Ref: stock_transaction.stock_id > stock.stock_id 

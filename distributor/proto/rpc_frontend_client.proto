@@ -1,0 +1,33 @@
+syntax = "proto3";
+import "frontend_client.proto";
+package pb;
+
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-distributor/pb";
+
+message CreateFrontendClientRequest{
+    string region=1;
+}
+
+message CreateFrontendClientResponse{
+    FrontendClient data=1;
+}
+
+message DeleteFrontendClientRequest{
+    string client_id=1;
+}
+
+message DeleteFrontendClientResponse{
+    string result=1;
+}
+
+
+message GetFrontendClientByIPRequest{
+
+}
+
+message GetFrontendClientByIPResponse{
+    FrontendClient data=1;
+}
+
+

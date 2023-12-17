@@ -1,0 +1,58 @@
+syntax = "proto3";
+package pb;
+
+option go_package = "github.com/RoyceAzure/go-stockinfo/shared/pb";
+
+message TransationRequest{
+    string stock_code = 1;
+    string transation_type = 2;
+    int32 trans_amt = 3;
+}
+message TransationResponse{
+string result=1;
+}
+
+message GetTransationsRequest{
+    int32 page_size=1;
+    int32 page=2;
+    int64 user_id=3;
+}
+
+message GetransationsResponse{
+    string transation_id=1;
+    int64 user_id=2;
+    int64 stock_id = 3;
+    string stock_code =4;
+    string stock_name=5;
+    string transation_type = 6;
+    int64 trans_amt = 7;
+    string trans_prices_per_share=8;
+    string result=9;
+    string msg=10;
+}
+
+
+message GetAllStockTransationRequest{
+    int64 user_id=1;
+    int64 stock_id=2;
+    string transation_type=3;
+    int32 page=4;
+    int32 page_size = 5;
+}
+
+message StockTransatsionResponse{
+repeated GetransationsResponse data=1;
+}
+
+message GetAllStockTransatioBySidRequest{
+    int64 stock_id=1;
+    int32 page=2;
+    int32 page_size = 3;
+}
+
+message GetAllStockTransatioByUidRequest{
+    int64 user_id=1;
+    int32 page=2;
+    int32 page_size = 3;
+}
+

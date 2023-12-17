@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+import "rpc_client_register.proto";
+import "rpc_frontend_client.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+package pb;
+
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/pb";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+      title: "stcok Info distributor API";
+      version: "1.0";
+      contact: {
+        name: "stcok_info project";
+        url: "https://github.com/RoyceAzure/go_stock";
+        email: "roycewnag@gmail.com";
+      };
+    };
+};
+    
+service StockInfoDistributor{
+    rpc CreateClientRegister (CreateClientRegisterRequest) returns (CreateClientRegisterResponse){
+        option (google.api.http) = {
+            post: "/v1/client_register"
+            body:"*"
+            };
+            option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+              description: "Use this API to create client register";
+              summary: "Create client register";
+            };
+    }
+
+    rpc DeleteClientRegister (DeleteClientRegisterRequest) returns (DeleteClientRegisterResponse){
+      option (google.api.http) = {
+          delete: "/v1/client_register"
+          };
+          option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Use this API to delete client register";
+            summary: "Delete client register";
+          };
+  }
+
+  rpc GetClientRegisterByClientUID (GetClientRegisterByClientUIDRequest) returns (GetClientRegisterResponse){
+    option (google.api.http) = {
+        get: "/v1/client_register/{client_id}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          description: "Use this API to get client register by id";
+          summary: "get client register by id";
+        };
+}
+
+rpc CreateFrontendClient (CreateFrontendClientRequest) returns (CreateFrontendClientResponse){
+  option (google.api.http) = {
+      post: "/v1/frontend_client"
+      body:"*"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to create frontend client";
+        summary: "create frontend client";
+      };
+}
+
+rpc DeleteFrontendClient (DeleteFrontendClientRequest) returns (DeleteFrontendClientResponse){
+  option (google.api.http) = {
+      delete: "/v1/frontend_client/{client_id}"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to delete frontend client";
+        summary: "delete frontend client";
+      };
+}
+
+rpc GetFrontendClientByIP (GetFrontendClientByIPRequest) returns (GetFrontendClientByIPResponse){
+  option (google.api.http) = {
+      get: "/v1/frontend_client/ip"
+      };
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+        description: "Use this API to  get frontend client";
+        summary: "get frontend client";
+      };
+}
+}

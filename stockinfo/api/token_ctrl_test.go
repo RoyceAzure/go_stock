@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	mockdb "github.com/RoyceAzure/go-stockinfo/project/db/mock"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	mockdb "github.com/RoyceAzure/go-stockinfo/repository/db/mock"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )

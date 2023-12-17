@@ -3,7 +3,7 @@ import "google/protobuf/timestamp.proto";
 package pb;
 
 
-option go_package = "github.com/RoyceAzure/go-stockinfo-broker/pb";
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
 
 message StockDayAvg{
     string stock_code = 1;

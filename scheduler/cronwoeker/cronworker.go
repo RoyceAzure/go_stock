@@ -29,7 +29,7 @@ func NewSchdulerWorker(service service.Service) *schdulerCronWorker {
 }
 
 func (cornWorker *schdulerCronWorker) SetUpSchdulerWorker(ctx context.Context) {
-	// cornWorker.Cron.CronWithSeconds("*/5 * * * * *").Do(cornWorker.service.DownloadAndInsertDataSVAA, ctx)
+	cornWorker.Cron.CronWithSeconds("0 0 0 * * *").Do(cornWorker.service.DownloadAndInsertDataSVAA, ctx)
 	cornWorker.Cron.CronWithSeconds("*/5 * * * * *").Do(cornWorker.service.RedisSyncStockPriceRealTime, ctx)
 }
 

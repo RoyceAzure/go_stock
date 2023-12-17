@@ -1,0 +1,1 @@
+ALTER TABLE "stock_transaction" DROP COLUMN msg;

@@ -1,0 +1,1 @@
+ALTER TABLE "stock_transaction" ADD COLUMN  msg varchar NULL DEFAULT '';

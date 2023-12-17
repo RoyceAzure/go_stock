@@ -7,8 +7,8 @@ import (
 	"os"
 
 	repository "github.com/RoyceAzure/go-stockinfo-logger/repository/mongodb"
-	"github.com/RoyceAzure/go-stockinfo-logger/shared/util/config"
 	"github.com/rs/zerolog"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var Logger zerolog.Logger
@@ -17,12 +17,12 @@ type MongoLogger struct {
 	mongoDao repository.IMongoDao
 }
 
-func SetUpMutiMongoLogger(mongoLogger *MongoLogger) error {
+func SetUpMutiMongoLogger(mongoLogger *MongoLogger, serviceId string) error {
 	if mongoLogger == nil {
 		return fmt.Errorf("mongo logger is not init")
 	}
 	multiLogger := zerolog.MultiLevelWriter(zerolog.ConsoleWriter{Out: os.Stdout}, mongoLogger)
-	Logger = zerolog.New(multiLogger).With().Timestamp().Logger()
+	Logger = zerolog.New(multiLogger).With().Str("service_name", serviceId).Timestamp().Logger()
 	return nil
 }
 
@@ -39,16 +39,12 @@ func (mw *MongoLogger) Write(p []byte) (n int, err error) {
 		return 0, fmt.Errorf("mongo logger is not init")
 	}
 
-	var logentry repository.LogEntry
-
-	err = json.Unmarshal(p, &logentry)
+	var logEntry bson.M
+	err = json.Unmarshal(p, &logEntry)
 	if err != nil {
 		return 0, err
 	}
-
-	logentry.ServiceName = config.AppConfig.ServiceID
-
-	err = mw.mongoDao.Insert(context.Background(), logentry)
+	err = mw.mongoDao.InsertBsonM(context.Background(), logEntry)
 	if err != nil {
 		return 0, err
 	}

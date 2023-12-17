@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo/api/token"
-	"github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	"github.com/RoyceAzure/go-stockinfo/worker"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"

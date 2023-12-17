@@ -12,6 +12,12 @@ type TaskDistributor interface {
 		payload *PayloadSendVerifyEmail,
 		opts ...asynq.Option,
 	) error
+
+	DistributeTaskStockTransation(
+		ctx context.Context,
+		payload *PayloadTransation,
+		opts ...asynq.Option,
+	) error
 }
 
 /*

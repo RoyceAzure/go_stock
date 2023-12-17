@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -33,7 +33,7 @@ func (processer RedisTaskProcessor) ProcessTaskBatchUpdateStock(ctx context.Cont
 	var successCouunt int
 	for _, payload := range payloads {
 		successData, err := processer.store.UpdateStockCPByCode(ctx, db.UpdateStockCPByCodeParams{
-			CurrentPrice: utility.StringToSqlNiStr(payload.CurrentPrice),
+			CurrentPrice: util.StringToSqlNiStr(payload.CurrentPrice),
 			StockCode:    payload.StockCode,
 		})
 		if err != nil {

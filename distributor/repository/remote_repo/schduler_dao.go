@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb/stock_info_scheduler"
+	pb "github.com/RoyceAzure/go-stockinfo-distributor/shared/pb"
 	"google.golang.org/grpc"
 )
 

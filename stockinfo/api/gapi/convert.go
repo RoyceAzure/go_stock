@@ -1,8 +1,8 @@
 package gapi
 
 import (
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

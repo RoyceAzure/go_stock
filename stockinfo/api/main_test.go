@@ -5,16 +5,16 @@ import (
 	"testing"
 	"time"
 
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
 
 func newTestServer(t *testing.T, store db.Store) *Server {
 	config := config.Config{
-		TokenSymmetricKey:    utility.RandomString(32),
+		TokenSymmetricKey:    util.RandomString(32),
 		AccessTokenDuration:  time.Minute,
 		RefreshTokenDuration: time.Hour,
 	}

@@ -6,14 +6,18 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	api "github.com/RoyceAzure/go-stockinfo/api"
 	"github.com/RoyceAzure/go-stockinfo/api/gapi"
-	"github.com/RoyceAzure/go-stockinfo/api/pb"
 	_ "github.com/RoyceAzure/go-stockinfo/doc/statik"
-	db "github.com/RoyceAzure/go-stockinfo/project/db/sqlc"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/config"
-	"github.com/RoyceAzure/go-stockinfo/shared/utility/mail"
+	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
+	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
+	remote_repo "github.com/RoyceAzure/go-stockinfo/repository/remote_repo"
+	"github.com/RoyceAzure/go-stockinfo/service"
+	"github.com/RoyceAzure/go-stockinfo/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/config"
+	"github.com/RoyceAzure/go-stockinfo/shared/util/mail"
 	worker "github.com/RoyceAzure/go-stockinfo/worker"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4"
@@ -31,6 +35,7 @@ import (
 )
 
 func main() {
+	zerolog.TimeFieldFormat = time.RFC3339
 	config, err := config.LoadConfig(".") //表示讀取當前資料夾
 	if err != nil {
 		log.Fatal().
@@ -54,9 +59,26 @@ func main() {
 		Addr: config.RedisQueueAddress,
 	}
 
+	//set up mongo logger
+	redisClient := asynq.NewClient(redisOpt)
+	loggerDis := logger.NewLoggerDistributor(redisClient)
+	err = logger.SetUpLoggerDistributor(loggerDis, config.ServiceID)
+	if err != nil {
+		log.Fatal().Err(err).Msg("err create db connect")
+	}
+
+	schdulerDao, err := remote_repo.NewJSchdulerInfoDao(config.GRPCSchedulerAddress)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("cannot connect to db:")
+	}
+
+	service := service.NewTransferService(store, schdulerDao)
+
 	//因為qsynq.client 是concurrent
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(config, redisOpt, store)
+	go runTaskProcessor(config, redisOpt, store, service)
 	// runGinServer(config, store)
 	clientFactory := gapi.NewGRPCSchedulerClientFactory(&config)
 	go runGRPCGatewayServer(config, store, taskDistributor, clientFactory)
@@ -86,6 +108,8 @@ func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker
 			Err(err).
 			Msg("cannot start server")
 	}
+
+	go server.InitStock(context.Background(), &pb.InitStockRequest{})
 	/*
 		使用 pb.RegisterStockInfoServer 函數註冊了先前創建的伺服器實例，使其能夠處理 StockInfoServer 接口的 RPC 請求。
 	*/
@@ -234,9 +258,9 @@ func runDBMigration(migrationURL string, dbSource string) {
 	log.Info().Msgf("db migrate successfully")
 }
 
-func runTaskProcessor(configs config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+func runTaskProcessor(configs config.Config, redisOpt asynq.RedisClientOpt, store db.Store, stockTranService service.ITransferService) {
 	mailer := mail.NewGmailSender(configs.EmailSenderName, configs.EmailSenderAddress, configs.EmailSenderPassword)
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer, stockTranService)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {
