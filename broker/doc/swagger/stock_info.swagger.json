@@ -14,6 +14,9 @@
       "name": "StockInfo"
     },
     {
+      "name": "StockInfoDistributor"
+    },
+    {
       "name": "StockInfoSchduler"
     }
   ],
@@ -24,6 +27,198 @@
     "application/json"
   ],
   "paths": {
+    "/v1/client_register": {
+      "delete": {
+        "summary": "Delete client register",
+        "description": "Use this API to delete client register",
+        "operationId": "StockInfoDistributor_DeleteClientRegister",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteClientRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "stockCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      },
+      "post": {
+        "summary": "Create client register",
+        "description": "Use this API to create client register",
+        "operationId": "StockInfoDistributor_CreateClientRegister",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateClientRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateClientRegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      }
+    },
+    "/v1/client_register/{clientId}": {
+      "get": {
+        "summary": "get client register by id",
+        "description": "Use this API to get client register by id",
+        "operationId": "StockInfoDistributor_GetClientRegisterByClientUID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetClientRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      }
+    },
+    "/v1/frontend_client": {
+      "post": {
+        "summary": "create frontend client",
+        "description": "Use this API to create frontend client",
+        "operationId": "StockInfoDistributor_CreateFrontendClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateFrontendClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateFrontendClientRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      }
+    },
+    "/v1/frontend_client/ip": {
+      "get": {
+        "summary": "get frontend client",
+        "description": "Use this API to  get frontend client",
+        "operationId": "StockInfoDistributor_GetFrontendClientByIP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetFrontendClientByIPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      }
+    },
+    "/v1/frontend_client/{clientId}": {
+      "delete": {
+        "summary": "delete frontend client",
+        "description": "Use this API to delete frontend client",
+        "operationId": "StockInfoDistributor_DeleteFrontendClient",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDeleteFrontendClientResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StockInfoDistributor"
+        ]
+      }
+    },
     "/v1/fund": {
       "get": {
         "summary": "Get fund",
@@ -670,6 +865,67 @@
         }
       }
     },
+    "pbClientRegister": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "stockCode": {
+          "type": "string"
+        },
+        "createAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updateAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbCreateClientRegisterRequest": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "stockCode": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateClientRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "stockCode": {
+          "type": "string"
+        },
+        "createAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbCreateFrontendClientRequest": {
+      "type": "object",
+      "properties": {
+        "region": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateFrontendClientResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbFrontendClient"
+        }
+      }
+    },
     "pbCreateUserRequest": {
       "type": "object",
       "properties": {
@@ -692,6 +948,40 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/pbUser"
+        }
+      }
+    },
+    "pbDeleteClientRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        }
+      }
+    },
+    "pbDeleteFrontendClientResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string"
+        }
+      }
+    },
+    "pbFrontendClient": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "createAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -718,6 +1008,26 @@
         "crDate": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "pbGetClientRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbClientRegister"
+          }
+        }
+      }
+    },
+    "pbGetFrontendClientByIPResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbFrontendClient"
         }
       }
     },
