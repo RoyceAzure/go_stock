@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-info-api-depolyment
+  labels:
+    app: stock-info-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-info-api
+  template:
+    metadata:
+      labels:
+        app: stock-info-api
+    spec:
+      containers:
+      - name: stock-info-api
+        image: royceazure/stockinfo:project7-stockinfo
+        #k8s 永遠抓最新的imgage
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        - containerPort: 9091
+        env:
+          - name: DB_SOURCE
+            value:  "postgres://royce:royce@postgres:5432/stock_info?sslmode=disable"
+          - name: REDIS_ADDRESS
+            value:  "redis-asynq-service:6379"
+          - name: SERVICEID
+            value:  "stockinfo01"
+          - name: GRPC_SCHEDULER_ADDRESS
+            value:  "scheduler-api-service:9092"
+        command: ["/app/main"]
+      imagePullSecrets:
+      - name: stockinfo

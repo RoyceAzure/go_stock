@@ -113,11 +113,8 @@ func runGRPCServer(configs config.Config, store db.Store, taskDistributor worker
 	/*
 		使用 pb.RegisterStockInfoServer 函數註冊了先前創建的伺服器實例，使其能夠處理 StockInfoServer 接口的 RPC 請求。
 	*/
-
-	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
-
 	//NewServer 可以接收多個grpc.ServerOption  而上面的Interceptor 就是一個grpc.ServerOption
-	grpcServer := grpc.NewServer(grpcLogger)
+	grpcServer := grpc.NewServer()
 	/*
 		gRPC 中，一個 grpc.Server 可以註冊多個服務接口。
 		每個服務接口通常對應於 .proto 文件中定義的一個 service。這允許單個 gRPC 伺服器同時提供多個服務，而不需要啟動多個伺服器實例。
@@ -230,11 +227,8 @@ func runGRPCGatewayServer(configs config.Config, store db.Store, taskDistributor
 	}
 	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
 
-	//
-	handler := gapi.HttpLogger(mux)
-
 	// 啟動HTTP伺服器
-	err = http.Serve(listener, handler)
+	err = http.Serve(listener, mux)
 	if err != nil {
 		log.Fatal().
 			Err(err).

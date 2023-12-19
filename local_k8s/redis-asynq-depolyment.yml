@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-asynq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-asynq
+  template:
+    metadata:
+      labels:
+        app: redis-asynq
+    spec:
+      containers:
+      - name: redis-asynq
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379

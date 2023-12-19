@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distributor
+spec:
+  replicas: 1  # 根据需要调整副本数量
+  selector:
+    matchLabels:
+      app: distributor
+  template:
+    metadata:
+      labels:
+        app: distributor
+    spec:
+      containers:
+        - name: distributor
+          image: royceazure/stockinfo:project7-distributor
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8083
+            - containerPort: 9093
+          env:
+            - name: DB_SOURCE
+              value: "postgres://royce:royce@postgres:5432/stock_info_distributor?sslmode=disable"
+            - name: GRPC_SCHEDULER_ADDRESS
+              value: "scheduler-api-service:9092"
+            - name: KAFKA_DISTRIBUTOR_ADDRESS
+              value: "kafka-service:9092"
+            - name: REDIS_Q_ADDRESS
+              value: "redis-asynq-service:6379"
+            - name: SERVICEID
+              value: "distributor01"
+          command: ["/app/main"]
+      imagePullSecrets:
+        - name: stockinfo

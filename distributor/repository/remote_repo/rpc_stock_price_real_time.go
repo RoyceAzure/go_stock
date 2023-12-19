@@ -20,7 +20,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 		return SprData{}, ctx.Err() // ctx.Err() 将是 context.DeadlineExceeded 如果超时
 	default:
 		// 正常处理请求
-		logger.Logger.Info().Msg("start get stock price realtime")
+		logger.Logger.Trace().Msg("start get stock price realtime")
 		now := time.Now().UTC()
 		if now.Sub(dao.preSprTime) >= SPR_SAVED_DUR {
 			res, err := dao.client.GetStockPriceRealTime(ctx, &pb.StockPriceRealTimeRequest{})
@@ -28,7 +28,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 				sprData := cvSprRes2SprData(res)
 				dao.SetSprData(ctx, sprData)
 				dao.preSprTime = now
-				logger.Logger.Info().Msg("end get stock price realtime")
+				logger.Logger.Trace().Msg("end get stock price realtime from remote dao")
 				return sprData, nil
 			}
 		}
@@ -36,7 +36,7 @@ func (dao *JSchdulerInfoDao) GetStockPriceRealTime(ctx context.Context) (SprData
 		if sprData.DataTime == "" {
 			return SprData{}, fmt.Errorf("get stock price real time get err")
 		}
-		logger.Logger.Info().Msg("end get stock price realtime")
+		logger.Logger.Trace().Msg("end get stock price realtime from cache")
 		return sprData, nil
 	}
 }

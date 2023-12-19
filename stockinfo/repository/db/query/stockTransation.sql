@@ -47,7 +47,7 @@ WHERE
     stock_transaction.user_id =  COALESCE(sqlc.narg(user_id), stock_transaction.user_id)
     AND stock_transaction.stock_id = COALESCE(sqlc.narg(stock_id), stock_transaction.stock_id)
     AND stock_transaction.transaction_type = COALESCE(sqlc.narg(transaction_type), stock_transaction.transaction_type)
-ORDER BY "transation_id"
+ORDER BY stock_transaction.cr_date
 LIMIT sqlc.arg(limits)
 OFFSET sqlc.arg(offsets);
 
