@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo-broker/shared/util"
 )
 
 func (distributorDao *DistributorDao) CreateClientRegister(ctx context.Context, req *pb.CreateClientRegisterRequest) (*pb.CreateClientRegisterResponse, error) {
-	res, err := distributorDao.client.CreateClientRegister(ctx, req)
+	newCtx := util.NewOutGoingMetaData(ctx, "")
+	res, err := distributorDao.client.CreateClientRegister(newCtx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -15,7 +17,8 @@ func (distributorDao *DistributorDao) CreateClientRegister(ctx context.Context, 
 }
 
 func (distributorDao *DistributorDao) DeleteClientRegister(ctx context.Context, req *pb.DeleteClientRegisterRequest) (*pb.DeleteClientRegisterResponse, error) {
-	res, err := distributorDao.client.DeleteClientRegister(ctx, req)
+	newCtx := util.NewOutGoingMetaData(ctx, "")
+	res, err := distributorDao.client.DeleteClientRegister(newCtx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +26,8 @@ func (distributorDao *DistributorDao) DeleteClientRegister(ctx context.Context, 
 }
 
 func (distributorDao *DistributorDao) GetClientRegisterByClientUID(ctx context.Context, req *pb.GetClientRegisterByClientUIDRequest) (*pb.GetClientRegisterResponse, error) {
-	res, err := distributorDao.client.GetClientRegisterByClientUID(ctx, req)
+	newCtx := util.NewOutGoingMetaData(ctx, "")
+	res, err := distributorDao.client.GetClientRegisterByClientUID(newCtx, req)
 	if err != nil {
 		return nil, err
 	}

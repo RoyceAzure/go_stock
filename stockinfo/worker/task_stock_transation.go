@@ -8,6 +8,7 @@ import (
 
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
 	"github.com/RoyceAzure/go-stockinfo/service"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -30,6 +31,7 @@ func (processer *RedisTaskProcessor) ProcessTaskStockTransfer(
 	task *asynq.Task,
 ) error {
 	var payload PayloadTransation
+	md := util.ExtractMetaData(ctx)
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		return fmt.Errorf("failed to unmarshal task payload %w", asynq.SkipRetry)
 	}
@@ -42,14 +44,25 @@ func (processer *RedisTaskProcessor) ProcessTaskStockTransfer(
 	err := processer.stockTranService.StockTransfer(ctx, arg)
 	if err != nil {
 		if errors.Is(err, constants.ErrInValidatePreConditionOp) || errors.Is(err, constants.ErrInvalidArgument) {
-			logger.Logger.Warn().Err(err).Msg("task stock transfer get err")
+			logger.Logger.Warn().Err(err).
+				Str("type", task.Type()).
+				Str("transation_id", payload.TransationID.String()).
+				Any("meta", md).
+				Msg("task stock transfer get err")
 			return fmt.Errorf("failed to process task stock transfer %w", asynq.SkipRetry)
 		}
-		logger.Logger.Error().Err(err).Msg("task stock transfer get internal err")
+		logger.Logger.Error().
+			Err(err).
+			Str("type", task.Type()).
+			Str("transation_id", payload.TransationID.String()).
+			Any("meta", md).
+			Msg("task stock transfer get internal err")
 		return fmt.Errorf("failed to process task stock transfer")
 	}
-	logger.Logger.Info().Str("type", task.Type()).
+	logger.Logger.Info().
+		Str("type", task.Type()).
 		Str("transation_id", payload.TransationID.String()).
+		Any("meta", md).
 		Msg("processed task successed")
 	return nil
 }

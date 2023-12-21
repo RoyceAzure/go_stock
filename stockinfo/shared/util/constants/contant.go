@@ -6,19 +6,22 @@ type SSOType string
 type CurrencyType string
 
 const (
-	ForeignKeyViolation              = "foreign_key_violation"
-	UniqueViolation                  = "unique_violation"
-	MS                  SSOType      = "MS"
-	GOOGLE              SSOType      = "GOOGLE"
-	FB                  SSOType      = "FB"
-	AWS                 SSOType      = "AWS"
-	USD                 CurrencyType = "USD"
-	TW                  CurrencyType = "TW"
-	EU                  CurrencyType = "EU"
-	DEFAULT_PAGE                     = 1
-	DEFAULT_PAGE_SIZE                = 10
-	SELL                             = "sell"
-	BUY                              = "buy"
+	ForeignKeyViolation                  = "foreign_key_violation"
+	UniqueViolation                      = "unique_violation"
+	MS                      SSOType      = "MS"
+	GOOGLE                  SSOType      = "GOOGLE"
+	FB                      SSOType      = "FB"
+	AWS                     SSOType      = "AWS"
+	USD                     CurrencyType = "USD"
+	TW                      CurrencyType = "TW"
+	EU                      CurrencyType = "EU"
+	DEFAULT_PAGE                         = 1
+	DEFAULT_PAGE_SIZE                    = 10
+	SELL                                 = "sell"
+	BUY                                  = "buy"
+	AuthorizationHeaderKey               = "authorization"
+	AuthorizationTypeBearer              = "bearer"
+	AuthorizationPayloadKey              = "authorization_payload"
 )
 
 var (

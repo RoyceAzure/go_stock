@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
+	"github.com/RoyceAzure/go-stockinfo-broker/shared/util"
 )
 
 func (schedulerDao *SchedulerDao) GetStockDayAvg(ctx context.Context, req *pb.StockDayAvgRequest) (*pb.StockDayAvgResponse, error) {
-	res, err := schedulerDao.client.GetStockDayAvg(ctx, req)
+	newCtx := util.NewOutGoingMetaData(ctx, "")
+	res, err := schedulerDao.client.GetStockDayAvg(newCtx, req)
 	if err != nil {
 		return nil, err
 	}

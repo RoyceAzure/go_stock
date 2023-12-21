@@ -20,9 +20,6 @@ func GrpcLogger(ctx context.Context,
 	startTime := time.Now()
 	log := logger.Logger.Info()
 
-	var reqID string
-	reqID, _ = ctx.Value(util.RequestIDKey).(string)
-
 	result, err := handler(ctx, req)
 	duration := time.Since(startTime)
 
@@ -38,10 +35,8 @@ func GrpcLogger(ctx context.Context,
 	mtda := util.ExtractMetaData(ctx)
 
 	log.Str("protocol", "grpc").
-		Str("req_id", reqID).
 		Str("method", info.FullMethod).
-		Str("user_ageent", mtda.UserAgent).
-		Str("ip", mtda.ClientIP).
+		Any("meta", mtda).
 		Int("status_code", int(statusCode)).
 		Str("status_text", statusCode.String()).
 		Dur("duration", duration).

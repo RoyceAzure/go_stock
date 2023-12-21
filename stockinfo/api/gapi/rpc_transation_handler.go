@@ -95,8 +95,9 @@ func (server *Server) TransationStock(ctx context.Context, req *pb.TransationReq
 		asynq.ProcessIn(10 * time.Second),
 		asynq.Queue(worker.MailQueue),
 	}
+	newCtx := util.NewOutGoingMetaData(ctx, "")
 
-	err = server.taskDistributor.DistributeTaskStockTransation(ctx, &worker.PayloadTransation{
+	err = server.taskDistributor.DistributeTaskStockTransation(newCtx, &worker.PayloadTransation{
 		TransationID: stockTrans.TransationID,
 		Operator:     payload.UPN,
 	}, opts...)

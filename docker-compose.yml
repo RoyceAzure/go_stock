@@ -45,7 +45,9 @@ services:
       - redis-asynq
 
   stockinfo:
-    image: royceazure/stockinfo:project7-stockinfo
+    build:
+      context: ./stockinfo
+      dockerfile: Dockerfile.stockinfo
     ports:
       - "8081:8081"
       - "9091:9091"
@@ -62,7 +64,9 @@ services:
     command: ["/app/main"]
 
   scheduler:
-    image: royceazure/stockinfo:project7-scheduler
+    build:
+      context: ./scheduler
+      dockerfile: Dockerfile.scheduler
     ports:
       - "8082:8082"
       - "9092:9092"
@@ -78,7 +82,9 @@ services:
     command: ["/app/main"]
 
   distributor:
-    image: royceazure/stockinfo:project7-distributor
+    build:
+      context: ./distributor
+      dockerfile: Dockerfile.distributor
     ports:
       - "8083:8083"
       - "9093:9093"
@@ -96,7 +102,9 @@ services:
 
 
   broker:
-    image: royceazure/stockinfo:project7-broker
+    build:
+      context: ./broker
+      dockerfile: Dockerfile.broker
     ports:
       - "8080:8080"
       - "9090:9090"
@@ -116,7 +124,9 @@ services:
 
 
   logger:
-    image: royceazure/stockinfo:project7-logger
+    build:
+      context: ./logger
+      dockerfile: Dockerfile.logger
     environment:
       - MONGODB_ADDRESS=mongodb://mongo:27017
       - REDIS_Q_ADDRESS=redis-asynq:6379
