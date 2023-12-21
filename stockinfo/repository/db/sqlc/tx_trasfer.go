@@ -59,13 +59,15 @@ stock, userstock, fund 都會鎖
 */
 func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxParams) (TransferStockTxResults, error) {
 	var result TransferStockTxResults
-
+	md := util.ExtractMetaData(ctx)
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 		isHasUserStock := true
 		stockTrans, err := q.GetStockTransaction(ctx, arg.TransationID)
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("get stock transation failed")
+			logger.Logger.Error().Err(err).
+				Str("req_id", md.RequestId).
+				Msg("get stock transation failed")
 			return util.InternalError(err)
 		}
 
@@ -74,13 +76,16 @@ func (store *SQLStore) TransferStockTx(ctx context.Context, arg TransferStockTxP
 			TransationID: arg.TransationID,
 		})
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("update stock transation failed")
+			logger.Logger.Error().Err(err).
+				Str("req_id", md.RequestId).
+				Msg("update stock transation failed")
 			return util.InternalError(err)
 		}
 
 		currentPerPrice, err := decimal.NewFromString(stockTrans.TransationPricePerShare)
 		if err != nil {
-			logger.Logger.Error().Err(err).Msg("convert per price failed")
+			logger.Logger.Error().Err(err).
+				Msg("convert per price failed")
 			return util.InternalError(err)
 		}
 

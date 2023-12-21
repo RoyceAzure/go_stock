@@ -2,10 +2,11 @@ package util
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
-
 )
 
 type contextKey string
@@ -18,9 +19,9 @@ const (
 )
 
 type MetaData struct {
-	UserAgent string
-	ClientIP  string
-	RequestId string
+	UserAgent string `json:"user_agent"`
+	ClientIP  string `json:"client_ip"`
+	RequestId string `json:"request_id"`
 }
 
 func ExtractMetaData(ctx context.Context) *MetaData {
@@ -46,4 +47,15 @@ func ExtractMetaData(ctx context.Context) *MetaData {
 		}
 	}
 	return mtda
+}
+
+func NewOutGoingMetaData(ctx context.Context, accessToken string) context.Context {
+	orimd := ExtractMetaData(ctx)
+	md := metadata.New(map[string]string{
+		string(RequestIDKey): orimd.RequestId,
+	})
+	if accessToken != "" {
+		md[constants.AuthorizationHeaderKey] = []string{fmt.Sprintf("%s %s", constants.AuthorizationTypeBearer, accessToken)}
+	}
+	return metadata.NewOutgoingContext(ctx, md)
 }

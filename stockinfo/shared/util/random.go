@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/RoyceAzure/go-stockinfo/shared/util/constants"
-
 )
 
-const alphabet string = "abcdefghijklmnopqrstuvwxyz"
+const (
+	alphabet string = "abcdefghijklmnopqrstuvwxyz"
+	integer  string = "1234567890"
+)
 
 var TransactionType = [2]string{"Buy", "Sell"}
 
@@ -63,4 +65,28 @@ func RandomString(n int) string {
 
 func RandomStrInt(n int) string {
 	return fmt.Sprintf("%d", rand.Intn(n))
+}
+
+func RandomFloatString(n int, point int) string {
+	var sb strings.Builder
+	k := len(integer)
+	for i := 0; i < n; i++ {
+		c := integer[rand.Intn(k)]
+		if i == 0 && c == '0' {
+			i--
+			continue
+		}
+		sb.WriteByte(c)
+	}
+	segma := byte('.')
+	sb.WriteByte(segma)
+	for i := 0; i < point; i++ {
+		c := integer[rand.Intn(k)]
+		if i == 0 && c == '0' {
+			i--
+			continue
+		}
+		sb.WriteByte(c)
+	}
+	return sb.String()
 }

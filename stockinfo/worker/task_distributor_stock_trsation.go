@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/hibiken/asynq"
 )
 
@@ -19,8 +20,13 @@ func (distributor *RedisTaskDistributor) DistributeTaskStockTransation(
 	payload *PayloadTransation,
 	opts ...asynq.Option,
 ) error {
+	md := util.ExtractMetaData(ctx)
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		logger.Logger.Error().
+			Err(err).
+			Any("meta", md).
+			Msg("enqueued task failed")
 		return fmt.Errorf("failed to marshal task payload %w", err)
 	}
 
@@ -28,11 +34,20 @@ func (distributor *RedisTaskDistributor) DistributeTaskStockTransation(
 	task := asynq.NewTask(TaskStockTransation, jsonData, opts...)
 	taskInfo, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {
+		logger.Logger.Error().
+			Err(err).
+			Str("type", task.Type()).
+			Any("meta", md).
+			Bytes("body", task.Payload()).
+			Str("queue", taskInfo.Queue).
+			Int("max_retry", taskInfo.MaxRetry).
+			Msg("enqueued task")
 		return fmt.Errorf("failed to enqueue task %w", err)
 	}
 
 	logger.Logger.Info().
 		Str("type", task.Type()).
+		Any("meta", md).
 		Bytes("body", task.Payload()).
 		Str("queue", taskInfo.Queue).
 		Int("max_retry", taskInfo.MaxRetry).

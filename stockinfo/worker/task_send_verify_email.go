@@ -7,6 +7,7 @@ import (
 
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	logger "github.com/RoyceAzure/go-stockinfo/repository/logger_distributor"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	utility "github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/hibiken/asynq"
 )
@@ -28,8 +29,13 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	payload *PayloadSendVerifyEmail,
 	opts ...asynq.Option,
 ) error {
+	md := util.ExtractMetaData(ctx)
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		logger.Logger.Error().
+			Err(err).
+			Any("meta", md).
+			Msg("enqueued task failed")
 		return fmt.Errorf("failed to marshal task payload %w", err)
 	}
 
@@ -37,6 +43,14 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	task := asynq.NewTask(TaskSendVerifyEmail, jsonData, opts...)
 	taskInfo, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {
+		logger.Logger.Error().
+			Err(err).
+			Str("type", task.Type()).
+			Any("meta", md).
+			Bytes("body", task.Payload()).
+			Str("queue", taskInfo.Queue).
+			Int("max_retry", taskInfo.MaxRetry).
+			Msg("enqueued task")
 		return fmt.Errorf("failed to enqueue task %w", err)
 	}
 
@@ -61,6 +75,7 @@ err == sql.ErrNORows 有可能是db 還沒有完成commit，所以就讓他retry
 */
 func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var payload PayloadSendVerifyEmail
+	md := util.ExtractMetaData(ctx)
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		return fmt.Errorf("failed to unmarshal task payload %w", asynq.SkipRetry)
 	}
@@ -100,6 +115,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 
 	logger.Logger.Info().Str("type", task.Type()).
 		Bytes("task payload", task.Payload()).
+		Any("meta", md).
 		Str("user email", user.Email).
 		Msg("porcessed task")
 	return nil

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/RoyceAzure/go-stockinfo-scheduler/util"
+	"github.com/RoyceAzure/go-stockinfo/shared/util"
 	"github.com/stretchr/testify/require"
 )
 
