@@ -1,0 +1,96 @@
+# This is a basic workflow to help you get started with Actions
+#docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+name: Depoly images to docker hub
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "master"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-and-push-stockinfo:
+    name: Build stockinfo image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check code
+        uses: actions/checkout@v3
+
+      - name: List files in the directory
+        run: ls -la
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build, tag, and push docker stockinfo image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: stockinfo
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker scheduler image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: scheduler
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker distributor image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: distributor
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+        
+      - name: Build, tag, and push docker logger image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: logger
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker broker image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: broker
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker postgres image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: postgres
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f Dockerfile.$PROJECT_NAME .
+          docker push -a $REGISTRY/$REPOSITORY

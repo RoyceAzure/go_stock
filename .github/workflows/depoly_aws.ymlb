@@ -1,0 +1,82 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Depoly to production
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "master" ,"ft/k8s"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  depoly:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check code
+        uses: actions/checkout@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.2' # default is latest stable
+        id: install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ap-northeast-1
+
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+
+      # - name: Load secrets and upload env
+      #   run: aws secretsmanager get-secret-value --secret-id stockinfo --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)")|.[]' >app.env
+
+      - name:
+        run: aws eks update-kubeconfig --name stockingo --region ap-northeast-1
+
+      - name: Depoly image to Amazon EKS
+        run: |
+          kubectl apply -f eks/aws-auth.yml
+          kubectl apply -f eks/ingress.yml
+          kubectl apply -f eks/postgres-depolyment.yml
+          kubectl apply -f eks/postgres-service.yml
+          kubectl apply -f eks/mongo-depolyment.yml
+          kubectl apply -f eks/mongo-service.yml
+          kubectl apply -f eks/redis-scheduler-depolyment.yml
+          kubectl apply -f eks/redis-scheduler-service.yml
+          kubectl apply -f eks/redis-asynq-depolyment.yml
+          kubectl apply -f eks/redis-asynq-service.yml
+          kubectl apply -f eks/zookeeper-depolyment.yml
+          kubectl apply -f eks/zookeeper-service.yml
+          kubectl apply -f eks/kafka-depolyment.yml
+          kubectl apply -f eks/kafka-service.yml
+          kubectl apply -f eks/kafkaui-depolyment.yml
+          kubectl apply -f eks/kafkaui-service.yml
+          kubectl apply -f eks/distributor-depolyment.yml
+          kubectl apply -f eks/distributor-service.yml
+          kubectl apply -f eks/scheduler-depolyment.yml
+          kubectl apply -f eks/scheduler-service.yml
+          kubectl apply -f eks/stockinfo-depolyment.yml
+          kubectl apply -f eks/stockinfo-service.yml
+          kubectl apply -f eks/broker-depolyment.yml
+          kubectl apply -f eks/broker-service.yml
+          kubectl apply -f eks/logger-depolyment.yml
+
+
+
+
+
+
+
+
+

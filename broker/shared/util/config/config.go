@@ -18,8 +18,6 @@ func init() {
 type Config struct {
 	ServiceID               string        `mapstructure:"SERVICEID"`
 	Enviornmant             string        `mapstructure:"ENVIRONMENT"`
-	DBDriver                string        `mapstructure:"DB_DRIVER"`
-	DBSource                string        `mapstructure:"DB_SOURCE"`
 	HttpServerAddress       string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GrpcServerAddress       string        `mapstructure:"GRPC_SERVER_ADDRESS"`
 	GrpcSchedulerAddress    string        `mapstructure:"GRPC_SCHEDULER_ADDRESS"`

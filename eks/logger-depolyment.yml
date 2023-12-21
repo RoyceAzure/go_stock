@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-api-depolyment
+  labels:
+    app: logger-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-api
+  template:
+    metadata:
+      labels:
+        app: logger-api
+    spec:
+      containers:
+      - name: logger-api
+        image: royceazure/stockinfo:project7-logger 
+        imagePullPolicy: Always
+        env:
+          - name: MONGODB_ADDRESS
+            value:  "mongodb://mongo-service:27017"
+          - name: REDIS_Q_ADDRESS
+            value:  "redis-asynq-service:6379"
+          - name: SERVICEID
+            value:  "logger01"
+        command: ["/app/main"]
+      imagePullSecrets:
+      - name: stockinfo

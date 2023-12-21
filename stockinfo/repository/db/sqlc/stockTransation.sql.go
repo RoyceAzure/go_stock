@@ -274,7 +274,7 @@ WHERE
     stock_transaction.user_id =  COALESCE($1, stock_transaction.user_id)
     AND stock_transaction.stock_id = COALESCE($2, stock_transaction.stock_id)
     AND stock_transaction.transaction_type = COALESCE($3, stock_transaction.transaction_type)
-ORDER BY "transation_id"
+ORDER BY stock_transaction.cr_date
 LIMIT $5
 OFFSET $4
 `

@@ -1,0 +1,232 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Run unit test
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: royce
+          POSTGRES_USER: royce
+          POSTGRES_DB: stock_info
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      mongo:
+        image: mongo:4.2.16-bionic
+        env:
+          MONGO_INITDB_DATABASE: logs
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check code inbto the go module dir
+        uses: actions/checkout@v3
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.21.3
+        id: go
+
+      - name: Wait for Postgres is ready
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            sleep 1;
+          done
+      
+      - name: Create addional DB
+        run: |
+          psql -h localhost -U royce -d stock_info -c "CREATE DATABASE stock_info_distributor";
+          psql -h localhost -U royce -d stock_info -c "CREATE DATABASE stock_info_scheduler";
+        env:
+          PGPASSWORD: royce
+
+      - name: Install golang migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
+          chmod +x migrate
+          sudo mv migrate /usr/bin/migrate
+          which migrate
+          migrate --version
+
+      - name: Run migrate
+        run: make migrateup
+        
+      - name: Test
+        run: make test
+
+  build-and-push-dockerhub:
+    needs: test
+    name: Build and push image to docker hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check code
+        uses: actions/checkout@v3
+
+      - name: List files in the directory
+        run: ls -la
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build, tag, and push docker stockinfo image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: stockinfo
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker scheduler image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: scheduler
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker distributor image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: distributor
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+        
+      - name: Build, tag, and push docker logger image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: logger
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker broker image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: broker
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f $PROJECT_NAME/Dockerfile.$PROJECT_NAME ./$PROJECT_NAME
+          docker push -a $REGISTRY/$REPOSITORY
+
+      - name: Build, tag, and push docker postgres image to docker hub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPOSITORY: stockinfo
+          # IMAGE_TAG: ${{ github.sha }}
+          PROJECT_PREFIX: project7-
+          PROJECT_NAME: postgres
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$PROJECT_PREFIX$PROJECT_NAME -t latest -f Dockerfile.$PROJECT_NAME .
+          docker push -a $REGISTRY/$REPOSITORY
+
+  depoly:
+    needs: build-and-push-dockerhub
+    name: Depoly to AWS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check code
+        uses: actions/checkout@v3
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.2' # default is latest stable
+        id: install
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ap-northeast-1
+
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+
+      # - name: Load secrets and upload env
+      #   run: aws secretsmanager get-secret-value --secret-id stockinfo --query SecretString --output text | jq -r 'to_entries | map("\(.key)=\(.value)")|.[]' >app.env
+
+      - name:
+        run: aws eks update-kubeconfig --name stockingo --region ap-northeast-1
+
+      - name: Depoly image to Amazon EKS
+        run: |
+          kubectl apply -f eks/aws-auth.yml
+          kubectl apply -f eks/ingress.yml
+          kubectl apply -f eks/postgres-depolyment.yml
+          kubectl apply -f eks/postgres-service.yml
+          kubectl apply -f eks/mongo-depolyment.yml
+          kubectl apply -f eks/mongo-service.yml
+          kubectl apply -f eks/redis-scheduler-depolyment.yml
+          kubectl apply -f eks/redis-scheduler-service.yml
+          kubectl apply -f eks/redis-asynq-depolyment.yml
+          kubectl apply -f eks/redis-asynq-service.yml
+          kubectl apply -f eks/zookeeper-depolyment.yml
+          kubectl apply -f eks/zookeeper-service.yml
+          kubectl apply -f eks/kafka-depolyment.yml
+          kubectl apply -f eks/kafka-service.yml
+          kubectl apply -f eks/kafkaui-depolyment.yml
+          kubectl apply -f eks/kafkaui-service.yml
+          kubectl apply -f eks/distributor-depolyment.yml
+          kubectl apply -f eks/distributor-service.yml
+          kubectl apply -f eks/scheduler-depolyment.yml
+          kubectl apply -f eks/scheduler-service.yml
+          kubectl apply -f eks/stockinfo-depolyment.yml
+          kubectl apply -f eks/stockinfo-service.yml
+          kubectl apply -f eks/broker-depolyment.yml
+          kubectl apply -f eks/broker-service.yml
+          kubectl apply -f eks/logger-depolyment.yml

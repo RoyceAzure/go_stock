@@ -15,7 +15,9 @@ import (
 
 func (server *Server) CreateFrontendClient(ctx context.Context, req *pb.CreateFrontendClientRequest) (*pb.CreateFrontendClientResponse, error) {
 	md := util.ExtractMetaData(ctx)
+	logger.Logger.Warn().Msg(md.ClientIP)
 	if !util.IsValidIP(md.ClientIP) {
+		logger.Logger.Error().Str("ip", md.ClientIP).Msg("get client register get err")
 		return nil, util.InValidateOperation(fmt.Errorf("ip is invalid"))
 	}
 
@@ -66,9 +68,10 @@ func (server *Server) DeleteFrontendClient(ctx context.Context, req *pb.DeleteFr
 
 func (server *Server) GetFrontendClientByIP(ctx context.Context, req *pb.GetFrontendClientByIPRequest) (*pb.GetFrontendClientByIPResponse, error) {
 	md := util.ExtractMetaData(ctx)
+	logger.Logger.Warn().Msg(md.ClientIP)
 	if !util.IsValidIP(md.ClientIP) {
 		err := fmt.Errorf("ip is invalid")
-		logger.Logger.Error().Err(err).Msg("get client register get err")
+		logger.Logger.Error().Err(err).Str("ip", md.ClientIP).Msg("get client register get err")
 		return nil, util.InValidateOperation(err)
 	}
 

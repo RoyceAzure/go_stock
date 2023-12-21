@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker-api-service
+spec:
+#要控制哪個pod
+  selector:
+    app: broker-api
+  ports:
+    - name: http-port
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: grpc-port
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  # type: LoadBalancer
+  type: ClusterIP
+  # externalTrafficPolicy: Local

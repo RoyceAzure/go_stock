@@ -34,7 +34,7 @@ Returns:
 	spr的dto slice
 */
 func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([]dto.StockPriceRealTimeDTO, error) {
-	logger.Logger.Info().Msg("start get filter spr by ip")
+	logger.Logger.Trace().Msg("start get filter spr by ip")
 
 	//get frontend register stock
 	client, err := s.dbDao.GetFrontendClientByIP(ctx, ip)
@@ -96,7 +96,7 @@ func (s *DistributorService) GetFilterSPRByIP(ctx context.Context, ip string) ([
 		res = append(res, item)
 	}
 
-	logger.Logger.Info().Msg("end get filter spr by ip")
+	logger.Logger.Trace().Msg("end get filter spr by ip")
 	return res, nil
 }
 
@@ -120,7 +120,7 @@ func (s *DistributorService) SetPreSuccessedSprtime(ctx context.Context, preSprt
 會對應多個client  取出所有註冊的distinct stock code，撈取對應資料  放入kafka
 */
 func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) error {
-	logger.Logger.Info().Msg("start get filter spr by ip and send to ka")
+	logger.Logger.Trace().Msg("start get filter spr by ip and send to ka")
 	var sprDatas []*pb.StockPriceRealTime
 	var sprTime string
 
@@ -131,7 +131,7 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 	preDataTime := s.GetPreSuccessedSprtime(ctx)
 
 	if preDataTime == sprRes.DataTime {
-		log.Info().Msg("spr already retrives!!")
+		log.Trace().Msg("spr already retrives!!")
 		return nil
 	}
 	sprDatas = sprRes.Data
@@ -198,7 +198,7 @@ func (s *DistributorService) GetAllRegisStockAndSendToKa(ctx context.Context) er
 		s.SetPreSuccessedSprtime(ctx, sprTime)
 	}
 
-	logger.Logger.Info().Msg("end get filter spr by ip and send to ka")
+	logger.Logger.Trace().Msg("end get filter spr by ip and send to ka")
 	return nil
 }
 
