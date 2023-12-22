@@ -34,7 +34,7 @@ spec:
           - name: GRPC_DISTRIBUTOR_ADDRESS
             value:  "distributor-api-service:9093"
         command: ["/app/main"]
-      nodeSelector:
-        group: app
+      # nodeSelector:
+      #   group: app
       imagePullSecrets:
       - name: stockinfo

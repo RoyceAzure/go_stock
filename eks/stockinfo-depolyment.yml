@@ -32,7 +32,5 @@ spec:
           - name: GRPC_SCHEDULER_ADDRESS
             value:  "scheduler-api-service:9092"
         command: ["/app/main"]
-      nodeSelector:
-        group: app
       imagePullSecrets:
       - name: stockinfo

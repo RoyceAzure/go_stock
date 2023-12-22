@@ -56,3 +56,4 @@ WHERE user_id = $1
 AND stock_id = $2
 FOR NO KEY UPDATE;
 
+

@@ -900,8 +900,34 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pbUserStock"
+            "$ref": "#/definitions/pbGetUserStockResponseDTO"
           }
+        }
+      }
+    },
+    "pbGetUserStockResponseDTO": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stockCode": {
+          "type": "string"
+        },
+        "stockName": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "purchasePricePerShare": {
+          "type": "string"
         }
       }
     },

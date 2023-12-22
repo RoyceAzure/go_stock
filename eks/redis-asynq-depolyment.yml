@@ -17,5 +17,5 @@ spec:
         image: redis:7-alpine
         ports:
         - containerPort: 6379
-      nodeSelector:
-        group: app
+      # nodeSelector:
+      #   group: app
