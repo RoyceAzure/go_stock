@@ -133,14 +133,14 @@ func runGRPCGatewayServer(configs config.Config, schedulerDao scheduler_dao.ISch
 			Msg("cannot start gateway http server")
 	}
 
-	serverScheduler, err := gapi.NewSchedulerServer(schedulerDao, authorizeScheduler)
+	serverScheduler, err := gapi.NewSchedulerServer(schedulerDao, stockinfoDao, authorizeScheduler)
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("cannot start gateway http server")
 	}
 
-	serverDistributor, err := gapi.NewDistributorServer(distributorDao, authorizeDistributor)
+	serverDistributor, err := gapi.NewDistributorServer(distributorDao, stockinfoDao, authorizeDistributor)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -296,14 +296,14 @@ func runGRPCServer(configs config.Config, schedulerDao scheduler_dao.ISchedulerD
 			Msg("cannot start gateway http server")
 	}
 
-	serverScheduler, err := gapi.NewSchedulerServer(schedulerDao, authorizeScheduler)
+	serverScheduler, err := gapi.NewSchedulerServer(schedulerDao, stockinfoDao, authorizeScheduler)
 	if err != nil {
 		log.Fatal().
 			Err(err).
 			Msg("cannot start gateway http server")
 	}
 
-	serverDistributor, err := gapi.NewDistributorServer(distributorDao, authorizeDistributor)
+	serverDistributor, err := gapi.NewDistributorServer(distributorDao, stockinfoDao, authorizeDistributor)
 	if err != nil {
 		log.Fatal().
 			Err(err).

@@ -129,6 +129,45 @@
         ]
       }
     },
+    "/v1/email/verify": {
+      "get": {
+        "summary": "Verify email",
+        "description": "Use this API to verify email address",
+        "operationId": "StockInfo_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "emailId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "secretCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/frontend_client": {
       "post": {
         "summary": "create frontend client",
@@ -559,6 +598,74 @@
         ]
       }
     },
+    "/v1/token/renew": {
+      "post": {
+        "summary": "Renew access token",
+        "description": "Use this API to renew access token",
+        "operationId": "StockInfo_RenewToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbRenewTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbRenewTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
+    "/v1/token/validate": {
+      "post": {
+        "summary": "Validate access token",
+        "description": "Use this API to validate access token",
+        "operationId": "StockInfo_ValidateToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbValidateTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbValidateTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StockInfo"
+        ]
+      }
+    },
     "/v1/unRealizedProfit": {
       "get": {
         "summary": "Get UnRealozedProfit",
@@ -795,45 +902,6 @@
             "required": true,
             "type": "string",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "StockInfo"
-        ]
-      }
-    },
-    "/v1/verify_email": {
-      "get": {
-        "summary": "Verify email",
-        "description": "Use this API to verify email address",
-        "operationId": "StockInfo_VerifyEmail",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbVerifyEmailResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "emailId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "secretCode",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [
@@ -1264,6 +1332,26 @@
         }
       }
     },
+    "pbRenewTokenRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string"
+        }
+      }
+    },
+    "pbRenewTokenResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "expiredAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "pbStock": {
       "type": "object",
       "properties": {
@@ -1469,6 +1557,22 @@
         },
         "purchasePricePerShare": {
           "type": "string"
+        }
+      }
+    },
+    "pbValidateTokenRequest": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        }
+      }
+    },
+    "pbValidateTokenResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "boolean"
         }
       }
     },

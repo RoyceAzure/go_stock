@@ -20,6 +20,7 @@ type Querier interface {
 	CreateUserStock(ctx context.Context, arg CreateUserStockParams) (UserStock, error)
 	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteFund(ctx context.Context, fundID int64) error
+	DeleteSession(ctx context.Context, id uuid.UUID) error
 	DeleteStock(ctx context.Context, stockID int64) error
 	DeleteStockTransaction(ctx context.Context, transationID uuid.UUID) error
 	DeleteUser(ctx context.Context, userID int64) error
@@ -34,6 +35,7 @@ type Querier interface {
 	GetRealizedProfitLosssByUserId(ctx context.Context, arg GetRealizedProfitLosssByUserIdParams) ([]RealizedProfitLoss, error)
 	GetRealizedProfitLosssByUserIdDetial(ctx context.Context, arg GetRealizedProfitLosssByUserIdDetialParams) ([]GetRealizedProfitLosssByUserIdDetialRow, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
+	GetSessionByUserId(ctx context.Context, userID int64) (Session, error)
 	GetStock(ctx context.Context, stockID int64) (Stock, error)
 	GetStockByCN(ctx context.Context, stockName string) (Stock, error)
 	GetStockByCode(ctx context.Context, stockCode string) (Stock, error)

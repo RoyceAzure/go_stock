@@ -27,6 +27,8 @@ type IStockInfoDao interface {
 	GetAllTransations(ctx context.Context, req *pb.GetAllStockTransationRequest, accessToken string) (*pb.StockTransatsionResponse, error)
 	GetUserStock(ctx context.Context, req *pb.GetUserStockRequest, accessToken string) (*pb.GetUserStockResponse, error)
 	GetUserStockById(ctx context.Context, req *pb.GetUserStockByIdRequest, accessToken string) (*pb.GetUserStockBuIdResponse, error)
+	ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error)
+	RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb.RenewTokenResponse, error)
 }
 
 type StockInfoDao struct {

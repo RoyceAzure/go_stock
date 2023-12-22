@@ -1,0 +1,23 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package pb;
+option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
+
+message ValidateTokenRequest{
+    string access_token = 1;
+}
+
+message ValidateTokenResponse{
+    bool result=1;
+}
+
+
+message RenewTokenRequest{
+    string refresh_token = 1;
+}
+
+message RenewTokenResponse{
+    string access_token=1;
+    google.protobuf.Timestamp expired_at=2;
+}

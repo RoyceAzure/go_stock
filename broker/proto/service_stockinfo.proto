@@ -12,6 +12,7 @@ import "rpc_stock.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "rpc_fund.proto";
+import "rpc_token.proto";
 package pb;
 
 option go_package = "github.com/RoyceAzure/go-stockinfo-broker/shared/pb";
@@ -70,7 +71,7 @@ service StockInfo{
 
     rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse){
       option (google.api.http) = {
-          get: "/v1/verify_email"
+          get: "/v1/email/verify"
           };
       option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
         description: "Use this API to verify email address";
@@ -207,6 +208,28 @@ rpc GetUnRealizedProfitLoss (GetUnRealizedProfitLossRequest) returns (GetUnReali
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
     description: "Use this API to get UnRealozedProfit";
     summary: "Get UnRealozedProfit";
+  };
+}
+
+rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse){
+  option (google.api.http) = {
+      post: "/v1/token/validate"
+      body:"*"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to validate access token";
+    summary: "Validate access token";
+  };
+}
+
+rpc RenewToken (RenewTokenRequest) returns (RenewTokenResponse){
+  option (google.api.http) = {
+      post: "/v1/token/renew"
+      body:"*"
+      };
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+    description: "Use this API to renew access token";
+    summary: "Renew access token";
   };
 }
 
