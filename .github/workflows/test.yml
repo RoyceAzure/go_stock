@@ -1,0 +1,87 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Run unit test
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  pull_request:
+    branches: ["master"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: royce
+          POSTGRES_USER: royce
+          POSTGRES_DB: stock_info
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      mongo:
+        image: mongo:4.2.16-bionic
+        env:
+          MONGO_INITDB_DATABASE: logs
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check code inbto the go module dir
+        uses: actions/checkout@v3
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.21.3
+        id: go
+
+      - name: Wait for Postgres is ready
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            sleep 1;
+          done
+      
+      - name: Create addional DB
+        run: |
+          psql -h localhost -U royce -d stock_info -c "CREATE DATABASE stock_info_distributor";
+          psql -h localhost -U royce -d stock_info -c "CREATE DATABASE stock_info_scheduler";
+        env:
+          PGPASSWORD: royce
+
+      - name: Install golang migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
+          chmod +x migrate
+          sudo mv migrate /usr/bin/migrate
+          which migrate
+          migrate --version
+
+      - name: Run migrate
+        run: make migrateup
+        
+      - name: Test
+        run: make test

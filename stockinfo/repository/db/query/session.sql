@@ -14,3 +14,12 @@ INSERT INTO session(
 -- name: GetSession :one
 SELECT * FROM session
 WHERE id = $1 LIMIT 1;
+
+-- name: DeleteSession :exec
+DELETE FROM session
+WHERE id = $1;
+
+
+-- name: GetSessionByUserId :one
+SELECT * FROM session
+WHERE user_id = $1 LIMIT 1;

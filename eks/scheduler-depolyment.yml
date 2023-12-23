@@ -28,7 +28,5 @@ spec:
           - name: SERVICEID
             value:  "schduler01"
         command: ["/app/main"]
-      nodeSelector:
-        group: app
       imagePullSecrets:
       - name: stockinfo

@@ -37,6 +37,8 @@ const (
 	StockInfo_GetUserStockById_FullMethodName        = "/pb.StockInfo/GetUserStockById"
 	StockInfo_GetRealizedProfitLoss_FullMethodName   = "/pb.StockInfo/GetRealizedProfitLoss"
 	StockInfo_GetUnRealizedProfitLoss_FullMethodName = "/pb.StockInfo/GetUnRealizedProfitLoss"
+	StockInfo_ValidateToken_FullMethodName           = "/pb.StockInfo/ValidateToken"
+	StockInfo_RenewToken_FullMethodName              = "/pb.StockInfo/RenewToken"
 )
 
 // StockInfoClient is the client API for StockInfo service.
@@ -61,6 +63,8 @@ type StockInfoClient interface {
 	GetUserStockById(ctx context.Context, in *GetUserStockByIdRequest, opts ...grpc.CallOption) (*GetUserStockBuIdResponse, error)
 	GetRealizedProfitLoss(ctx context.Context, in *GetRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetRealizedProfitLossResponse, error)
 	GetUnRealizedProfitLoss(ctx context.Context, in *GetUnRealizedProfitLossRequest, opts ...grpc.CallOption) (*GetUnRealizedProfitLossResponse, error)
+	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error)
+	RenewToken(ctx context.Context, in *RenewTokenRequest, opts ...grpc.CallOption) (*RenewTokenResponse, error)
 }
 
 type stockInfoClient struct {
@@ -233,6 +237,24 @@ func (c *stockInfoClient) GetUnRealizedProfitLoss(ctx context.Context, in *GetUn
 	return out, nil
 }
 
+func (c *stockInfoClient) ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error) {
+	out := new(ValidateTokenResponse)
+	err := c.cc.Invoke(ctx, StockInfo_ValidateToken_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stockInfoClient) RenewToken(ctx context.Context, in *RenewTokenRequest, opts ...grpc.CallOption) (*RenewTokenResponse, error) {
+	out := new(RenewTokenResponse)
+	err := c.cc.Invoke(ctx, StockInfo_RenewToken_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StockInfoServer is the server API for StockInfo service.
 // All implementations must embed UnimplementedStockInfoServer
 // for forward compatibility
@@ -255,6 +277,8 @@ type StockInfoServer interface {
 	GetUserStockById(context.Context, *GetUserStockByIdRequest) (*GetUserStockBuIdResponse, error)
 	GetRealizedProfitLoss(context.Context, *GetRealizedProfitLossRequest) (*GetRealizedProfitLossResponse, error)
 	GetUnRealizedProfitLoss(context.Context, *GetUnRealizedProfitLossRequest) (*GetUnRealizedProfitLossResponse, error)
+	ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error)
+	RenewToken(context.Context, *RenewTokenRequest) (*RenewTokenResponse, error)
 	mustEmbedUnimplementedStockInfoServer()
 }
 
@@ -315,6 +339,12 @@ func (UnimplementedStockInfoServer) GetRealizedProfitLoss(context.Context, *GetR
 }
 func (UnimplementedStockInfoServer) GetUnRealizedProfitLoss(context.Context, *GetUnRealizedProfitLossRequest) (*GetUnRealizedProfitLossResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUnRealizedProfitLoss not implemented")
+}
+func (UnimplementedStockInfoServer) ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
+}
+func (UnimplementedStockInfoServer) RenewToken(context.Context, *RenewTokenRequest) (*RenewTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewToken not implemented")
 }
 func (UnimplementedStockInfoServer) mustEmbedUnimplementedStockInfoServer() {}
 
@@ -653,6 +683,42 @@ func _StockInfo_GetUnRealizedProfitLoss_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StockInfo_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockInfoServer).ValidateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockInfo_ValidateToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockInfoServer).ValidateToken(ctx, req.(*ValidateTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StockInfo_RenewToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StockInfoServer).RenewToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StockInfo_RenewToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StockInfoServer).RenewToken(ctx, req.(*RenewTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StockInfo_ServiceDesc is the grpc.ServiceDesc for StockInfo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -731,6 +797,14 @@ var StockInfo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUnRealizedProfitLoss",
 			Handler:    _StockInfo_GetUnRealizedProfitLoss_Handler,
+		},
+		{
+			MethodName: "ValidateToken",
+			Handler:    _StockInfo_ValidateToken_Handler,
+		},
+		{
+			MethodName: "RenewToken",
+			Handler:    _StockInfo_RenewToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

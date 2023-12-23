@@ -8,8 +8,17 @@ message GetUserStockRequest{
     int32 page_size=1;
     int32 page=2;
 }
+message GetUserStockResponseDTO{
+    int64 user_id=1;
+    int64 stock_id = 2;
+    string stock_code=3;
+    string stock_name=4;
+    int32 quantity = 5;
+    string purchase_price_per_share = 6;
+}
+
 message GetUserStockResponse{
-    repeated UserStock data=1;
+    repeated GetUserStockResponseDTO data=1;
 }
 
 message GetUserStockByIdRequest{

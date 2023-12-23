@@ -44,12 +44,14 @@ func (server *Server) GetUserStock(ctx context.Context, req *pb.GetUserStockRequ
 		return nil, util.InternalError(err)
 	}
 
-	var data []*pb.UserStock
+	var data []*pb.GetUserStockResponseDTO
 
 	for _, usesrSotck := range userStocks {
-		data = append(data, &pb.UserStock{
+		data = append(data, &pb.GetUserStockResponseDTO{
 			UserId:                usesrSotck.UserID,
 			StockId:               usesrSotck.StockID,
+			StockCode:             usesrSotck.StockCode.String,
+			StockName:             usesrSotck.StockName.String,
 			Quantity:              usesrSotck.Quantity,
 			PurchasePricePerShare: usesrSotck.PurchasePricePerShare,
 		})

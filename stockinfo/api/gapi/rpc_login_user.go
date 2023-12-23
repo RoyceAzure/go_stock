@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
+	"github.com/RoyceAzure/go-stockinfo/api/token"
 	db "github.com/RoyceAzure/go-stockinfo/repository/db/sqlc"
 	"github.com/RoyceAzure/go-stockinfo/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo/shared/util"
@@ -33,32 +35,33 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.Unauthenticated, "%s", fmt.Errorf("wrong password"))
 	}
 
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(req.Email,
-		user.UserID,
-		server.config.AccessTokenDuration)
+	var accessToken string
+	var accessPayload *token.Payload
+	var session db.Session
+	session, err = server.store.GetSessionByUserId(ctx, user.UserID)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%s", err)
+		if err != sql.ErrNoRows {
+			return nil, status.Errorf(codes.Internal, "%s", err)
+		}
+		session, err = server.createSession(ctx, user.Email, user.UserID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "%s", err)
+		}
+	} else if time.Now().After(session.ExpiredAt) {
+		err = server.store.DeleteSession(ctx, session.ID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "%s", err)
+		}
+		session, err = server.createSession(ctx, user.Email, user.UserID)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "%s", err)
+		}
 	}
 
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err = server.tokenMaker.CreateToken(
 		req.Email,
 		user.UserID,
-		server.config.RefreshTokenDuration,
-	)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%s", err)
-	}
-	//session跟token綁定??
-	mtda := util.ExtractMetaData(ctx)
-	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
-		ID:           refreshPayload.ID,
-		UserID:       user.UserID,
-		RefreshToken: refreshToken,
-		UserAgent:    mtda.UserAgent, //TODO : fillit
-		ClientIp:     mtda.ClientIP,  //TODO : fillit
-		IsBlocked:    false,
-		ExpiredAt:    refreshPayload.ExpiredAt,
-	})
+		server.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
@@ -68,8 +71,8 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		SessionId:             session.ID.String(),
 		AccessToken:           accessToken,
 		AccessTokenExpiredAt:  timestamppb.New(accessPayload.ExpiredAt),
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiredAt: timestamppb.New(refreshPayload.ExpiredAt),
+		RefreshToken:          session.RefreshToken,
+		RefreshTokenExpiredAt: timestamppb.New(session.ExpiredAt),
 	}
 	return rsp, nil
 }
@@ -82,4 +85,30 @@ func validateLoginRequest(req *pb.LoginUserRequest) (violations []*errdetails.Ba
 		violations = append(violations, util.FieldViolation("password", err))
 	}
 	return violations
+}
+
+func (server *Server) createSession(ctx context.Context, email string, userId int64) (session db.Session, err error) {
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+		email,
+		userId,
+		server.config.RefreshTokenDuration,
+	)
+	if err != nil {
+		return session, status.Errorf(codes.Internal, "%s", err)
+	}
+	//session跟token綁定??
+	mtda := util.ExtractMetaData(ctx)
+	session, err = server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		UserID:       userId,
+		RefreshToken: refreshToken,
+		UserAgent:    mtda.UserAgent, //TODO : fillit
+		ClientIp:     mtda.ClientIP,  //TODO : fillit
+		IsBlocked:    false,
+		ExpiredAt:    refreshPayload.ExpiredAt,
+	})
+	if err != nil {
+		return session, err
+	}
+	return session, nil
 }

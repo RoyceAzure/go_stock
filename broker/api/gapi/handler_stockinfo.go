@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/pb"
 	"github.com/RoyceAzure/go-stockinfo-broker/shared/util"
@@ -22,6 +23,14 @@ func (s *StockInfoServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequ
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}
+
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		return nil, util.InvalidArgumentError(violations)
@@ -47,6 +56,13 @@ func (s *StockInfoServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (
 		return nil, err
 	}
 
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	res, err := s.stockinfoDao.GetUser(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -56,6 +72,12 @@ func (s *StockInfoServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (
 
 func (s *StockInfoServer) GetFund(ctx context.Context, req *pb.GetFundRequest) (*pb.GetFundResponse, error) {
 	_, token, err := s.authorizer.AuthorizUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -72,6 +94,12 @@ func (s *StockInfoServer) AddFund(ctx context.Context, req *pb.AddFundRequest) (
 	if err != nil {
 		return nil, err
 	}
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := s.stockinfoDao.AddFund(ctx, req, token)
 	if err != nil {
@@ -85,7 +113,12 @@ func (s *StockInfoServer) GetRealizedProfitLoss(ctx context.Context, req *pb.Get
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetRealizedProfitLoss(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -98,7 +131,12 @@ func (s *StockInfoServer) GetUnRealizedProfitLoss(ctx context.Context, req *pb.G
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetUnRealizedProfitLoss(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -107,7 +145,6 @@ func (s *StockInfoServer) GetUnRealizedProfitLoss(ctx context.Context, req *pb.G
 }
 
 func (s *StockInfoServer) GetStock(ctx context.Context, req *pb.GetStockRequest) (*pb.GetStockResponse, error) {
-
 	res, err := s.stockinfoDao.GetStock(ctx, req)
 	if err != nil {
 		return nil, err
@@ -120,7 +157,12 @@ func (s *StockInfoServer) GetStocks(ctx context.Context, req *pb.GetStocksReques
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetStocks(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -133,7 +175,12 @@ func (s *StockInfoServer) TransationStock(ctx context.Context, req *pb.Transatio
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.TransationStock(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -146,7 +193,12 @@ func (s *StockInfoServer) GetAllTransations(ctx context.Context, req *pb.GetAllS
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetAllTransations(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -159,7 +211,12 @@ func (s *StockInfoServer) GetUserStock(ctx context.Context, req *pb.GetUserStock
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetUserStock(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -172,7 +229,12 @@ func (s *StockInfoServer) GetUserStockById(ctx context.Context, req *pb.GetUserS
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	res, err := s.stockinfoDao.GetUserStockById(ctx, req, token)
 	if err != nil {
 		return nil, err
@@ -189,11 +251,33 @@ func (s *StockInfoServer) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRe
 }
 
 func (s *StockInfoServer) InitStock(ctx context.Context, req *pb.InitStockRequest) (*pb.InitStockResponse, error) {
-	_, _, err := s.authorizer.AuthorizUser(ctx)
+	_, token, err := s.authorizer.AuthorizUser(ctx)
 	if err != nil {
 		return nil, util.UnauthticatedError(err)
 	}
+	_, err = s.stockinfoDao.ValidateToken(ctx, &pb.ValidateTokenRequest{
+		AccessToken: token,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return s.stockinfoDao.InitStock(ctx, req)
+}
+
+func (s *StockInfoServer) ValidateToken(ctx context.Context, req *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
+	violations := validateValidateTokenRequest(req)
+	if violations != nil {
+		return nil, util.InvalidArgumentError(violations)
+	}
+	return s.stockinfoDao.ValidateToken(ctx, req)
+}
+
+func (s *StockInfoServer) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb.RenewTokenResponse, error) {
+	violations := validateRenewTokenRequest(req)
+	if violations != nil {
+		return nil, util.InvalidArgumentError(violations)
+	}
+	return s.stockinfoDao.RenewToken(ctx, req)
 }
 
 func validateCreteUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
@@ -250,6 +334,20 @@ func validateVerifyEmailRequest(req *pb.VerifyEmailRequest) (violations []*errde
 	}
 	if err := validate.ValidSecretCode(req.GetSecretCode()); err != nil {
 		violations = append(violations, util.FieldViolation("secret_code", err))
+	}
+	return violations
+}
+
+func validateValidateTokenRequest(req *pb.ValidateTokenRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if req.AccessToken == "" {
+		violations = append(violations, util.FieldViolation("access_token", fmt.Errorf("access token is empty")))
+	}
+	return violations
+}
+
+func validateRenewTokenRequest(req *pb.RenewTokenRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if req.RefreshToken == "" {
+		violations = append(violations, util.FieldViolation("refresh_token", fmt.Errorf("refresh token is empty")))
 	}
 	return violations
 }
